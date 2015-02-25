@@ -13,6 +13,8 @@
 		"express": "4.x",
 		"mongojs": "0.14.x",
 		"http-proxy": "~0.10.3",
-		"bluebird": "2.9.x"
+		"bluebird": "2.9.x",
+		"react": "^0.12.2",
+		"node-jsx": "^0.12.4"
 	}
 }

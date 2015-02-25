@@ -6,19 +6,33 @@ var mongojs = require('mongojs');
 var db = mongojs('QuestBnB');
 var trips = db.collection('trips');
 var port = process.env.PORT || 3000;
+var React = require('react');
+var Renderer = require('./renderer/server_renderer');
+var self = this;
 
 //bluebird promisify mongojs
 Promise.promisifyAll(mongojs);
 
 //allows requiring in jsx files
-//require('node-jsx').install({extension: '.jsx'});
+require('node-jsx').install({extension: '.jsx'});
 
-//app.use(express.static(__dirname + '/'));
+var landingView = React.createFactory(require('./views/landingView.jsx'));
+var tripView = React.createFactory(require('./views/TripView.jsx'));
+var stopsView = React.createFactory(require('./views/StopsView.jsx'));
+var stopView = React.createFactory(require('./views/StopView.jsx'));
+var overviewView = React.createFactory(require('./views/overviewView.jsx'));
+
+this.renderer = new Renderer();
+
+app.use(express.static(__dirname + '/public'));
 
 //app.use('/api', api.proxy);
 
 app.get("/", function(req, res) {
-	res.send("<!DOCTYPE html><html><head><title>Landing Page</title></head><body><h1>Landing Page</h1></body></html>");
+	var html = self.renderer.render(landingView, {
+		title: "Landing Page"
+	});
+	res.send(html);
 });
 
 app.get('/trips/:id', function(req, res){
@@ -29,11 +43,15 @@ app.get('/trips/:id', function(req, res){
 		if (wantsJSON) {
 			res.send(docs);
 		} else {
-			//TODO: need a renderer
-			res.send("<!DOCTYPE html><html><head><title>Trip Page</title></head><body><h1>Trip Page</h1></body></html>");
+			var html = self.renderer.render(tripView, {
+				title: "Trip Page",
+				data: docs[0]
+			});
+			res.send(html);
 		}
 		
 	}).catch(function(e) {
+		console.log("ERROR: ", e);
 		res.sendStatus(500);
 	});
 	
@@ -63,7 +81,10 @@ app.put('/trips', function(req, res){
 });
 
 app.get('/trips/:id/stops', function(req, res) {
-	res.send("<!DOCTYPE html><html><head><title>Stop Page</title></head><body><h1>Stops Page</h1></body></html>");
+	var html = self.renderer.render(stopsView, {
+		title: "Stops Page"
+	});
+	res.send(html);
 });
 
 app.put('/trips/:id/stops', function(req, res) {
@@ -71,7 +92,10 @@ app.put('/trips/:id/stops', function(req, res) {
 });
 
 app.get('/trips/:id/stops/:id', function(req, res) {
-	res.send("<!DOCTYPE html><html><head><title>Stop Page</title></head><body><h1>Stop Page</h1></body></html>");
+	var html = self.renderer.render(stopsView, {
+		title: "Stop Page"
+	});
+	res.send(html);
 });
 
 app.patch('/trips/:id/stops/:id', function(req, res){
@@ -79,13 +103,12 @@ app.patch('/trips/:id/stops/:id', function(req, res){
 });
 
 app.get("/trips/:id/overview", function(req, res) {
-	var tripId = parseInt(req.params.id);
-
-	res.send("<!DOCTYPE html><html><head><title>Overview Page</title></head><body><h1>Overview Page</h1></body></html>");
+	var html = self.renderer.render(overviewView, {
+		title: "Overview Page"
+	});
+	res.send(html);
 });
 
 var server = app.listen(port, function() {
     console.log('Listening on port %d', server.address().port);
 });
-
-//api.listen(3010);
