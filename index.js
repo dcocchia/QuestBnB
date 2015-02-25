@@ -5,6 +5,7 @@ var Promise = require("bluebird");
 var mongojs = require('mongojs');
 var db = mongojs('QuestBnB');
 var trips = db.collection('trips');
+var port = process.env.PORT || 3000;
 
 //bluebird promisify mongojs
 Promise.promisifyAll(mongojs);
@@ -83,7 +84,7 @@ app.get("/trips/:id/overview", function(req, res) {
 	res.send("<!DOCTYPE html><html><head><title>Overview Page</title></head><body><h1>Overview Page</h1></body></html>");
 });
 
-var server = app.listen(3000, function() {
+var server = app.listen(port, function() {
     console.log('Listening on port %d', server.address().port);
 });
 
