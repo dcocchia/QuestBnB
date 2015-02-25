@@ -16,7 +16,7 @@ Promise.promisifyAll(mongojs);
 //allows requiring in jsx files
 require('node-jsx').install({extension: '.jsx'});
 
-var landingView = React.createFactory(require('./views/landingView.jsx'));
+var landingView = React.createFactory(require('./views/LandingView.jsx'));
 var tripView = React.createFactory(require('./views/TripView.jsx'));
 var stopsView = React.createFactory(require('./views/StopsView.jsx'));
 var stopView = React.createFactory(require('./views/StopView.jsx'));
