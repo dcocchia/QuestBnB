@@ -1,0 +1,82 @@
+@import (reference) "colors";
+.landing-page {
+
+	h1 {
+		text-transform: uppercase;
+		color: #fff;
+		text-align: center;
+		height: auto;
+		padding: 20px 10px;
+		border-left: 0;
+		border-right: 0;
+		font-size: 60px;
+		font-weight: 900;
+		line-height: 60px;
+		z-index: 10;
+		text-shadow: 6px 6px 6px #000;
+		padding-top: 105px;
+	}
+
+	.search-area {
+		position: relative;
+		top: 50px;
+		height: 350px;
+		width: 100%;
+	}
+
+	.search-box {
+		background: #000;
+		background: rgba(0,0,0,0.6);
+		-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding-top: 30px;
+		padding-bottom: 30px;
+		text-align: center;
+
+		.form-control,
+		.submit {
+			height: 44px;
+			display: inline-block;
+		}
+
+		.location {
+			width: 290px;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+
+		.date {
+			width: 130px;
+		}
+
+		.date,
+		.travellers {
+			border-radius: 0;
+		}
+
+		.travellers {
+
+		}
+
+		.submit {
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
+			vertical-align: baseline;
+		}
+	}
+
+	.map {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		margin: auto;
+		z-index: -1;
+		width: 100%;
+		height: 100%;
+	}
+}

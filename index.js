@@ -30,7 +30,8 @@ app.use(express.static(__dirname + '/public'));
 
 app.get("/", function(req, res) {
 	var html = self.renderer.render(landingView, {
-		title: "Landing Page"
+		title: "Find Your Adventure",
+		styleSheets: ["/app/css/landing_page.css"]
 	});
 	res.send(html);
 });

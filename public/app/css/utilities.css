@@ -1,0 +1,1 @@
+.absolute-center{position:absolute;top:0;left:0;right:0;bottom:0;margin:auto}.overlay{position:fixed;width:100%;height:100%;background:rgba(0,0,0,.3);z-index:1000}.overlay.back{z-index:0}.overlay.partial{top:-225px;height:225px}.input-wrapper{display:inline-block;position:relative}
