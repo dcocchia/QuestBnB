@@ -1,6 +1,5 @@
 var express = require('express');
 var app = express();
-var api = require("./lib/api");
 var Promise = require("bluebird");
 var mongojs = require('mongojs');
 var db = mongojs('QuestBnB');
@@ -16,11 +15,13 @@ Promise.promisifyAll(mongojs);
 //allows requiring in jsx files
 require('node-jsx').install({extension: '.jsx'});
 
-var landingView = React.createFactory(require('./views/LandingView.jsx'));
-var tripView = React.createFactory(require('./views/TripView.jsx'));
-var stopsView = React.createFactory(require('./views/StopsView.jsx'));
-var stopView = React.createFactory(require('./views/StopView.jsx'));
-var overviewView = React.createFactory(require('./views/overviewView.jsx'));
+var viewsPath = "./views/"
+
+var landingView = React.createFactory(require(viewsPath + 'LandingView.jsx'));
+var tripView = React.createFactory(require(viewsPath + 'TripView.jsx'));
+var stopsView = React.createFactory(require(viewsPath + 'StopsView.jsx'));
+var stopView = React.createFactory(require(viewsPath + 'StopView.jsx'));
+var overviewView = React.createFactory(require(viewsPath + 'overviewView.jsx'));
 
 this.renderer = new Renderer();
 

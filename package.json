@@ -18,10 +18,13 @@
     "node-jsx": "^0.12.4"
   },
   "devDependencies": {
+    "browserify": "9.0.*",
+    "vinyl-source-stream": "1.0.0",
     "gulp": "^3.8.11",
     "gulp-less": "3.0.*",
     "gulp-minify-css": "0.4.*",
     "gulp-nodemon": "1.0.*",
+    "gulp-react": "2.0.0",
     "less": "2.4.*"
   }
 }

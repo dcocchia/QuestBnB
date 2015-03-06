@@ -2,7 +2,10 @@ var gulp = require('gulp');
 var less = require('gulp-less');
 var nodemon = require('gulp-nodemon');
 var path = require('path');
-var minifyCSS = require('gulp-minify-css')
+var minifyCSS = require('gulp-minify-css');
+var react = require('gulp-react');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
 
 gulp.task('less', function () {
   return gulp.src('./public/app/less/**/*.less')
@@ -13,9 +16,19 @@ gulp.task('less', function () {
     .pipe(gulp.dest('./public/app/css'));
 });
 
-// gulp.task('watch', function() {
-//     gulp.watch('./public/app/less/**/*.less', ['less']);
-// });
+gulp.task('build-jsx', function() {
+  return gulp.src('./views/**/*.jsx')
+    .pipe(react())
+    .pipe(gulp.dest('./public/views'));
+});
+
+gulp.task('browserify', function() {
+  return browserify('./public/app/app.js')
+  .bundle()
+  .pipe(source('bundle.js'))
+  .pipe(gulp.dest('./public/'));
+});
+
 
 gulp.task('develop', function() {
 	nodemon({ 
@@ -23,10 +36,13 @@ gulp.task('develop', function() {
 		ext: 'html js jsx less',
 		ignore: [
 			".git",
-    		"node_modules/**/node_modules"
+    	"node_modules/**/node_modules",
+      "./public/views/*",
+      "./public/app/css/*",
+      "./public/bundle.js"
 		]
 	})
-    .on('change', 'less')
+    .on('change', ['less', 'build-jsx', 'browserify'])
 });
 
-gulp.task('default', ['less']);
+gulp.task('default', ['less', 'build-jsx', 'browserify']);

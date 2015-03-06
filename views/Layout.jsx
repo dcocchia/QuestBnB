@@ -31,7 +31,8 @@ var Layout = React.createClass({
 					{this.props.body}
 					<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 					<script src="/libraries.js"></script>
-					<script src="/app/app.js"></script>
+					<script src="/bundle.js"></script>
+
 				</body>
 			</html>
 		)
