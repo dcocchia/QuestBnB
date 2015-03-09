@@ -3,11 +3,15 @@ var renderer = require("../../../renderer/client_renderer");
 
 var LandingView = Backbone.View.extend({
 	_findElms: function() {
-		this.elms.$searchBox = this.$(".search-box");
+		this.elms.$searchArea = this.$(".search-area");
+		this.elms.$searchBox = this.elms.$searchArea.find(".search-box");
+		this.elms.$searchForm = this.elms.$searchBox.find(".search-form");
 		this.elms.$locationsMenu = this.elms.$searchBox.find(".locations-menu");
 		this.elms.$locationInput = this.elms.$searchBox.find(".form-control.location");
 		this.elms.$startCalendar = this.elms.$searchBox.find(".form-control.date.start");
 		this.elms.$endCalendar = this.elms.$searchBox.find(".form-control.date.end");
+		this.elms.$travellers = this.elms.$searchBox.find(".form-control.travellers");
+		this.elms.$searchBtn = this.elms.$searchBox.find(".search-btn");
 	},
 
 	elms: {},
@@ -17,7 +21,9 @@ var LandingView = Backbone.View.extend({
 		"keydown .form-control.location": "onLocationKeydown",
 		"click .location-item": "onLocationItemClick",
 		"focusin .form-control.location": "renderSearchResults",
-		"focusin .form-control.date": "onCalendarInputFocus"
+		"focusin .form-control.date": "onCalendarInputFocus",
+		"change .form-control.travellers": "onTravellerChange",
+		"submit .search-form": "onSubmit"
 	},
 
 	initialize: function(opts) {
@@ -25,11 +31,34 @@ var LandingView = Backbone.View.extend({
 
 		this._findElms();
 
+		//hack for autofocus React bug: https://github.com/facebook/react/issues/3066
+		this.elms.$locationInput.focus();
+
+		this.bindDatePickers();
+
+		this.map_api = opts.map_api;
+
 		this.model.on("change", _.bind(this.renderSearchResults, this));
 
 		this.sendQuery = _.debounce( _.bind( function(options) {
 			this.model.getQueryPredictions(options);
 		}, this), 500);
+	},
+
+	bindDatePickers: function() {
+		this.elms.$startCalendar.datepicker({ 
+			onSelect: _.bind( function(resp) {
+				var that = this;
+				_.delay( function() {
+					that.elms.$endCalendar.focus();
+				}, 250);
+			}, this)
+		});
+		this.elms.$endCalendar.datepicker({ 
+			onSelect: _.bind( function(resp) {
+				this.elms.$travellers.focus();
+			}, this)
+		});
 	},
 
 	onLocationKeydown: function(e) {
@@ -141,36 +170,54 @@ var LandingView = Backbone.View.extend({
 	onLocationItemClick: function(e) {
 		var item = e.currentTarget,
 			$item = this.$(item),
-			placeDescription = $item.attr("data-place-description");
+			placeDescription = $item.attr("data-place-description"),
+			placeId = $item.attr("data-place-id"),
+			offset_y = -0.7,
+			offset_x = 0;
 
 		if (e && e.preventDefault) { e.preventDefault(); }
+
+		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
+			if (status === google.maps.places.PlacesServiceStatus.OK ) {
+				Backbone.trigger("map:clearMarkers");
+				Backbone.trigger("map:setCenter", {
+					lat: place.geometry.location.k + offset_y, long: place.geometry.location.D + offset_x
+				});
+				Backbone.trigger("map:setMarker", {
+					location: place.geometry.location
+				});
+				Backbone.trigger("map:setZoom", 8);
+			}
+		});
 
 		this.elms.$locationInput.val(placeDescription);
 		this.elms.$startCalendar.focus();
 	},
 
 	onCalendarInputFocus: function(e) {
-		var input = e.currentTarget,
-			$item = this.$(input),
-			calendar = $item.attr("data-calendar");
+		this.hideLocationMenu();
+	},
 
+	onTravellerChange: function(e) {
+		this.elms.$searchBtn.focus();
+	},
+
+	slideOutSearchArea: function() {
+		this.elms.$searchArea.addClass("out");
+	},
+
+	slideInSearchArea: function() {
+		this.elms.$searchArea.removeClass("out");
+	},
+
+	onSubmit: function(e) {
 		if (e && e.preventDefault) { e.preventDefault(); }
+		
+		var data = {};
+		this.elms.$searchForm.serializeArray().map(function(x){data[x.name] = x.value;});
 
-		this.showCalendar(calendar);
-	},
-
-	showCalendar: function(calendar) {
-		if (calendar === "end") {
-			this.hideCalendar("start");
-			this.hideLocationMenu();
-		} else {
-			this.hideCalendar("end");
-			this.hideLocationMenu();
-		}
-	},
-
-	hideCalendar: function(calendar) {
-
+		this.slideOutSearchArea();
+		Backbone.trigger("landing_view:submit", data);
 	}
 
 });

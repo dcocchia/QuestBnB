@@ -15,7 +15,8 @@
     "http-proxy": "~0.10.3",
     "bluebird": "2.9.x",
     "react": "^0.12.2",
-    "node-jsx": "^0.12.4"
+    "node-jsx": "^0.12.4",
+    "react-input-calendar": "0.1.5"
   },
   "devDependencies": {
     "browserify": "9.0.*",

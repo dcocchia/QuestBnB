@@ -12,6 +12,16 @@ var Script = React.createClass({displayName: "Script",
 	}
 });
 
+var Map = React.createClass({displayName: "Map",
+	render: function() {
+		return (
+			React.createElement("div", {className: this.props.mapStyleClasses}, 
+				React.createElement("div", {id: "goog_map"})
+			)
+		)
+	}
+});
+
 var Layout = React.createClass({displayName: "Layout",
 	render: function() {
 		var styleSheets = this.props.styleSheets;
@@ -28,7 +38,10 @@ var Layout = React.createClass({displayName: "Layout",
 					})
 				), 
 				React.createElement("body", null, 
-					this.props.body, 
+					React.createElement("div", {className: "page-view"}, 
+						this.props.body
+					), 
+					React.createElement(Map, {mapStyleClasses: this.props.mapStyleClasses}), 
 					React.createElement("script", {type: "text/javascript", src: "https://maps.googleapis.com/maps/api/js?libraries=places"}), 
 					React.createElement("script", {src: "/libraries.js"}), 
 					React.createElement("script", {src: "/bundle.js"})

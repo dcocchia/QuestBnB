@@ -32,7 +32,8 @@ app.use(express.static(__dirname + '/public'));
 app.get("/", function(req, res) {
 	var html = self.renderer.render(landingView, {
 		title: "Find Your Adventure",
-		styleSheets: ["/app/css/landing_page.css"]
+		styleSheets: ["/app/css/landing_page.css"],
+		mapStyleClasses: "map"
 	});
 	res.send(html);
 });
@@ -47,7 +48,8 @@ app.get('/trips/:id', function(req, res){
 		} else {
 			var html = self.renderer.render(tripView, {
 				title: "Trip Page",
-				data: docs[0]
+				styleSheets: ["/app/css/trip_page.css"],
+				mapStyleClasses: "map design"
 			});
 			res.send(html);
 		}

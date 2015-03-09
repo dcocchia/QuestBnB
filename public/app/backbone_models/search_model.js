@@ -1,9 +1,11 @@
-var map_api = require("../util/map_api");
-
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
 		queryStatus: "noResults"
+	},
+
+	initialize: function(opts) {
+		this.map_api = opts.map_api;
 	},
 
 	getQueryPredictions: function(options) {
@@ -31,7 +33,7 @@ var SearchModel = Backbone.Model.extend({
 			}
 		}
 
-		map_api.getQueryPredictions(options, _.bind( setModelQuery, this));
+		this.map_api.getQueryPredictions(options, _.bind( setModelQuery, this));
 	}
 });
 

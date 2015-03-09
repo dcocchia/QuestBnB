@@ -12,6 +12,16 @@ var Script = React.createClass({
 	}
 });
 
+var Map = React.createClass({
+	render: function() {
+		return (
+			<div className={this.props.mapStyleClasses}>
+				<div id="goog_map"></div>
+			</div>
+		)
+	}
+});
+
 var Layout = React.createClass({
 	render: function() {
 		var styleSheets = this.props.styleSheets;
@@ -28,7 +38,10 @@ var Layout = React.createClass({
 					})}
 				</head>
 				<body>
-					{this.props.body}
+					<div className="page-view">
+						{this.props.body}
+					</div>
+					<Map mapStyleClasses={this.props.mapStyleClasses}/>
 					<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 					<script src="/libraries.js"></script>
 					<script src="/bundle.js"></script>
