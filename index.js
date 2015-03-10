@@ -31,7 +31,6 @@ app.use(express.static(__dirname + '/public'));
 
 app.get("/", function(req, res) {
 	var html = self.renderer.render(landingView, {
-		title: "Find Your Adventure",
 		styleSheets: ["/app/css/landing_page.css"],
 		mapStyleClasses: "map"
 	});
@@ -47,7 +46,6 @@ app.get('/trips/:id', function(req, res){
 			res.send(docs);
 		} else {
 			var html = self.renderer.render(tripView, {
-				title: "Trip Page",
 				styleSheets: ["/app/css/trip_page.css"],
 				mapStyleClasses: "map design"
 			});

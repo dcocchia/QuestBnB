@@ -48,6 +48,7 @@
 					map_api: this.map_api
 				});
 				this.loadView(landing_view, "landing_view", { 
+					$parentEl: this.$el,
 					el: $(".landing-page"), 
 					map_api: this.map_api, 
 					model: this.models["search_model"] 
@@ -57,7 +58,8 @@
 			this.router.on("route:trip", _.bind( function() { 
 				this.loadModel(trip_model, "trip_model");
 
-				this.loadView(trip_view, "trip_view", { 
+				this.loadView(trip_view, "trip_view", {
+					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					model: this.models["trip_model"]
@@ -95,7 +97,8 @@
 					]
 				});
 
-				this.loadView(trip_view, "trip_view", { 
+				this.loadView(trip_view, "trip_view", {
+					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					model: this.models["trip_model"]
@@ -129,7 +132,7 @@
 	$(function() { 
 		var app = new App({
 			router: new Router(),
-			el: $(".container")
+			el: $(".page-view")
 		});
 	});
 })(window);

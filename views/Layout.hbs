@@ -1,0 +1,25 @@
+<!DOCTYPE>
+<html lang="eng">
+	<head>
+		<meta charSet="UTF-8"/>
+		<title>{{{title}}}</title>
+		<link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="/app/css/common.css" rel="stylesheet" />
+		{{#each styleSheets}}
+		<link href={{this}} rel="stylesheet"/>
+		{{/each}}
+		
+	</head>
+	<body>
+		<div class="page-view">
+			{{{body}}}
+		</div>
+		<div class="{{{mapStyleClasses}}}">
+			<div id="goog_map"></div>
+		</div>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+		<script src="/libraries.js"></script>
+		<script src="/bundle.js"></script>
+
+	</body>
+</html>

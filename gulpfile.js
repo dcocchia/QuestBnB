@@ -2,8 +2,10 @@ var gulp = require('gulp');
 var less = require('gulp-less');
 var nodemon = require('gulp-nodemon');
 var path = require('path');
+var wrap = require('gulp-wrap');
 var minifyCSS = require('gulp-minify-css');
 var react = require('gulp-react');
+var handlebars = require('gulp-handlebars');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 

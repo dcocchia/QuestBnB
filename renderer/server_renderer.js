@@ -1,6 +1,8 @@
+var fs = require('fs');
 var React = require('react');
+var Handlebars = require('handlebars');
 require('node-jsx').install({extension: '.jsx'});
-var layout = React.createFactory(require('../views/Layout.jsx'));
+var layout = Handlebars.compile(fs.readFileSync('views/Layout.hbs').toString());
 
 function Renderer() {}
 
@@ -9,14 +11,19 @@ Renderer.prototype = {
 		var body = view(props);
 		var props = props || {};
 
-		props.body = body;
+		props.body = React.renderToString(body);
 
-		return wrapWithLayout(body, props);
+		return wrapWithLayout(props);
 	}
 }
 
 module.exports = Renderer;
 
-function wrapWithLayout(component, props) {
-	return '<!DOCTYPE>' + React.renderToString(layout(props));
+function wrapWithLayout(props) {
+	try {
+		return layout(props);	
+	} catch (err) {
+		return res.status(500).type('text').send(err.message);
+	}
+	
 }

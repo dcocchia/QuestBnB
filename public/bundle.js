@@ -49,6 +49,7 @@
 					map_api: this.map_api
 				});
 				this.loadView(landing_view, "landing_view", { 
+					$parentEl: this.$el,
 					el: $(".landing-page"), 
 					map_api: this.map_api, 
 					model: this.models["search_model"] 
@@ -58,7 +59,8 @@
 			this.router.on("route:trip", _.bind( function() { 
 				this.loadModel(trip_model, "trip_model");
 
-				this.loadView(trip_view, "trip_view", { 
+				this.loadView(trip_view, "trip_view", {
+					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					model: this.models["trip_model"]
@@ -96,7 +98,8 @@
 					]
 				});
 
-				this.loadView(trip_view, "trip_view", { 
+				this.loadView(trip_view, "trip_view", {
+					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					model: this.models["trip_model"]
@@ -130,7 +133,7 @@
 	$(function() { 
 		var app = new App({
 			router: new Router(),
-			el: $(".container")
+			el: $(".page-view")
 		});
 	});
 })(window);
@@ -18480,11 +18483,13 @@ var trip_model = Backbone.Model.extend({
 
 module.exports = trip_model;
 },{}],151:[function(require,module,exports){
+var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
 var renderer = require("../../../renderer/client_renderer");
 
 var LandingView = Backbone.View.extend({
-	_findElms: function() {
+	_findElms: function($parentEl) {
+		this.elms.$parentEl = $parentEl;
 		this.elms.$searchArea = this.$(".search-area");
 		this.elms.$searchBox = this.elms.$searchArea.find(".search-box");
 		this.elms.$searchForm = this.elms.$searchBox.find(".search-form");
@@ -18511,7 +18516,7 @@ var LandingView = Backbone.View.extend({
 	initialize: function(opts) {
 		opts || (opts = {});
 
-		this._findElms();
+		this._findElms(opts.$parentEl);
 
 		//hack for autofocus React bug: https://github.com/facebook/react/issues/3066
 		this.elms.$locationInput.focus();
@@ -18525,6 +18530,10 @@ var LandingView = Backbone.View.extend({
 		this.sendQuery = _.debounce( _.bind( function(options) {
 			this.model.getQueryPredictions(options);
 		}, this), 500);
+	},
+
+	render: function() {
+		renderer.render(landing_template, {}, this.elms.$parentEl[0]);
 	},
 
 	bindDatePickers: function() {
@@ -18706,7 +18715,7 @@ var LandingView = Backbone.View.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":156,"../../views/LocationsMenu":155}],152:[function(require,module,exports){
+},{"../../../renderer/client_renderer":157,"../../views/LandingView":155,"../../views/LocationsMenu":156}],152:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	mapMarkers: [],
 	events: {},
@@ -18764,12 +18773,12 @@ var TripView = Backbone.View.extend({
 	},
 
 	render: function() {
-		console.log("render! data: ", this.model.attributes);
+		
 	}
 });
 
 module.exports = TripView;
-},{"../../../renderer/client_renderer":156}],154:[function(require,module,exports){
+},{"../../../renderer/client_renderer":157}],154:[function(require,module,exports){
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
 	this.autocompleteService = new google.maps.places.AutocompleteService({
@@ -18793,6 +18802,45 @@ Map.prototype = {
 
 module.exports = Map;
 },{}],155:[function(require,module,exports){
+var React = require('react');
+
+var LandingView = React.createClass({displayName: "LandingView",
+	render: function() {
+		return (
+			React.createElement("div", {className: "landing-page"}, 
+				React.createElement("div", {className: "search-area col-sm-12"}, 
+					React.createElement("h1", {className: "title"}, "Find Your Adventure"), 
+					React.createElement("div", {className: "search-box col-12"}, 
+						React.createElement("form", {className: "search-form"}, 
+							React.createElement("div", {className: "input-wrapper"}, 
+								React.createElement("input", {className: "form-control location", type: "text", autoFocus: true, placeholder: "Where are you going?", name: "location"}), 
+								React.createElement("input", {className: "form-control date start", type: "text", placeholder: "Leaving", "data-calendar": "start", name: "start"}), 
+								React.createElement("input", {className: "form-control date end", type: "text", placeholder: "Returning", "data-calendar": "end", name: "end"}), 
+								React.createElement("div", {className: "select"}, 
+									React.createElement("select", {className: "form-control travellers", name: "travellers"}, 
+										React.createElement("option", {value: "1"}, "1 Travellers"), 
+										React.createElement("option", {value: "2"}, "2 Travellers"), 
+										React.createElement("option", {value: "3"}, "3 Travellers"), 
+										React.createElement("option", {value: "4"}, "4 Travellers"), 
+										React.createElement("option", {value: "5"}, "5 Travellers"), 
+										React.createElement("option", {value: "6"}, "6 Travellers"), 
+										React.createElement("option", {value: "7"}, "7 Travellers"), 
+										React.createElement("option", {value: "7"}, "8 Travellers")
+									)
+								), 
+								React.createElement("div", {className: "locations-menu hide", id: "locations-menu", "aria-expanded": "false", "aria-role": "listbox"})
+							), 
+							React.createElement("button", {type: "submit", className: "search-btn submit form-inline btn btn-primary btn-large"}, "Search")
+						)
+					)
+				)
+			)
+		)
+	}
+});
+
+module.exports = LandingView;
+},{"react":148}],156:[function(require,module,exports){
 var React = require("react");
 
 var LocationItem = React.createClass({displayName: "LocationItem",
@@ -18821,7 +18869,7 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 });
 
 module.exports = LocationsMenu;
-},{"react":148}],156:[function(require,module,exports){
+},{"react":148}],157:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

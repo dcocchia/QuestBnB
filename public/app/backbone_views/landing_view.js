@@ -1,8 +1,10 @@
+var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
 var renderer = require("../../../renderer/client_renderer");
 
 var LandingView = Backbone.View.extend({
-	_findElms: function() {
+	_findElms: function($parentEl) {
+		this.elms.$parentEl = $parentEl;
 		this.elms.$searchArea = this.$(".search-area");
 		this.elms.$searchBox = this.elms.$searchArea.find(".search-box");
 		this.elms.$searchForm = this.elms.$searchBox.find(".search-form");
@@ -29,7 +31,7 @@ var LandingView = Backbone.View.extend({
 	initialize: function(opts) {
 		opts || (opts = {});
 
-		this._findElms();
+		this._findElms(opts.$parentEl);
 
 		//hack for autofocus React bug: https://github.com/facebook/react/issues/3066
 		this.elms.$locationInput.focus();
@@ -43,6 +45,10 @@ var LandingView = Backbone.View.extend({
 		this.sendQuery = _.debounce( _.bind( function(options) {
 			this.model.getQueryPredictions(options);
 		}, this), 500);
+	},
+
+	render: function() {
+		renderer.render(landing_template, {}, this.elms.$parentEl[0]);
 	},
 
 	bindDatePickers: function() {

@@ -5,7 +5,7 @@ var LandingView = React.createClass({
 		return (
 			<div className="landing-page">
 				<div className="search-area col-sm-12">
-					<h1 className="title">{this.props.title}</h1>
+					<h1 className="title">Find Your Adventure</h1>
 					<div className="search-box col-12">
 						<form className="search-form">
 							<div className="input-wrapper">

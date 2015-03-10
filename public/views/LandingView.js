@@ -5,7 +5,7 @@ var LandingView = React.createClass({displayName: "LandingView",
 		return (
 			React.createElement("div", {className: "landing-page"}, 
 				React.createElement("div", {className: "search-area col-sm-12"}, 
-					React.createElement("h1", {className: "title"}, this.props.title), 
+					React.createElement("h1", {className: "title"}, "Find Your Adventure"), 
 					React.createElement("div", {className: "search-box col-12"}, 
 						React.createElement("form", {className: "search-form"}, 
 							React.createElement("div", {className: "input-wrapper"}, 

@@ -8,7 +8,7 @@ var TripView = Backbone.View.extend({
 	},
 
 	render: function() {
-		console.log("render! data: ", this.model.attributes);
+		
 	}
 });
 
