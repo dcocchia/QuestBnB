@@ -3,7 +3,6 @@ var map_view = Backbone.View.extend({
 	events: {},
 	initialize: function(opts) {
 		this.createMap();
-
 	},
 
 	createMap: function() {
@@ -40,6 +39,10 @@ var map_view = Backbone.View.extend({
 		});
 
 		this.mapMarkers = [];
+	},
+
+	setMode: function(modeClass) {
+		this.$el.removeClass("trip-view stop-view stops-view overview-view").addClass(modeClass);
 	}
 });
 

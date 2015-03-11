@@ -2,6 +2,8 @@
 	var React = require('react');
 	window.React = React;
 
+	var Promise = require("bluebird");
+
 	//map
 	var map_api = require("./util/map_api");
 	var map_view = require("./backbone_views/map_view");
@@ -82,28 +84,51 @@
 		},
 
 		setViewListeners: function() {
-			//TODO: create trip model from data sent to backbone listener, sync to database?
-			//render trip view using trip model on init
 			Backbone.on("landing_view:submit", _.bind(function(data) {
-
-				this.loadModel(trip_model, "trip_model", {
-					start: data.start,
-					end: data.end,
-					travellerCount: data.travellers,
-					stops: [
-						{
-							location: data.location
-						}
-					]
+				var timeOutPromise = new Promise(function(resolve, reject) {
+					setTimeout(function() {
+						resolve();
+					}, 1000);
 				});
 
-				this.loadView(trip_view, "trip_view", {
-					$parentEl: this.$el, 
-					el: $(".trip-page"), 
-					map_api: this.map_api,
-					model: this.models["trip_model"]
-				}).render();
+				var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {			
 
+					this.loadModel(trip_model, "trip_model", {
+						start: data.start,
+						end: data.end,
+						travellerCount: data.travellers,
+						stops: [
+							{
+								location: data.location
+							}
+						]
+					});
+
+					this.loadView(trip_view, "trip_view", {
+						$parentEl: this.$el, 
+						el: $(".trip-page"), 
+						map_api: this.map_api,
+						map_view: this.views["map_view"],
+						model: this.models["trip_model"]
+					});
+
+					//TODO: validation in the model
+					this.models["trip_model"].save(null, {
+						success: function(data) {
+							resolve(data);
+						},
+						error: function() {
+							reject();
+						}
+					});
+				}, this));
+
+				//1 second for animation, and unknown time for db query result
+				Promise.map([timeOutPromise, dbQueryPromise], _.bind(function(a, b){
+					var tripId = this.models["trip_model"].get("_id");
+					this.router.navigate("/trips/" + tripId);
+					Backbone.trigger("trip_view:render");
+				}, this));
 				
 			}, this));
 		},

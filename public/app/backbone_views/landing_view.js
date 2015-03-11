@@ -1,8 +1,9 @@
+var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
 var renderer = require("../../../renderer/client_renderer");
 
-var LandingView = Backbone.View.extend({
+var LandingView = PageView.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
 		this.elms.$searchArea = this.$(".search-area");
@@ -15,8 +16,6 @@ var LandingView = Backbone.View.extend({
 		this.elms.$travellers = this.elms.$searchBox.find(".form-control.travellers");
 		this.elms.$searchBtn = this.elms.$searchBox.find(".search-btn");
 	},
-
-	elms: {},
 
 	events: {
 		"keyup .form-control.location": "onLocationKeyup",
@@ -42,13 +41,13 @@ var LandingView = Backbone.View.extend({
 
 		this.model.on("change", _.bind(this.renderSearchResults, this));
 
+		Backbone.on("landing_view:render", _.bind(function() {
+			this.render(landing_template);
+		}, this));
+
 		this.sendQuery = _.debounce( _.bind( function(options) {
 			this.model.getQueryPredictions(options);
 		}, this), 500);
-	},
-
-	render: function() {
-		renderer.render(landing_template, {}, this.elms.$parentEl[0]);
 	},
 
 	bindDatePickers: function() {
@@ -160,7 +159,10 @@ var LandingView = Backbone.View.extend({
 		var status = this.model.get("queryStatus");
 		switch(status) {
 			case "OK":
-				renderer.render(locationsMenu, {predictions: this.model.get("queryPredictions")}, this.elms.$locationsMenu[0]);
+				renderer.render(
+					locationsMenu, 
+					{predictions: this.model.get("queryPredictions")}, this.elms.$locationsMenu[0]
+				);
 				this.showLocationMenu();
 				break;
 			case "noResults":
@@ -223,7 +225,9 @@ var LandingView = Backbone.View.extend({
 		this.elms.$searchForm.serializeArray().map(function(x){data[x.name] = x.value;});
 
 		this.slideOutSearchArea();
+
 		Backbone.trigger("landing_view:submit", data);
+		
 	}
 
 });

@@ -6,6 +6,8 @@ var trip_model = Backbone.Model.extend({
 		stops: []
 	},
 
+	url: "/trips",
+
 	initialize: function(opts) {
 
 		console.log("trip model init");
