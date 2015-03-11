@@ -125,7 +125,7 @@
 				}, this));
 
 				//1 second for animation, and unknown time for db query result
-				Promise.map([timeOutPromise, dbQueryPromise], _.bind(function(a, b){
+				Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
 					var tripId = this.models["trip_model"].get("_id");
 					this.router.navigate("/trips/" + tripId);
 					Backbone.trigger("trip_view:render");
