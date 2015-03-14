@@ -4,11 +4,13 @@ var Stop = React.createClass({
 	render: function() {
 		var data = this.props.data;
 		return (
-			<li className="stop" data-stop-id={data._id}>
-				<div className="stops-bar"></div>
-				<div className="stop-info">
-					<div className="stop-num">{data.stopNum}</div>
-					<div className="stop-place-info">
+			<li className="stop left-full-width" data-stop-id={data._id}>
+				<div className="stop-bar left-full-height"></div>
+				<div className="stop-info left-full-height">
+					<div className="stop-num-wrapper left-full-height">
+						<div className="stop-num center">{data.stopNum}</div>
+					</div>
+					<div className="stop-place-info left-full-height">
 						<h3>{data.location}</h3>
 						<p>Day {data.dayNum}</p>
 						<p>{data.milesNum} miles</p>
@@ -55,19 +57,21 @@ var TripView = React.createClass({
 		return (
 			<div className="trip-page">
 				<div className="side-bar panel">
-					<h1>{this.props.title}</h1>
-					<div className="stops">
-						<ol>
-						{stops.map(function(stop) {
-							return <Stop data={stop}/>;
-						})}
-						</ol>
-					</div>
-					<div className="trip-blurbs">
-						<TripBlurb text={this.props.tripLength + " days"} />
-						<TripBlurb text={this.props.tripDistance  + " miles"} />
-						<TripBlurb text={this.props.numStops + " stops"}/>
-						<TripBlurb text={"$" + this.props.cost} />
+					<div className="bleed-width-20">
+						<h1 className="left-full-width">{this.props.title}</h1>
+						<div className="stops left-full-width">
+							<ol className="left-full-width">
+							{stops.map(function(stop) {
+								return <Stop data={stop}/>;
+							})}
+							</ol>
+						</div>
+						<div className="trip-blurbs">
+							<TripBlurb text={this.props.tripLength + " days"} />
+							<TripBlurb text={this.props.tripDistance  + " miles"} />
+							<TripBlurb text={this.props.numStops + " stops"}/>
+							<TripBlurb text={"$" + this.props.cost} />
+						</div>
 					</div>
 				</div>
 				<div className="bottom-bar panel">

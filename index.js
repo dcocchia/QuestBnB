@@ -62,6 +62,8 @@ app.get('/trips/:id', function(req, res){
 		if (docs && docs.length > 0) {
 			
 			doc = docs[0];
+
+			console.log("doc found: ", doc);
 			
 			_.extend(doc, {
 				mapStyleClasses: "map trip-view"

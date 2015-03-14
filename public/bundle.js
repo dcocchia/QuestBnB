@@ -23187,8 +23187,7 @@ var trip_model = Backbone.Model.extend({
 		numStops: 0,
 		cost: 0,
 		travellers: [],
-		stops: [],
-		blurbs: []
+		stops: []
 	},
 
 	url: "/trips",
@@ -23626,11 +23625,13 @@ var Stop = React.createClass({displayName: "Stop",
 	render: function() {
 		var data = this.props.data;
 		return (
-			React.createElement("li", {className: "stop", "data-stop-id": data._id}, 
-				React.createElement("div", {className: "stops-bar"}), 
-				React.createElement("div", {className: "stop-info"}, 
-					React.createElement("div", {className: "stop-num"}, data.stopNum), 
-					React.createElement("div", {className: "stop-place-info"}, 
+			React.createElement("li", {className: "stop left-full-width", "data-stop-id": data._id}, 
+				React.createElement("div", {className: "stop-bar left-full-height"}), 
+				React.createElement("div", {className: "stop-info left-full-height"}, 
+					React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
+						React.createElement("div", {className: "stop-num center"}, data.stopNum)
+					), 
+					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("h3", null, data.location), 
 						React.createElement("p", null, "Day ", data.dayNum), 
 						React.createElement("p", null, data.milesNum, " miles")
@@ -23677,19 +23678,21 @@ var TripView = React.createClass({displayName: "TripView",
 		return (
 			React.createElement("div", {className: "trip-page"}, 
 				React.createElement("div", {className: "side-bar panel"}, 
-					React.createElement("h1", null, this.props.title), 
-					React.createElement("div", {className: "stops"}, 
-						React.createElement("ol", null, 
-						stops.map(function(stop) {
-							return React.createElement(Stop, {data: stop});
-						})
+					React.createElement("div", {className: "bleed-width-20"}, 
+						React.createElement("h1", {className: "left-full-width"}, this.props.title), 
+						React.createElement("div", {className: "stops left-full-width"}, 
+							React.createElement("ol", {className: "left-full-width"}, 
+							stops.map(function(stop) {
+								return React.createElement(Stop, {data: stop});
+							})
+							)
+						), 
+						React.createElement("div", {className: "trip-blurbs"}, 
+							React.createElement(TripBlurb, {text: this.props.tripLength + " days"}), 
+							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles"}), 
+							React.createElement(TripBlurb, {text: this.props.numStops + " stops"}), 
+							React.createElement(TripBlurb, {text: "$" + this.props.cost})
 						)
-					), 
-					React.createElement("div", {className: "trip-blurbs"}, 
-						React.createElement(TripBlurb, {text: this.props.tripLength + " days"}), 
-						React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles"}), 
-						React.createElement(TripBlurb, {text: this.props.numStops + " stops"}), 
-						React.createElement(TripBlurb, {text: "$" + this.props.cost})
 					)
 				), 
 				React.createElement("div", {className: "bottom-bar panel"}, 

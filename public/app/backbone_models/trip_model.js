@@ -7,8 +7,7 @@ var trip_model = Backbone.Model.extend({
 		numStops: 0,
 		cost: 0,
 		travellers: [],
-		stops: [],
-		blurbs: []
+		stops: []
 	},
 
 	url: "/trips",

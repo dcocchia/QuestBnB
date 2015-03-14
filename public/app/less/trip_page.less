@@ -1,13 +1,54 @@
 @import (reference) "common";
 .trip-page {
 	.stops {
+		
 		ol {
 			padding: 0;
+			margin: 0;
 		}
 
 		li {
 			list-style: none;
 		}	
+	}
+
+	.stop {
+		height: 145px;
+		padding: 0 20px;
+		border-bottom: 1px solid @panel-border-grey;
+
+		.stop-num-wrapper {
+			position: relative;
+			width: 30px;
+			margin-right: 12px;
+		}
+
+		.stop-num {
+			font-size: 2em;
+			text-align: center;
+			height: 1.4em;
+		}
+
+		.stop-bar {
+			width: 12px;
+			border-right: 1px solid #ccc;
+			display: inline-block;
+			margin-left: -20px;
+		}
+
+		.stop-place-info {
+			float: left;
+		}
+	}
+
+	.side-bar {
+		h1 {
+			color: @light-red;
+			margin-top: 0;
+			margin-bottom: 0;
+			padding: 10px 20px;
+			border-bottom: 1px solid @panel-border-grey;
+		}
 	}
 
 	.trip-dates-wrapper {
@@ -53,7 +94,7 @@
 
 		.traveller {
 			width: 110px;
-			border-right: 1px solid #dce0e0;
+			border-right: 1px solid @panel-border-grey;
 			.profile-pic-wrapper {
 				height: 35px;
   				top: 5px;
@@ -91,6 +132,7 @@
 			background-color: rgba(0,0,0,0.35);
 			border: 0;
 			color: #fff;
+			padding: 0px;
 
 			&:hover {
 				background-color: rgba(0,0,0,0.55);
