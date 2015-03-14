@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var Promise = require("bluebird");
+var _ = require('lodash');
 var mongojs = require('mongojs');
 var db = mongojs('QuestBnB');
 var trips = db.collection('trips');
@@ -33,7 +34,6 @@ app.use(express.static(__dirname + '/public'));
 
 app.get("/", function(req, res) {
 	var html = self.renderer.render(landingView, {
-		styleSheets: ["/app/css/landing_page.css"],
 		mapStyleClasses: "map"
 	});
 	res.send(html);
@@ -53,18 +53,30 @@ app.post('/trips', function(req, res){
 });
 
 app.get('/trips/:id', function(req, res){
-	var tripId = parseInt(req.params.id);
+	var tripId = req.params.id;
 	var wantsJSON = req.accepts('html', 'json') === 'json';
+	var ObjectId = mongojs.ObjectId;
+	var doc;
 
-	trips.findAsync({id: tripId}).then(function(docs) {
-		if (wantsJSON) {
-			res.send(docs);
-		} else {
-			var html = self.renderer.render(tripView, {
-				styleSheets: ["/app/css/trip_page.css"],
-				mapStyleClasses: "map design"
+	trips.findAsync({_id: ObjectId(tripId)}).then(function(docs) {
+		if (docs && docs.length > 0) {
+			
+			doc = docs[0];
+			
+			_.extend(doc, {
+				mapStyleClasses: "map trip-view"
+
 			});
-			res.send(html);
+
+			if (wantsJSON) {
+				res.send(doc);
+			} else {
+				var html = self.renderer.render(tripView, doc);
+				res.send(html);
+			}
+
+		} else {
+			res.sendStatus(404);
 		}
 		
 	}).catch(function(e) {

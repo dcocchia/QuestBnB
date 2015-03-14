@@ -83,6 +83,7 @@
 			Backbone.on("map:setZoom", _.bind(mapView.setZoom, mapView));
 		},
 
+		//TODO: this will get unruly. Pull into some kind of orechestrator
 		setViewListeners: function() {
 			Backbone.on("landing_view:submit", _.bind(function(data) {
 				var timeOutPromise = new Promise(function(resolve, reject) {
@@ -94,12 +95,24 @@
 				var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {			
 
 					this.loadModel(trip_model, "trip_model", {
+						title: "Your Next Adventure",
 						start: data.start,
 						end: data.end,
-						travellerCount: data.travellers,
+						numStops: 1,
+						travellers: [
+							{
+								name: "You",
+								img: {
+									src: "/app/img/default-icon.jpg"
+								}
+							}
+						],
 						stops: [
 							{
-								location: data.location
+								location: data.location,
+								stopNum: 1,
+								dayNum: 1,
+								milesNum: 0
 							}
 						]
 					});

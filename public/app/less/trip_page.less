@@ -1,4 +1,100 @@
 @import (reference) "common";
-.trip_page {
-	
+.trip-page {
+	.stops {
+		ol {
+			padding: 0;
+		}
+
+		li {
+			list-style: none;
+		}	
+	}
+
+	.trip-dates-wrapper {
+		padding: 0;
+
+		.form-control {
+			border-left: none;
+			border-right: none;
+		}
+
+		.date,
+		.submit {
+			width: 33.33%;
+			border-radius: 0;
+		}
+
+		.date:nth-child(2) {
+			border-left: 1px solid #c4c4c4;
+			border-right: 1px solid #c4c4c4;
+		}
+
+		.submit {
+			border-right: 0;
+		}
+	}
+
+	.travellers {
+		height: 70px;
+
+		.trip-traveller-text,
+		.traveller {
+			display: inline-block;
+			height: 100%;
+			float: left;
+		}
+
+		.trip-traveller-text {
+			width: 90px;
+			line-height: 70px;
+			padding: 0 5px;
+			font-size: 18px;
+		}
+
+		.traveller {
+			width: 110px;
+			border-right: 1px solid #dce0e0;
+			.profile-pic-wrapper {
+				height: 35px;
+  				top: 5px;
+
+  				img {
+  					border-radius: 50%;
+  					transition: all .2s ease-in-out;
+  				}
+			}
+
+			.name {
+				margin: 0;
+				padding: 12px 5px 0 5px;
+				font-size: 10px;
+				text-align: center;
+				line-height: 10px;
+			}
+
+			&:hover {
+				cursor: pointer;
+
+				.profile-pic-wrapper {
+					img {
+						transform: scale(1.1);
+					}
+				}
+			}
+		}
+
+		button {
+			height: 100%;
+			width: 30px;
+			float: left;
+			font-size: 28px;
+			background-color: rgba(0,0,0,0.35);
+			border: 0;
+			color: #fff;
+
+			&:hover {
+				background-color: rgba(0,0,0,0.55);
+			}
+		}
+	}
 }

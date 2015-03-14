@@ -1,5 +1,7 @@
 @import (reference) "common";
 .landing-page {
+	overflow: hidden;
+	height: 100%;
 
 	h1 {
 		text-transform: uppercase;
@@ -15,6 +17,7 @@
 		z-index: 10;
 		text-shadow: 6px 6px 6px #000;
 		padding-top: 105px;
+		margin-bottom: 20px;
 	}
 
 	.search-area {
@@ -22,6 +25,7 @@
 		top: 50px;
 		height: 350px;
 		width: 100%;
+		padding: 0;
 
 		-webkit-transition: top 1s ease-in-out;
 	    -moz-transition: top 1s ease-in-out;
@@ -39,43 +43,15 @@
 		background: #000;
 		background: rgba(0,0,0,0.6);
 		-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		padding-top: 30px;
-		padding-bottom: 30px;
-		text-align: center;
-
-		.form-control,
-		.submit {
-			height: 44px;
-			display: inline-block;
-		}
-
-		.location {
-			width: 290px;
-			border-top-right-radius: 0;
-			border-bottom-right-radius: 0;
-		}
-
-		.date {
-			width: 130px;
-		}
 
 		.date,
 		.travellers {
 			border-radius: 0;
 		}
 
-		.travellers {
-
-		}
-
 		.submit {
 			border-top-left-radius: 0;
 			border-bottom-left-radius: 0;
-			vertical-align: baseline;
 		}
 	}
 
