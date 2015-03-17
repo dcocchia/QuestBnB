@@ -15,8 +15,6 @@ var TripView = PageView.extend({
 	},
 
 	initialize: function(opts) {
-		var tripId = this.$el.attr("data-trip-id");
-
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
 
@@ -31,10 +29,6 @@ var TripView = PageView.extend({
 		}, this));
 
 		this._findElms(opts.$parentEl);
-
-		this.model.setUrl(tripId);
-
-		this.model.fetch();
 
 	},
 

@@ -57,8 +57,9 @@
 				});
 			}, this));
 
-			this.router.on("route:trip", _.bind( function() { 
+			this.router.on("route:trip", _.bind( function(tripId) { 
 				this.loadModel(trip_model, "trip_model");
+				this.models["trip_model"].setUrl(tripId);
 
 				this.loadView(trip_view, "trip_view", {
 					$parentEl: this.$el, 
@@ -145,7 +146,10 @@
 
 				//1 second for animation, and unknown time for db query result
 				Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
+					var trip_model = this.models["trip_model"];
 					var tripId = this.models["trip_model"].get("_id");
+					trip_model.setUrl(tripId);
+					trip_model.fetch();
 					this.router.navigate("/trips/" + tripId);
 					Backbone.trigger("trip_view:render");
 				}, this));

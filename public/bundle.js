@@ -58,8 +58,9 @@
 				});
 			}, this));
 
-			this.router.on("route:trip", _.bind( function() { 
+			this.router.on("route:trip", _.bind( function(tripId) { 
 				this.loadModel(trip_model, "trip_model");
+				this.models["trip_model"].setUrl(tripId);
 
 				this.loadView(trip_view, "trip_view", {
 					$parentEl: this.$el, 
@@ -146,7 +147,10 @@
 
 				//1 second for animation, and unknown time for db query result
 				Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
+					var trip_model = this.models["trip_model"];
 					var tripId = this.models["trip_model"].get("_id");
+					trip_model.setUrl(tripId);
+					trip_model.fetch();
 					this.router.navigate("/trips/" + tripId);
 					Backbone.trigger("trip_view:render");
 				}, this));
@@ -209,7 +213,7 @@
  * 
  */
 /**
- * bluebird build version 2.9.13
+ * bluebird build version 2.9.14
  * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, progress, cancel, using, filter, any, each, timers
 */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -3929,11 +3933,8 @@ Promise.reduce = function (promises, fn, initialValue, _each) {
 "use strict";
 var schedule;
 if (_dereq_("./util.js").isNode) {
-    var version = process.versions.node.split(".").map(Number);
-    schedule = (version[0] === 0 && version[1] > 10) || (version[0] > 0)
-        ? global.setImmediate : process.nextTick;
-}
-else if (typeof MutationObserver !== "undefined") {
+    schedule = process.nextTick;
+} else if (typeof MutationObserver !== "undefined") {
     schedule = function(fn) {
         var div = document.createElement("div");
         var observer = new MutationObserver(fn);
@@ -3941,13 +3942,11 @@ else if (typeof MutationObserver !== "undefined") {
         return function() { div.classList.toggle("foo"); };
     };
     schedule.isStatic = true;
-}
-else if (typeof setTimeout !== "undefined") {
+} else if (typeof setTimeout !== "undefined") {
     schedule = function (fn) {
         setTimeout(fn, 0);
     };
-}
-else {
+} else {
     schedule = function() {
         throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/m3OTXk\u000a");
     };
@@ -23576,8 +23575,6 @@ var TripView = PageView.extend({
 	},
 
 	initialize: function(opts) {
-		var tripId = this.$el.attr("data-trip-id");
-
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
 
@@ -23592,10 +23589,6 @@ var TripView = PageView.extend({
 		}, this));
 
 		this._findElms(opts.$parentEl);
-
-		this.model.setUrl(tripId);
-
-		this.model.fetch();
 
 	},
 
