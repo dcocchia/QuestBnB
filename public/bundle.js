@@ -65,6 +65,7 @@
 					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
+					map_view: this.views["map_view"],
 					model: this.models["trip_model"]
 				});
 
@@ -99,7 +100,7 @@
 						title: "Your Next Adventure",
 						start: data.start,
 						end: data.end,
-						numStops: 1,
+						numStops: 2,
 						travellers: [
 							{
 								name: "You",
@@ -110,8 +111,14 @@
 						],
 						stops: [
 							{
-								location: data.location,
+								location: "Home",
 								stopNum: 1,
+								dayNum: 1,
+								milesNum: 0
+							},
+							{
+								location: data.location,
+								stopNum: 2,
 								dayNum: 1,
 								milesNum: 0
 							}
@@ -23195,6 +23202,51 @@ var trip_model = Backbone.Model.extend({
 	initialize: function(opts) {
 
 		console.log("trip model init");
+	},
+
+	setUrl: function(TripId) {
+		this.url = this.url + "/" + TripId;
+	},
+
+	addStop: function(index, opts, silent) {
+		var defaults = {
+			location: "New Stop",
+			stopNum: 1,
+			dayNum: 1,
+			milesNum: 0,
+			isNew: false
+		}
+
+		var extendedOpts = _.defaults(opts, defaults);
+
+		this.attributes.stops.splice(index, 0, extendedOpts);
+
+		_.each(this.attributes.stops, function(stop, index) {
+			stop.stopNum = index + 1;
+		});
+
+		if (silent !== true) {
+			this.trigger("change");
+		}
+
+		_.delay(_.bind(this.setStopsActive, this), 400);
+	},
+
+	setStopsActive: function() {
+		var shouldRender = false;
+
+		_.each(this.attributes.stops, function(stop, index) {
+			if (stop.isNew === true) {
+				stop.isNew = false;
+				shouldRender = true;
+			}
+			
+		});
+
+		if (shouldRender) {
+			this.trigger("change");
+		}
+		
 	}
 });
 
@@ -23500,6 +23552,8 @@ var PageView = Backbone.View.extend({
 		_.extend(data, modelData);
 
 		renderer.render(template, data, this.elms.$parentEl[0]);
+
+		this.setElement(this.elms.$parentEl.children(this.$el.selector));
 	}
 });
 
@@ -23509,7 +23563,21 @@ var PageView = require("./page_view");
 var trip_template = require("../../views/TripView");
 
 var TripView = PageView.extend({
+
+	_findElms: function($parentEl) {
+		this.elms.$parentEl = $parentEl;
+		this.elms.$stops = this.$(".stops");
+	},
+
+	events: {
+		"click .add-stop-btn": "onAddStopClick",
+		"blur .title": "onTitleBlur",
+		"keydown .title": "onTitleKeyDown"
+	},
+
 	initialize: function(opts) {
+		var tripId = this.$el.attr("data-trip-id");
+
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
 
@@ -23523,6 +23591,41 @@ var TripView = PageView.extend({
 			this.map_view.setMode("trip-view");
 		}, this));
 
+		this._findElms(opts.$parentEl);
+
+		this.model.setUrl(tripId);
+
+		this.model.fetch();
+
+	},
+
+	onAddStopClick: function(e) {
+		var stopIndex = $(e.currentTarget).closest(".stop").data("stopIndex");
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		if (_.isNumber(stopIndex) ) {
+			this.model.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId() });
+		}
+		
+	},
+
+	onTitleBlur: function(e) {
+		var target = e.currentTarget,
+			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
+
+		if (this.model.get("title") !== text) {
+			this.model.set("title", text);
+			this.model.sync("update", this.model, {url: this.model.url});
+		}
+		
+	},
+
+	onTitleKeyDown: function(e) {
+		if (e && e.keyCode === 13) {
+			if (e.preventDefault) { e.preventDefault(); }
+			$(e.currentTarget).blur()
+		}
 	}
 });
 
@@ -23624,20 +23727,24 @@ var React = require('react');
 var Stop = React.createClass({displayName: "Stop",
 	render: function() {
 		var data = this.props.data;
+		var isNew = data.isNew;
+		var index = this.props.index;
 		return (
-			React.createElement("li", {className: "stop left-full-width", "data-stop-id": data._id}, 
-				React.createElement("div", {className: "stop-bar left-full-height"}), 
+			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
+				React.createElement("div", {className: "stop-bar left-full-height"}, 
+					React.createElement("button", {className: "add-stop-btn"}, "+")
+				), 
+				React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
+					React.createElement("div", {className: "stop-num center"}, data.stopNum)
+				), 
 				React.createElement("div", {className: "stop-info left-full-height"}, 
-					React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
-						React.createElement("div", {className: "stop-num center"}, data.stopNum)
-					), 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("h3", null, data.location), 
 						React.createElement("p", null, "Day ", data.dayNum), 
 						React.createElement("p", null, data.milesNum, " miles")
 					)
 				), 
-				React.createElement("div", {className: "stop-lodging"}
+				React.createElement("div", {className: "stop-lodging left-full-height"}
 
 				)
 			)
@@ -23649,7 +23756,7 @@ var TripBlurb = React.createClass({displayName: "TripBlurb",
 	render: function() {
 		return (
 			React.createElement("div", {className: "trip-blurb"}, 
-				this.props.text
+				React.createElement("h3", null, this.props.text)
 			)
 		)
 	}
@@ -23659,7 +23766,7 @@ var Traveller = React.createClass({displayName: "Traveller",
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
-			React.createElement("div", {className: "traveller"}, 
+			React.createElement("div", {className: "traveller", key: this.props.key}, 
 				React.createElement("div", {className: "profile-pic-wrapper img-wrapper"}, 
 					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center"})
 				), 
@@ -23676,18 +23783,18 @@ var TripView = React.createClass({displayName: "TripView",
 		var travellers = this.props.travellers;
 
 		return (
-			React.createElement("div", {className: "trip-page"}, 
+			React.createElement("div", {className: "trip-page", "data-trip-id": this.props._id}, 
 				React.createElement("div", {className: "side-bar panel"}, 
 					React.createElement("div", {className: "bleed-width-20"}, 
-						React.createElement("h1", {className: "left-full-width"}, this.props.title), 
+						React.createElement("h1", {className: "title left-full-width", contentEditable: "true"}, this.props.title), 
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
-							stops.map(function(stop) {
-								return React.createElement(Stop, {data: stop});
+							stops.map(function(stop, index) {
+								return React.createElement(Stop, {data: stop, index: index, key: index});
 							})
 							)
 						), 
-						React.createElement("div", {className: "trip-blurbs"}, 
+						React.createElement("div", {className: "trip-blurbs left-full-width"}, 
 							React.createElement(TripBlurb, {text: this.props.tripLength + " days"}), 
 							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles"}), 
 							React.createElement(TripBlurb, {text: this.props.numStops + " stops"}), 
@@ -23700,8 +23807,8 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "trip-traveller-text"}, "Travellers"), 
 						React.createElement("button", {className: "add-traveller"}, "+"), 
 						React.createElement("div", {className: "travellers-wrapper"}, 
-							travellers.map(function(traveller) {
-								return React.createElement(Traveller, {traveller: traveller})
+							travellers.map(function(traveller, index) {
+								return React.createElement(Traveller, {traveller: traveller, key: index})
 							})
 						)
 					), 

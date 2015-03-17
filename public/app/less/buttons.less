@@ -2,18 +2,22 @@
 	font-weight: bold;
 }
 
+.add-stop-btn,
 .btn.btn-primary {
 	border-color: #ff5a5f;
 	border-bottom-color: #e00007;
 	background-color: #ff5a5f;
-	color: #fff;
+	color: #fff;	
+}
 
-	&:hover, &:focus {
-		border-color: #ff7e82;
-		border-bottom-color: #fa0008;
-		background-color: #ff7e82;
-		color: #fff;
-	}
+.btn.btn-primary:hover, 
+.btn.btn-primary:focus,
+.add-stop-btn:active {
+	border-color: #ff7e82;
+	border-bottom-color: #fa0008;
+	background-color: #ff7e82;
+	color: #fff;
+	outline: none;
 }
 
 .btn-large {
@@ -26,4 +30,21 @@
 	border-bottom-color: #383b3c;
 	background-color: #565a5c;
 	color: #fff;
+}
+
+.add-stop-btn {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	bottom: -10px;
+	position: absolute;
+	text-align: center;
+	line-height: 11px;
+	border-width: 0;
+	display: block;
+	z-index: 10;
+
+	&:focus {
+		outline: none;
+	}
 }

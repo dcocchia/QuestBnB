@@ -64,6 +64,7 @@
 					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
+					map_view: this.views["map_view"],
 					model: this.models["trip_model"]
 				});
 
@@ -98,7 +99,7 @@
 						title: "Your Next Adventure",
 						start: data.start,
 						end: data.end,
-						numStops: 1,
+						numStops: 2,
 						travellers: [
 							{
 								name: "You",
@@ -109,8 +110,14 @@
 						],
 						stops: [
 							{
-								location: data.location,
+								location: "Home",
 								stopNum: 1,
+								dayNum: 1,
+								milesNum: 0
+							},
+							{
+								location: data.location,
+								stopNum: 2,
 								dayNum: 1,
 								milesNum: 0
 							}

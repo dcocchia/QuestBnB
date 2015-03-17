@@ -1,7 +1,15 @@
 @import (reference) "common";
 .trip-page {
+	.title {
+		&:hover,
+		&:focus,
+		&:active {
+			background-color: #fff;
+		}
+	}
+
 	.stops {
-		
+		margin-bottom: 20px;
 		ol {
 			padding: 0;
 			margin: 0;
@@ -14,8 +22,28 @@
 
 	.stop {
 		height: 145px;
-		padding: 0 20px;
+		padding-left: 20px;
 		border-bottom: 1px solid @panel-border-grey;
+		background-color: #fff;
+
+		&.new {
+
+			-moz-animation-name: openStop;
+			-moz-animation-iteration-count: 1;
+			-moz-animation-timing-function: ease-in;
+			-moz-animation-duration: 0.4s;
+
+			-webkit-animation-name: openStop;
+			-webkit-animation-iteration-count: 1;
+			-webkit-animation-timing-function: ease-in;
+			-webkit-animation-duration: 0.4s;
+
+			animation-name: openStop;
+			animation-iteration-count: 1;
+			animation-timing-function: ease-in;
+			animation-duration: 0.4s;
+
+		}
 
 		.stop-num-wrapper {
 			position: relative;
@@ -31,13 +59,39 @@
 
 		.stop-bar {
 			width: 12px;
-			border-right: 1px solid #ccc;
+			border-right: 1px solid @panel-border-light-grey;
 			display: inline-block;
 			margin-left: -20px;
+			position: relative;
 		}
 
 		.stop-place-info {
 			float: left;
+
+			p {
+				margin: 0;
+			}
+		}
+
+		.stop-lodging {
+			width: 180px;
+			float: right;
+			border-left: 1px solid @panel-border-light-grey;
+		}
+	}
+
+	.trip-blurbs {
+		background-color: #fff;
+		border-top: 1px solid @panel-border-grey;
+	}
+
+	.trip-blurb {
+		height: 45px;
+		padding: 10px 20px;
+		border-bottom: 1px solid @panel-border-grey;
+
+		h3 {
+			margin: 0;
 		}
 	}
 

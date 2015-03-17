@@ -88,6 +88,34 @@ app.get('/trips/:id', function(req, res){
 	
 });
 
+app.put('/trips/:id', function(req, res) {
+	var tripId = req.params.id;
+	var ObjectId = mongojs.ObjectId;
+	var data = req.body;
+
+	delete data._id;
+
+	trips.findAndModifyAsync({
+		query: { _id: ObjectId(tripId) },
+		update: data,
+		new: true
+
+	}).then(function(docs) {
+		if (docs && docs.length > 0) {			
+			doc = docs[0];
+			
+			res.status(200).send(doc);
+
+		} else {
+			res.sendStatus(404);
+		}
+		
+	}).catch(function(e) {
+		console.log("ERROR: ", e);
+		res.sendStatus(500);
+	});
+});
+
 app.get('/trips/:id/stops', function(req, res) {
 	var html = self.renderer.render(stopsView, {
 		title: "Stops Page"

@@ -3,20 +3,24 @@ var React = require('react');
 var Stop = React.createClass({
 	render: function() {
 		var data = this.props.data;
+		var isNew = data.isNew;
+		var index = this.props.index;
 		return (
-			<li className="stop left-full-width" data-stop-id={data._id}>
-				<div className="stop-bar left-full-height"></div>
+			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
+				<div className="stop-bar left-full-height">
+					<button className="add-stop-btn">&#43;</button>
+				</div>
+				<div className="stop-num-wrapper left-full-height">
+					<div className="stop-num center">{data.stopNum}</div>
+				</div>
 				<div className="stop-info left-full-height">
-					<div className="stop-num-wrapper left-full-height">
-						<div className="stop-num center">{data.stopNum}</div>
-					</div>
 					<div className="stop-place-info left-full-height">
 						<h3>{data.location}</h3>
 						<p>Day {data.dayNum}</p>
 						<p>{data.milesNum} miles</p>
 					</div>
 				</div>
-				<div className="stop-lodging">
+				<div className="stop-lodging left-full-height">
 
 				</div>
 			</li>
@@ -28,7 +32,7 @@ var TripBlurb = React.createClass({
 	render: function() {
 		return (
 			<div className="trip-blurb">
-				{this.props.text}
+				<h3>{this.props.text}</h3>
 			</div>
 		)
 	}
@@ -38,7 +42,7 @@ var Traveller = React.createClass({
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
-			<div className="traveller">
+			<div className="traveller" key={this.props.key}>
 				<div className="profile-pic-wrapper img-wrapper">
 					<img src={traveller && traveller.img && traveller.img.src ? traveller.img.src : ''} className="center"/>
 				</div>
@@ -55,18 +59,18 @@ var TripView = React.createClass({
 		var travellers = this.props.travellers;
 
 		return (
-			<div className="trip-page">
+			<div className="trip-page" data-trip-id={this.props._id}>
 				<div className="side-bar panel">
 					<div className="bleed-width-20">
-						<h1 className="left-full-width">{this.props.title}</h1>
+						<h1 className="title left-full-width" contentEditable="true">{this.props.title}</h1>
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
-							{stops.map(function(stop) {
-								return <Stop data={stop}/>;
+							{stops.map(function(stop, index) {
+								return <Stop data={stop} index = {index} key={index}/>;
 							})}
 							</ol>
 						</div>
-						<div className="trip-blurbs">
+						<div className="trip-blurbs left-full-width">
 							<TripBlurb text={this.props.tripLength + " days"} />
 							<TripBlurb text={this.props.tripDistance  + " miles"} />
 							<TripBlurb text={this.props.numStops + " stops"}/>
@@ -79,8 +83,8 @@ var TripView = React.createClass({
 						<div className="trip-traveller-text">Travellers</div>
 						<button className="add-traveller">&#43;</button>
 						<div className="travellers-wrapper">
-							{travellers.map(function(traveller) {
-								return <Traveller traveller={traveller} />
+							{travellers.map(function(traveller, index) {
+								return <Traveller traveller={traveller} key={index}/>
 							})}
 						</div>
 					</div>

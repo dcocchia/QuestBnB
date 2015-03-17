@@ -11,6 +11,8 @@ var PageView = Backbone.View.extend({
 		_.extend(data, modelData);
 
 		renderer.render(template, data, this.elms.$parentEl[0]);
+
+		this.setElement(this.elms.$parentEl.children(this.$el.selector));
 	}
 });
 
