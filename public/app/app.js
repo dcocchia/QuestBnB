@@ -60,6 +60,7 @@
 			this.router.on("route:trip", _.bind( function(tripId) { 
 				this.loadModel(trip_model, "trip_model");
 				this.models["trip_model"].setUrl(tripId);
+				this.models["trip_model"].fetch();
 
 				this.loadView(trip_view, "trip_view", {
 					$parentEl: this.$el, 
