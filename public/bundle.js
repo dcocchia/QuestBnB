@@ -23572,7 +23572,10 @@ var TripView = PageView.extend({
 	events: {
 		"click .add-stop-btn": "onAddStopClick",
 		"blur .title": "onTitleBlur",
-		"keydown .title": "onTitleKeyDown"
+		"keydown .title": "onEditKeyDown",
+		"keydown .stop-location-title": "onEditKeyDown",
+		"blur .stop-location-title": "onLocationTitleBlur",
+		"click .clear": "onClearClick"
 	},
 
 	initialize: function(opts) {
@@ -23615,10 +23618,35 @@ var TripView = PageView.extend({
 		
 	},
 
-	onTitleKeyDown: function(e) {
+	onLocationTitleBlur: function(e) {
+		var target = e.currentTarget,
+			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
+
+		console.log(text);
+	},
+
+	onEditKeyDown: function(e) {
 		if (e && e.keyCode === 13) {
 			if (e.preventDefault) { e.preventDefault(); }
-			$(e.currentTarget).blur()
+			$(e.currentTarget).blur();
+			this.clearAllRanges();
+		}
+	},
+
+	onClearClick: function(e) {
+		var $target = this.$(e.currentTarget).siblings(".stop-location-title");
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		$target.text("");
+	},
+
+	clearAllRanges: function() {
+		if (window.getSelection) {
+			window.getSelection().removeAllRanges();
+		} else if (document.selection.createRange) {
+			var range = document.selection.createRange();
+			document.selection.empty();
 		}
 	}
 });
@@ -23733,7 +23761,10 @@ var Stop = React.createClass({displayName: "Stop",
 				), 
 				React.createElement("div", {className: "stop-info left-full-height"}, 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
-						React.createElement("h3", null, data.location), 
+						React.createElement("div", {className: "stop-location-title-wrapper"}, 
+							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
+							React.createElement("span", {className: "clear"})
+						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
 						React.createElement("p", null, data.milesNum, " miles")
 					)

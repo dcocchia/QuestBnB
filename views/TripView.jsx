@@ -15,7 +15,10 @@ var Stop = React.createClass({
 				</div>
 				<div className="stop-info left-full-height">
 					<div className="stop-place-info left-full-height">
-						<h3>{data.location}</h3>
+						<div className="stop-location-title-wrapper">
+							<h3 className="stop-location-title" contentEditable="true">{data.location}</h3>
+							<span className="clear"></span>
+						</div>
 						<p>Day {data.dayNum}</p>
 						<p>{data.milesNum} miles</p>
 					</div>

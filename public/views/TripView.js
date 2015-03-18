@@ -15,7 +15,10 @@ var Stop = React.createClass({displayName: "Stop",
 				), 
 				React.createElement("div", {className: "stop-info left-full-height"}, 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
-						React.createElement("h3", null, data.location), 
+						React.createElement("div", {className: "stop-location-title-wrapper"}, 
+							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
+							React.createElement("span", {className: "clear"})
+						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
 						React.createElement("p", null, data.milesNum, " miles")
 					)
