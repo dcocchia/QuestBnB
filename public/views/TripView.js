@@ -60,6 +60,7 @@ var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
 		var travellers = this.props.travellers;
+		var slideInBottom = this.props.slideInBottom;
 
 		return (
 			React.createElement("div", {className: "trip-page", "data-trip-id": this.props._id}, 
@@ -81,7 +82,7 @@ var TripView = React.createClass({displayName: "TripView",
 						)
 					)
 				), 
-				React.createElement("div", {className: "bottom-bar panel"}, 
+				React.createElement("div", {className: "bottom-bar panel slide-in"}, 
 					React.createElement("div", {className: "travellers"}, 
 						React.createElement("div", {className: "trip-traveller-text"}, "Travellers"), 
 						React.createElement("button", {className: "add-traveller"}, "+"), 

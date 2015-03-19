@@ -1,4 +1,5 @@
 var PageView = require("./page_view");
+var StopView = require("./stop_view");
 var trip_template = require("../../views/TripView");
 
 var TripView = PageView.extend({
@@ -11,15 +12,24 @@ var TripView = PageView.extend({
 	events: {
 		"click .add-stop-btn": "onAddStopClick",
 		"blur .title": "onTitleBlur",
-		"keydown .title": "onEditKeyDown",
-		"keydown .stop-location-title": "onEditKeyDown",
-		"blur .stop-location-title": "onLocationTitleBlur",
-		"click .clear": "onClearClick"
+		"keydown .title": "onEditKeyDown"
 	},
 
 	initialize: function(opts) {
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
+
+		this.model.once("sync", _.bind(function(data){
+			this.stops_collection = new opts.stops_collection;
+			this.stops_collection.add(this.model.get("stops"));
+
+			//TODO: since new stops are in collection, on render they aren't in model
+			this.stops_collection.on("change", _.bind(function(data){
+				this.render(trip_template);
+			}, this));
+
+			this.createStopViews();
+		}, this));
 
 		this.model.on("change", _.bind(function() {
 			this.render(trip_template);
@@ -35,13 +45,22 @@ var TripView = PageView.extend({
 
 	},
 
+	createStopViews: function() {
+		_.each(this.stops_collection.models, function(stopModel) {
+			new StopView({
+				model: stopModel,
+				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
+			});
+		});
+	},
+
 	onAddStopClick: function(e) {
 		var stopIndex = $(e.currentTarget).closest(".stop").data("stopIndex");
 
 		if (e.preventDefault) { e.preventDefault(); }
 
 		if (_.isNumber(stopIndex) ) {
-			this.model.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId() });
+			this.stops_collection.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId("stop__") });
 		}
 		
 	},
@@ -57,27 +76,12 @@ var TripView = PageView.extend({
 		
 	},
 
-	onLocationTitleBlur: function(e) {
-		var target = e.currentTarget,
-			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
-
-		console.log(text);
-	},
-
 	onEditKeyDown: function(e) {
 		if (e && e.keyCode === 13) {
 			if (e.preventDefault) { e.preventDefault(); }
 			$(e.currentTarget).blur();
 			this.clearAllRanges();
 		}
-	},
-
-	onClearClick: function(e) {
-		var $target = this.$(e.currentTarget).siblings(".stop-location-title");
-
-		if (e.preventDefault) { e.preventDefault(); }
-
-		$target.text("");
 	},
 
 	clearAllRanges: function() {

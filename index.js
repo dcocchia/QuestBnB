@@ -43,6 +43,8 @@ app.post('/trips', function(req, res){
 	var tripData = req.body;
 	//TODO: validate data before passing it along
 
+	addObjIds(tripData.stops);
+
 	trips.insertAsync(tripData).then(function(insertedDoc, err) {
 		if (err) {
 			res.status(500).send(err);
@@ -95,6 +97,8 @@ app.put('/trips/:id', function(req, res) {
 
 	delete data._id;
 
+	addObjIds(data.stops);
+
 	trips.findAndModifyAsync({
 		query: { _id: ObjectId(tripId) },
 		update: data,
@@ -144,6 +148,14 @@ app.get("/trips/:id/overview", function(req, res) {
 	});
 	res.send(html);
 });
+
+var addObjIds = function(items) {
+	_.each(items, function(item) {
+		if ( !item._id || !mongojs.ObjectId.isValid(item._id) ) {
+			item._id = mongojs.ObjectId();
+		}
+	});
+}
 
 var server = app.listen(port, function() {
     console.log('Listening on port %d', server.address().port);

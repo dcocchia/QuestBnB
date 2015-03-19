@@ -60,6 +60,7 @@ var TripView = React.createClass({
 	render: function() {
 		var stops = this.props.stops;
 		var travellers = this.props.travellers;
+		var slideInBottom = this.props.slideInBottom;
 
 		return (
 			<div className="trip-page" data-trip-id={this.props._id}>
@@ -81,7 +82,7 @@ var TripView = React.createClass({
 						</div>
 					</div>
 				</div>
-				<div className="bottom-bar panel">
+				<div className="bottom-bar panel slide-in">
 					<div className="travellers">
 						<div className="trip-traveller-text">Travellers</div>
 						<button className="add-traveller">&#43;</button>

@@ -4,6 +4,9 @@
 	window.React = React;
 
 	var Promise = require("bluebird");
+	
+	//view/event orchestrator
+	var view_orchestrator = require("./util/view_orchestrator");
 
 	//map
 	var map_api = require("./util/map_api");
@@ -12,6 +15,9 @@
 	//backbone views
 	var landing_view = require("./backbone_views/landing_view");
 	var trip_view = require("./backbone_views/trip_view");
+
+	//backbone collections
+	var stops_collection = require("./backbone_collections/stops_collection");
 
 	//backbone models
 	var search_model = require("./backbone_models/search_model");
@@ -32,7 +38,7 @@
 		}
 	});
 
-	var App = Backbone.View.extend({
+	var App = view_orchestrator.extend({
 		initialize: function(opts) {
 			this.router = opts.router;
 			this.views = {};
@@ -40,8 +46,19 @@
 			this.loadView(map_view, "map_view", { el: $(".map")});
 			this.map_api = new map_api(this.views["map_view"].map);
 			this.setRouteListeners();
-			this.setMapListeners();
-			this.setViewListeners();
+			this.startOrchestrator({
+				Models: {
+					search_model: search_model,
+					trip_model: trip_model
+				},
+				Views: {
+					landing_view: landing_view,
+					trip_view: trip_view
+				},
+				Collections: {
+					stops_collection: stops_collection
+				}
+			});
 			Backbone.history.start({pushState: true});
 		},
 
@@ -61,102 +78,23 @@
 			this.router.on("route:trip", _.bind( function(tripId) { 
 				this.loadModel(trip_model, "trip_model");
 				this.models["trip_model"].setUrl(tripId);
-				this.models["trip_model"].fetch();
-
+				
 				this.loadView(trip_view, "trip_view", {
 					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					map_view: this.views["map_view"],
-					model: this.models["trip_model"]
+					model: this.models["trip_model"],
+					stops_collection: stops_collection
 				});
+
+				this.models["trip_model"].fetch();
 
 			}, this));
 
 			this.router.on("route:stops", function() { console.log("stops view!") });
 			this.router.on("route:stop", function() { console.log("stop view!") });
 			this.router.on("route:overview", function() { console.log("overview view!") });
-		},
-
-		setMapListeners: function() {
-			var mapView = this.views["map_view"];
-
-			Backbone.on("map:setCenter", _.bind(mapView.setCenter, mapView));
-			Backbone.on("map:setMarker", _.bind(mapView.setMarker, mapView));
-			Backbone.on("map:clearMarkers", _.bind(mapView.clearMarkers, mapView));
-			Backbone.on("map:setZoom", _.bind(mapView.setZoom, mapView));
-		},
-
-		//TODO: this will get unruly. Pull into some kind of orechestrator
-		setViewListeners: function() {
-			Backbone.on("landing_view:submit", _.bind(function(data) {
-				var timeOutPromise = new Promise(function(resolve, reject) {
-					setTimeout(function() {
-						resolve();
-					}, 1000);
-				});
-
-				var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {			
-
-					this.loadModel(trip_model, "trip_model", {
-						title: "Your Next Adventure",
-						start: data.start,
-						end: data.end,
-						numStops: 2,
-						travellers: [
-							{
-								name: "You",
-								img: {
-									src: "/app/img/default-icon.jpg"
-								}
-							}
-						],
-						stops: [
-							{
-								location: "Home",
-								stopNum: 1,
-								dayNum: 1,
-								milesNum: 0
-							},
-							{
-								location: data.location,
-								stopNum: 2,
-								dayNum: 1,
-								milesNum: 0
-							}
-						]
-					});
-
-					this.loadView(trip_view, "trip_view", {
-						$parentEl: this.$el, 
-						el: $(".trip-page"), 
-						map_api: this.map_api,
-						map_view: this.views["map_view"],
-						model: this.models["trip_model"]
-					});
-
-					//TODO: validation in the model
-					this.models["trip_model"].save(null, {
-						success: function(data) {
-							resolve(data);
-						},
-						error: function() {
-							reject();
-						}
-					});
-				}, this));
-
-				//1 second for animation, and unknown time for db query result
-				Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
-					var trip_model = this.models["trip_model"];
-					var tripId = this.models["trip_model"].get("_id");
-					trip_model.setUrl(tripId);
-					trip_model.fetch();
-					this.router.navigate("/trips/" + tripId);
-					Backbone.trigger("trip_view:render");
-				}, this));
-				
-			}, this));
 		},
 
 		loadView: function(view, viewName, options) {
@@ -187,7 +125,7 @@
 		});
 	});
 })(window);
-},{"./backbone_models/search_model":150,"./backbone_models/trip_model":151,"./backbone_views/landing_view":152,"./backbone_views/map_view":153,"./backbone_views/trip_view":155,"./util/map_api":156,"bluebird":2,"react":149}],2:[function(require,module,exports){
+},{"./backbone_collections/stops_collection":150,"./backbone_models/search_model":151,"./backbone_models/trip_model":153,"./backbone_views/landing_view":154,"./backbone_views/map_view":155,"./backbone_views/trip_view":158,"./util/map_api":159,"./util/view_orchestrator":160,"bluebird":2,"react":149}],2:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -23144,6 +23082,55 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":31}],150:[function(require,module,exports){
+var stop_model = require("../backbone_models/stop_model");
+
+var stops_colletion = Backbone.Collection.extend({
+	model: stop_model,
+
+	initialize: function(opts) {
+
+		console.log("stop collection init");
+	},
+
+	addStop: function(index, opts, silent) {
+		var newStopModel = new stop_model(opts);
+		
+		this.models.splice(index, 0, newStopModel);
+
+		_.each(this.models, function(stop, index) {
+			stop.attributes.stopNum = index + 1;
+		});
+
+		if (silent !== true) {
+			this.trigger("change");
+		}
+
+		_.delay(_.bind(this.setStopsActive, this), 400);
+	},
+
+	setStopsActive: function() {
+		var shouldRender = false;
+		var returnedStop;
+
+		_.each(this.models, function(stop, index) {
+			stop = stop.attributes;
+
+			if (stop.isNew === true) {
+				stop.isNew = false;
+				shouldRender = true;
+				returnedStop = stop;
+			}
+			
+		});
+
+		if (shouldRender) {
+			this.trigger("change", returnedStop);
+		}
+	}
+});
+
+module.exports = stops_colletion;
+},{"../backbone_models/stop_model":152}],151:[function(require,module,exports){
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
@@ -23184,7 +23171,23 @@ var SearchModel = Backbone.Model.extend({
 });
 
 module.exports = SearchModel;
-},{}],151:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
+var stop_model = Backbone.Model.extend({
+	defaults: {
+		"location": "Home",
+		"stopNum": 1,
+		"dayNum": 1,
+		"milesNum": 0
+	},
+
+	initialize: function(opts) {
+
+		console.log("stop model init");
+	}
+});
+
+module.exports = stop_model;
+},{}],153:[function(require,module,exports){
 var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: "",
@@ -23206,52 +23209,11 @@ var trip_model = Backbone.Model.extend({
 
 	setUrl: function(TripId) {
 		this.url = this.url + "/" + TripId;
-	},
-
-	addStop: function(index, opts, silent) {
-		var defaults = {
-			location: "New Stop",
-			stopNum: 1,
-			dayNum: 1,
-			milesNum: 0,
-			isNew: false
-		}
-
-		var extendedOpts = _.defaults(opts, defaults);
-
-		this.attributes.stops.splice(index, 0, extendedOpts);
-
-		_.each(this.attributes.stops, function(stop, index) {
-			stop.stopNum = index + 1;
-		});
-
-		if (silent !== true) {
-			this.trigger("change");
-		}
-
-		_.delay(_.bind(this.setStopsActive, this), 400);
-	},
-
-	setStopsActive: function() {
-		var shouldRender = false;
-
-		_.each(this.attributes.stops, function(stop, index) {
-			if (stop.isNew === true) {
-				stop.isNew = false;
-				shouldRender = true;
-			}
-			
-		});
-
-		if (shouldRender) {
-			this.trigger("change");
-		}
-		
 	}
 });
 
 module.exports = trip_model;
-},{}],152:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
@@ -23488,7 +23450,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":160,"../../views/LandingView":157,"../../views/LocationsMenu":158,"./page_view":154}],153:[function(require,module,exports){
+},{"../../../renderer/client_renderer":164,"../../views/LandingView":161,"../../views/LocationsMenu":162,"./page_view":156}],155:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	mapMarkers: [],
 	events: {},
@@ -23538,7 +23500,7 @@ var map_view = Backbone.View.extend({
 });
 
 module.exports = map_view;
-},{}],154:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 var renderer = require("../../../renderer/client_renderer");
 var PageView = Backbone.View.extend({
 
@@ -23558,70 +23520,24 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":160}],155:[function(require,module,exports){
-var PageView = require("./page_view");
-var trip_template = require("../../views/TripView");
-
-var TripView = PageView.extend({
-
-	_findElms: function($parentEl) {
-		this.elms.$parentEl = $parentEl;
-		this.elms.$stops = this.$(".stops");
-	},
-
+},{"../../../renderer/client_renderer":164}],157:[function(require,module,exports){
+StopView = Backbone.View.extend({
 	events: {
-		"click .add-stop-btn": "onAddStopClick",
-		"blur .title": "onTitleBlur",
-		"keydown .title": "onEditKeyDown",
 		"keydown .stop-location-title": "onEditKeyDown",
 		"blur .stop-location-title": "onLocationTitleBlur",
 		"click .clear": "onClearClick"
 	},
 
 	initialize: function(opts) {
-		this.map_api = opts.map_api;
-		this.map_view = opts.map_view;
-
-		this.model.on("change", _.bind(function() {
-			this.render(trip_template);
-			this.map_view.setMode("trip-view");
-		}, this));
-
-		Backbone.on("trip_view:render", _.bind(function(){
-			this.render(trip_template);
-			this.map_view.setMode("trip-view");
-		}, this));
-
-		this._findElms(opts.$parentEl);
-
-	},
-
-	onAddStopClick: function(e) {
-		var stopIndex = $(e.currentTarget).closest(".stop").data("stopIndex");
-
-		if (e.preventDefault) { e.preventDefault(); }
-
-		if (_.isNumber(stopIndex) ) {
-			this.model.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId() });
-		}
-		
-	},
-
-	onTitleBlur: function(e) {
-		var target = e.currentTarget,
-			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
-
-		if (this.model.get("title") !== text) {
-			this.model.set("title", text);
-			this.model.sync("update", this.model, {url: this.model.url});
-		}
-		
+		console.log("stop view init. el: ", this.$el);
+		this.focus();
 	},
 
 	onLocationTitleBlur: function(e) {
 		var target = e.currentTarget,
 			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
 
+		//TODO: save to db
 		console.log(text);
 	},
 
@@ -23648,11 +23564,113 @@ var TripView = PageView.extend({
 			var range = document.selection.createRange();
 			document.selection.empty();
 		}
+	},
+
+	focus: function(stop) {
+		this.$(".stop-location-title").focus();
+	}
+});
+
+module.exports = StopView;
+},{}],158:[function(require,module,exports){
+var PageView = require("./page_view");
+var StopView = require("./stop_view");
+var trip_template = require("../../views/TripView");
+
+var TripView = PageView.extend({
+
+	_findElms: function($parentEl) {
+		this.elms.$parentEl = $parentEl;
+		this.elms.$stops = this.$(".stops");
+	},
+
+	events: {
+		"click .add-stop-btn": "onAddStopClick",
+		"blur .title": "onTitleBlur",
+		"keydown .title": "onEditKeyDown"
+	},
+
+	initialize: function(opts) {
+		this.map_api = opts.map_api;
+		this.map_view = opts.map_view;
+
+		this.model.once("sync", _.bind(function(data){
+			this.stops_collection = new opts.stops_collection;
+			this.stops_collection.add(this.model.get("stops"));
+
+			//TODO: since new stops are in collection, on render they aren't in model
+			this.stops_collection.on("change", _.bind(function(data){
+				this.render(trip_template);
+			}, this));
+
+			this.createStopViews();
+		}, this));
+
+		this.model.on("change", _.bind(function() {
+			this.render(trip_template);
+			this.map_view.setMode("trip-view");
+		}, this));
+
+		Backbone.on("trip_view:render", _.bind(function(){
+			this.render(trip_template);
+			this.map_view.setMode("trip-view");
+		}, this));
+
+		this._findElms(opts.$parentEl);
+
+	},
+
+	createStopViews: function() {
+		_.each(this.stops_collection.models, function(stopModel) {
+			new StopView({
+				model: stopModel,
+				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
+			});
+		});
+	},
+
+	onAddStopClick: function(e) {
+		var stopIndex = $(e.currentTarget).closest(".stop").data("stopIndex");
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		if (_.isNumber(stopIndex) ) {
+			this.stops_collection.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId("stop__") });
+		}
+		
+	},
+
+	onTitleBlur: function(e) {
+		var target = e.currentTarget,
+			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
+
+		if (this.model.get("title") !== text) {
+			this.model.set("title", text);
+			this.model.sync("update", this.model, {url: this.model.url});
+		}
+		
+	},
+
+	onEditKeyDown: function(e) {
+		if (e && e.keyCode === 13) {
+			if (e.preventDefault) { e.preventDefault(); }
+			$(e.currentTarget).blur();
+			this.clearAllRanges();
+		}
+	},
+
+	clearAllRanges: function() {
+		if (window.getSelection) {
+			window.getSelection().removeAllRanges();
+		} else if (document.selection.createRange) {
+			var range = document.selection.createRange();
+			document.selection.empty();
+		}
 	}
 });
 
 module.exports = TripView;
-},{"../../views/TripView":159,"./page_view":154}],156:[function(require,module,exports){
+},{"../../views/TripView":163,"./page_view":156,"./stop_view":157}],159:[function(require,module,exports){
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
 	this.autocompleteService = new google.maps.places.AutocompleteService({
@@ -23675,7 +23693,104 @@ Map.prototype = {
 }
 
 module.exports = Map;
-},{}],157:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
+var Promise = require("bluebird");
+
+var ViewOrchestrator = Backbone.View.extend({
+
+	startOrchestrator: function(opts) {
+		this.Views = opts.Views;
+		this.Collections = opts.Collections;
+		this.Models = opts.Models;
+
+		this.setMapListeners();
+		this.setViewListeners();
+	},
+
+	setMapListeners: function() {
+		var mapView = this.views["map_view"];
+
+		Backbone.on("map:setCenter", _.bind(mapView.setCenter, mapView));
+		Backbone.on("map:setMarker", _.bind(mapView.setMarker, mapView));
+		Backbone.on("map:clearMarkers", _.bind(mapView.clearMarkers, mapView));
+		Backbone.on("map:setZoom", _.bind(mapView.setZoom, mapView));
+	},
+
+	setViewListeners: function() {
+		Backbone.on("landing_view:submit", _.bind(function(data) {
+			var timeOutPromise = new Promise(function(resolve, reject) {
+				setTimeout(function() {
+					resolve();
+				}, 1000);
+			});
+
+			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {			
+
+				this.loadModel(this.Models.trip_model, "trip_model", {
+					title: "Your Next Adventure",
+					start: data.start,
+					end: data.end,
+					numStops: 2,
+					travellers: [
+						{
+							name: "You",
+							img: {
+								src: "/app/img/default-icon.jpg"
+							}
+						}
+					],
+					stops: [
+						{
+							location: "Home",
+							stopNum: 1,
+							dayNum: 1,
+							milesNum: 0
+						},
+						{
+							location: data.location,
+							stopNum: 2,
+							dayNum: 1,
+							milesNum: 0
+						}
+					]
+				});
+
+				this.loadView(this.Views.trip_view, "trip_view", {
+					$parentEl: this.$el, 
+					el: $(".trip-page"), 
+					map_api: this.map_api,
+					map_view: this.views["map_view"],
+					model: this.models["trip_model"],
+					stops_collection: this.Collections.stops_collection
+				});
+
+				//TODO: validation in the model
+				this.models["trip_model"].save(null, {
+					success: function(data) {
+						resolve(data);
+					},
+					error: function() {
+						reject();
+					}
+				});
+			}, this));
+
+			//1 second for animation, and unknown time for db query result
+			Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
+				var trip_model = this.models["trip_model"];
+				var tripId = this.models["trip_model"].get("_id");
+				trip_model.setUrl(tripId);
+				trip_model.fetch();
+				this.router.navigate("/trips/" + tripId);
+				Backbone.trigger("trip_view:render", true);
+			}, this));
+			
+		}, this));
+	}
+});
+
+module.exports = ViewOrchestrator;
+},{"bluebird":2}],161:[function(require,module,exports){
 var React = require('react');
 
 var LandingView = React.createClass({displayName: "LandingView",
@@ -23714,7 +23829,7 @@ var LandingView = React.createClass({displayName: "LandingView",
 });
 
 module.exports = LandingView;
-},{"react":149}],158:[function(require,module,exports){
+},{"react":149}],162:[function(require,module,exports){
 var React = require("react");
 
 var LocationItem = React.createClass({displayName: "LocationItem",
@@ -23743,7 +23858,7 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 });
 
 module.exports = LocationsMenu;
-},{"react":149}],159:[function(require,module,exports){
+},{"react":149}],163:[function(require,module,exports){
 var React = require('react');
 
 var Stop = React.createClass({displayName: "Stop",
@@ -23806,6 +23921,7 @@ var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
 		var travellers = this.props.travellers;
+		var slideInBottom = this.props.slideInBottom;
 
 		return (
 			React.createElement("div", {className: "trip-page", "data-trip-id": this.props._id}, 
@@ -23827,7 +23943,7 @@ var TripView = React.createClass({displayName: "TripView",
 						)
 					)
 				), 
-				React.createElement("div", {className: "bottom-bar panel"}, 
+				React.createElement("div", {className: "bottom-bar panel slide-in"}, 
 					React.createElement("div", {className: "travellers"}, 
 						React.createElement("div", {className: "trip-traveller-text"}, "Travellers"), 
 						React.createElement("button", {className: "add-traveller"}, "+"), 
@@ -23849,7 +23965,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"react":149}],160:[function(require,module,exports){
+},{"react":149}],164:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

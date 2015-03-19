@@ -1,5 +1,6 @@
 @import (reference) "common";
 .trip-page {
+
 	.title {
 		&:hover,
 		&:focus,
@@ -243,6 +244,30 @@
 			&:hover {
 				background-color: rgba(0,0,0,0.55);
 			}
+		}
+	}
+
+	.bottom-bar {
+		-webkit-transition: -webkit-transform 1s ease;
+		-moz-transition: -moz-transform 1s ease;
+		-o-transition: -o-transform 1s ease;
+		transition: transform 1s ease;
+
+		&.slide-in {
+			-moz-animation-name: bottomBarSlideIn;
+			-moz-animation-iteration-count: 1;
+			-moz-animation-timing-function: ease-in;
+			-moz-animation-duration: 1s;
+
+			-webkit-animation-name: bottomBarSlideIn;
+			-webkit-animation-iteration-count: 1;
+			-webkit-animation-timing-function: ease-in;
+			-webkit-animation-duration: 1s;
+
+			animation-name: bottomBarSlideIn;
+			animation-iteration-count: 1;
+			animation-timing-function: ease-in;
+			animation-duration: 1s;
 		}
 	}
 }
