@@ -1,6 +1,6 @@
 var stop_model = Backbone.Model.extend({
 	defaults: {
-		"location": "Home",
+		"location": "",
 		"stopNum": 1,
 		"dayNum": 1,
 		"milesNum": 0

@@ -23,9 +23,15 @@ var TripView = PageView.extend({
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
 
-			//TODO: since new stops are in collection, on render they aren't in model
-			this.stops_collection.on("change", _.bind(function(data){
+			this.stops_collection.on("change", _.bind(function(stopModel){
+				this.model.set("stops", this.stops_collection.toJSON(), true);
 				this.render(trip_template);
+				if (stopModel && stopModel instanceof Backbone.Model) {
+					new StopView({
+						model: stopModel,
+						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
+					});
+				}
 			}, this));
 
 			this.createStopViews();

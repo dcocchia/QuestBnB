@@ -7,7 +7,11 @@ StopView = Backbone.View.extend({
 
 	initialize: function(opts) {
 		console.log("stop view init. el: ", this.$el);
-		this.focus();
+
+		this.model.on("active", _.bind(function() {
+			this.focus();
+		}, this));
+		
 	},
 
 	onLocationTitleBlur: function(e) {

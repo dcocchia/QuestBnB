@@ -23101,29 +23101,28 @@ var stops_colletion = Backbone.Collection.extend({
 			stop.attributes.stopNum = index + 1;
 		});
 
-		if (silent !== true) {
-			this.trigger("change");
-		}
-
-		_.delay(_.bind(this.setStopsActive, this), 400);
+		//let's trip_view's trip_model know to update list of stops
+		this.trigger("change", newStopModel);
+		_.delay(_.bind(this.setStopsActive, this), 450);
 	},
 
 	setStopsActive: function() {
-		var shouldRender = false;
-		var returnedStop;
+		var returnedStop, thisStop, thisStopModel;
 
 		_.each(this.models, function(stop, index) {
-			stop = stop.attributes;
+			thisStop = stop.attributes;
 
-			if (stop.isNew === true) {
-				stop.isNew = false;
-				shouldRender = true;
-				returnedStop = stop;
+			if (thisStop.isNew === true) {
+				thisStop.isNew = false;
+				returnedStop = thisStop;
+				thisStopModel = stop;
 			}
 			
 		});
 
-		if (shouldRender) {
+		thisStopModel.trigger("active");
+
+		if (returnedStop) {
 			this.trigger("change", returnedStop);
 		}
 	}
@@ -23174,7 +23173,7 @@ module.exports = SearchModel;
 },{}],152:[function(require,module,exports){
 var stop_model = Backbone.Model.extend({
 	defaults: {
-		"location": "Home",
+		"location": "",
 		"stopNum": 1,
 		"dayNum": 1,
 		"milesNum": 0
@@ -23530,7 +23529,11 @@ StopView = Backbone.View.extend({
 
 	initialize: function(opts) {
 		console.log("stop view init. el: ", this.$el);
-		this.focus();
+
+		this.model.on("active", _.bind(function() {
+			this.focus();
+		}, this));
+		
 	},
 
 	onLocationTitleBlur: function(e) {
@@ -23598,9 +23601,15 @@ var TripView = PageView.extend({
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
 
-			//TODO: since new stops are in collection, on render they aren't in model
-			this.stops_collection.on("change", _.bind(function(data){
+			this.stops_collection.on("change", _.bind(function(stopModel){
+				this.model.set("stops", this.stops_collection.toJSON(), true);
 				this.render(trip_template);
+				if (stopModel && stopModel instanceof Backbone.Model) {
+					new StopView({
+						model: stopModel,
+						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
+					});
+				}
 			}, this));
 
 			this.createStopViews();
