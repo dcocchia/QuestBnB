@@ -37,15 +37,6 @@ StopView = Backbone.View.extend({
 		console.log(text);
 	},
 
-	onEditKeyDown: function(e) {
-		if (e && e.keyCode === 13) {
-			if (e.preventDefault) { e.preventDefault(); }
-			$(e.currentTarget).blur();
-			this.clearAllRanges();
-			this.search_model.clear();
-		}
-	},
-
 	onEditKeyup: function(e) {
 		var target = e.currentTarget;
 
@@ -58,11 +49,32 @@ StopView = Backbone.View.extend({
 			case 38:
 				this.focusPrevLocationItem(target);
 				break;
+			case 13: 
+				this.onLocationKeydown(e);
+				break;
 			default: 
 				this.locationSearch(e);
 				break;
 		}
 		
+	},
+
+	onLocationKeydown: function(e) {
+		var $active, $locationsMenu;
+
+		if (e.keyCode === 13) {
+			if (e && e.preventDefault) { e.preventDefault(); }
+
+			$locationsMenu = $(e.currentTarget).siblings(".locations-menu");
+			$active = $locationsMenu.find(".location-item.active");
+
+			if ($active.length > 0) {
+				$active.click();
+			} else {
+				$active = $locationsMenu.find(".location-item").first();
+				$active.click();
+			}
+		}
 	},
 
 	focusNextLocationItem: function(target) {
@@ -121,15 +133,28 @@ StopView = Backbone.View.extend({
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
-		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
+		this.map_api.getPlaceDetails({placeId: placeId}, _.bind(function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
 				Backbone.trigger("map:setMarker", {
 					location: place.geometry.location
 				});
 
-				//TODO: set model with new location, re-render page
+				this.model.set({
+					location: placeDescription,
+					address: place.formatted_address,
+					place_id: place.place_id,
+					id: place.id,
+					geo: {
+						lat: place.geometry.location.lat(),
+						lng: place.geometry.location.lng()
+					}
+				});
+
+				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
+				this.clearAllRanges();
+				this.search_model.clear();
 			}
-		});
+		}, this));
 
 	},
 

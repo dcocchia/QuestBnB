@@ -23092,7 +23092,9 @@ var stops_colletion = Backbone.Collection.extend({
 	addStop: function(index, opts, silent) {
 		var newStopModel = new stop_model(opts);
 		
-		this.models.splice(index, 0, newStopModel);
+		this.add(newStopModel, {
+			at: index
+		});
 
 		_.each(this.models, function(stop, index) {
 			stop.attributes.stopNum = index + 1;
@@ -23288,6 +23290,9 @@ var LandingView = PageView.extend({
 
 			if ($active.length > 0) {
 				$active.click();
+			} else {
+				$active = this.elms.$locationsMenu.find(".location-item").first();
+				$active.click();
 			}
 		}
 	},
@@ -23303,6 +23308,9 @@ var LandingView = PageView.extend({
 			case 38:
 				this.showLocationMenu();
 				this.focusPrevLocationItem();
+				break;
+			case 13: 
+				this.onLocationKeydown(e);
 				break;
 			default: 
 				this.locationSearch(e);
@@ -23556,15 +23564,6 @@ StopView = Backbone.View.extend({
 		console.log(text);
 	},
 
-	onEditKeyDown: function(e) {
-		if (e && e.keyCode === 13) {
-			if (e.preventDefault) { e.preventDefault(); }
-			$(e.currentTarget).blur();
-			this.clearAllRanges();
-			this.search_model.clear();
-		}
-	},
-
 	onEditKeyup: function(e) {
 		var target = e.currentTarget;
 
@@ -23577,11 +23576,32 @@ StopView = Backbone.View.extend({
 			case 38:
 				this.focusPrevLocationItem(target);
 				break;
+			case 13: 
+				this.onLocationKeydown(e);
+				break;
 			default: 
 				this.locationSearch(e);
 				break;
 		}
 		
+	},
+
+	onLocationKeydown: function(e) {
+		var $active, $locationsMenu;
+
+		if (e.keyCode === 13) {
+			if (e && e.preventDefault) { e.preventDefault(); }
+
+			$locationsMenu = $(e.currentTarget).siblings(".locations-menu");
+			$active = $locationsMenu.find(".location-item.active");
+
+			if ($active.length > 0) {
+				$active.click();
+			} else {
+				$active = $locationsMenu.find(".location-item").first();
+				$active.click();
+			}
+		}
 	},
 
 	focusNextLocationItem: function(target) {
@@ -23640,15 +23660,28 @@ StopView = Backbone.View.extend({
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
-		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
+		this.map_api.getPlaceDetails({placeId: placeId}, _.bind(function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
 				Backbone.trigger("map:setMarker", {
 					location: place.geometry.location
 				});
 
-				//TODO: set model with new location, re-render page
+				this.model.set({
+					location: placeDescription,
+					address: place.formatted_address,
+					place_id: place.place_id,
+					id: place.id,
+					geo: {
+						lat: place.geometry.location.lat(),
+						lng: place.geometry.location.lng()
+					}
+				});
+
+				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
+				this.clearAllRanges();
+				this.search_model.clear();
 			}
-		});
+		}, this));
 
 	},
 
@@ -23704,7 +23737,7 @@ var TripView = PageView.extend({
 			this.stops_collection.on("change", _.bind(function(stopModel){
 				this.model.set("stops", this.stops_collection.toJSON(), true);
 				this.render(trip_template);
-				if (stopModel && stopModel instanceof Backbone.Model) {
+				if (stopModel && stopModel.get && stopModel.get("isNew") === true) {
 					new StopView({
 						model: stopModel,
 						map_api: this.map_api,
@@ -24002,6 +24035,7 @@ var Stop = React.createClass({displayName: "Stop",
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
+		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
@@ -24016,7 +24050,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
 							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
 							React.createElement("span", {className: "clear"}), 
-							React.createElement("div", {className: queryPredictions.length > 0 && stopProps._id === data._id ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": "false", "aria-role": "listbox"}, 
+							React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
 								React.createElement(LocationsMenu, {predictions: queryPredictions})
 							)
 						), 

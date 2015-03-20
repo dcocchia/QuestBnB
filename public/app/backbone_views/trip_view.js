@@ -26,7 +26,7 @@ var TripView = PageView.extend({
 			this.stops_collection.on("change", _.bind(function(stopModel){
 				this.model.set("stops", this.stops_collection.toJSON(), true);
 				this.render(trip_template);
-				if (stopModel && stopModel instanceof Backbone.Model) {
+				if (stopModel && stopModel.get && stopModel.get("isNew") === true) {
 					new StopView({
 						model: stopModel,
 						map_api: this.map_api,

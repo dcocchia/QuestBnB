@@ -9,6 +9,7 @@ var Stop = React.createClass({displayName: "Stop",
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
+		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
@@ -23,7 +24,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
 							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
 							React.createElement("span", {className: "clear"}), 
-							React.createElement("div", {className: queryPredictions.length > 0 && stopProps._id === data._id ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": "false", "aria-role": "listbox"}, 
+							React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
 								React.createElement(LocationsMenu, {predictions: queryPredictions})
 							)
 						), 

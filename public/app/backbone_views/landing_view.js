@@ -76,6 +76,9 @@ var LandingView = PageView.extend({
 
 			if ($active.length > 0) {
 				$active.click();
+			} else {
+				$active = this.elms.$locationsMenu.find(".location-item").first();
+				$active.click();
 			}
 		}
 	},
@@ -91,6 +94,9 @@ var LandingView = PageView.extend({
 			case 38:
 				this.showLocationMenu();
 				this.focusPrevLocationItem();
+				break;
+			case 13: 
+				this.onLocationKeydown(e);
 				break;
 			default: 
 				this.locationSearch(e);

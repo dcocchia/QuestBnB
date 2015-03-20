@@ -8,7 +8,9 @@ var stops_colletion = Backbone.Collection.extend({
 	addStop: function(index, opts, silent) {
 		var newStopModel = new stop_model(opts);
 		
-		this.models.splice(index, 0, newStopModel);
+		this.add(newStopModel, {
+			at: index
+		});
 
 		_.each(this.models, function(stop, index) {
 			stop.attributes.stopNum = index + 1;

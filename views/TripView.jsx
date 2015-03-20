@@ -9,6 +9,7 @@ var Stop = React.createClass({
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
+		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
@@ -23,7 +24,7 @@ var Stop = React.createClass({
 						<div className="stop-location-title-wrapper">
 							<h3 className="stop-location-title" contentEditable="true">{data.location}</h3>
 							<span className="clear"></span>
-							<div className={queryPredictions.length > 0 && stopProps._id === data._id ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded="false" aria-role="listbox">
+							<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
 								<LocationsMenu predictions={queryPredictions} />
 							</div>
 						</div>
