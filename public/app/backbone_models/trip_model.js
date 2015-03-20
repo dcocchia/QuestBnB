@@ -13,8 +13,6 @@ var trip_model = Backbone.Model.extend({
 	url: "/trips",
 
 	initialize: function(opts) {
-
-		console.log("trip model init");
 	},
 
 	setUrl: function(TripId) {

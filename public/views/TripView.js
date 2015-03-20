@@ -1,10 +1,15 @@
 var React = require('react');
+var LocationsMenu = require('./LocationsMenu');
 
 var Stop = React.createClass({displayName: "Stop",
 	render: function() {
 		var data = this.props.data;
 		var isNew = data.isNew;
 		var index = this.props.index;
+		var locationProps = ( this.props.locationProps || {} );
+		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+		var stopProps = ( this.props.stopProps || {} );
+
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
@@ -17,7 +22,10 @@ var Stop = React.createClass({displayName: "Stop",
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
 							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
-							React.createElement("span", {className: "clear"})
+							React.createElement("span", {className: "clear"}), 
+							React.createElement("div", {className: queryPredictions.length > 0 && stopProps._id === data._id ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": "false", "aria-role": "listbox"}, 
+								React.createElement(LocationsMenu, {predictions: queryPredictions})
+							)
 						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
 						React.createElement("p", null, data.milesNum, " miles")
@@ -59,6 +67,8 @@ var Traveller = React.createClass({displayName: "Traveller",
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
+		var locationProps = this.props.location_props;
+		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
 
@@ -70,7 +80,7 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
-								return React.createElement(Stop, {data: stop, index: index, key: index});
+								return React.createElement(Stop, {data: stop, index: index, locationProps: locationProps, stopProps: stopProps, key: index});
 							})
 							)
 						), 

@@ -98,7 +98,7 @@
 
 		loadView: function(view, viewName, options) {
 			if (this.views[viewName]) {
-				this.views[viewName].initialize();
+				this.views[viewName].initialize(options);
 			} else {
 				this.views[viewName] = new view(options);
 			}
@@ -108,7 +108,7 @@
 
 		loadModel: function(model, modelName, options) {
 			if (this.models[modelName]) {
-				this.models[modelName].initialize();
+				this.models[modelName].initialize(options);
 			} else {
 				this.models[modelName] = new model(options);
 			}

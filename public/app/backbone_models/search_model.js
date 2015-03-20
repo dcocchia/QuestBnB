@@ -34,6 +34,10 @@ var SearchModel = Backbone.Model.extend({
 		}
 
 		this.map_api.getQueryPredictions(options, _.bind( setModelQuery, this));
+	},
+
+	clear: function() {
+		this.set(this.defaults);
 	}
 });
 

@@ -3,10 +3,7 @@ var stop_model = require("../backbone_models/stop_model");
 var stops_colletion = Backbone.Collection.extend({
 	model: stop_model,
 
-	initialize: function(opts) {
-
-		console.log("stop collection init");
-	},
+	initialize: function(opts) {},
 
 	addStop: function(index, opts, silent) {
 		var newStopModel = new stop_model(opts);
@@ -17,7 +14,7 @@ var stops_colletion = Backbone.Collection.extend({
 			stop.attributes.stopNum = index + 1;
 		});
 
-		//let's trip_view's trip_model know to update list of stops
+		//lets trip_view's trip_model know to update list of stops
 		this.trigger("change", newStopModel);
 		_.delay(_.bind(this.setStopsActive, this), 450);
 	},

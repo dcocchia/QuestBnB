@@ -59,12 +59,17 @@ var ViewOrchestrator = Backbone.View.extend({
 					]
 				});
 
+				this.loadModel(this.Models.search_model, "search_model", {
+					map_api: this.map_api
+				});
+
 				this.loadView(this.Views.trip_view, "trip_view", {
 					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					map_view: this.views["map_view"],
 					model: this.models["trip_model"],
+					search_model: this.models["search_model"],
 					stops_collection: this.Collections.stops_collection
 				});
 

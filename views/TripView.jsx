@@ -1,10 +1,15 @@
 var React = require('react');
+var LocationsMenu = require('./LocationsMenu');
 
 var Stop = React.createClass({
 	render: function() {
 		var data = this.props.data;
 		var isNew = data.isNew;
 		var index = this.props.index;
+		var locationProps = ( this.props.locationProps || {} );
+		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+		var stopProps = ( this.props.stopProps || {} );
+
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
 				<div className="stop-bar left-full-height">
@@ -18,6 +23,9 @@ var Stop = React.createClass({
 						<div className="stop-location-title-wrapper">
 							<h3 className="stop-location-title" contentEditable="true">{data.location}</h3>
 							<span className="clear"></span>
+							<div className={queryPredictions.length > 0 && stopProps._id === data._id ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded="false" aria-role="listbox">
+								<LocationsMenu predictions={queryPredictions} />
+							</div>
 						</div>
 						<p>Day {data.dayNum}</p>
 						<p>{data.milesNum} miles</p>
@@ -59,6 +67,8 @@ var Traveller = React.createClass({
 var TripView = React.createClass({
 	render: function() {
 		var stops = this.props.stops;
+		var locationProps = this.props.location_props;
+		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
 
@@ -70,7 +80,7 @@ var TripView = React.createClass({
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
-								return <Stop data={stop} index = {index} key={index}/>;
+								return <Stop data={stop} index={index} locationProps={locationProps} stopProps={stopProps} key={index}/>;
 							})}
 							</ol>
 						</div>

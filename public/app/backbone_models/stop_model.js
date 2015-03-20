@@ -7,8 +7,6 @@ var stop_model = Backbone.Model.extend({
 	},
 
 	initialize: function(opts) {
-
-		console.log("stop model init");
 	}
 });
 

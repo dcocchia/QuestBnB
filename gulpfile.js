@@ -18,7 +18,7 @@ gulp.task('less', function () {
     .pipe(gulp.dest('./public/app/css'));
 });
 
-gulp.task('build-jsx', function() {
+gulp.task('jsx', function() {
   return gulp.src('./views/**/*.jsx')
     .pipe(react())
     .pipe(gulp.dest('./public/views'));
@@ -30,7 +30,6 @@ gulp.task('browserify', function() {
   .pipe(source('bundle.js'))
   .pipe(gulp.dest('./public/'));
 });
-
 
 gulp.task('develop', function() {
 	nodemon({ 
@@ -44,7 +43,7 @@ gulp.task('develop', function() {
       "./public/bundle.js"
 		]
 	})
-    .on('change', ['less', 'build-jsx', 'browserify'])
+    .on('change', ['less', 'jsx', 'browserify'])
 });
 
-gulp.task('default', ['less', 'build-jsx', 'browserify']);
+gulp.task('default', ['less', 'jsx', 'browserify']);

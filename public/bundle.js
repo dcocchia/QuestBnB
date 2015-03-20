@@ -99,7 +99,7 @@
 
 		loadView: function(view, viewName, options) {
 			if (this.views[viewName]) {
-				this.views[viewName].initialize();
+				this.views[viewName].initialize(options);
 			} else {
 				this.views[viewName] = new view(options);
 			}
@@ -109,7 +109,7 @@
 
 		loadModel: function(model, modelName, options) {
 			if (this.models[modelName]) {
-				this.models[modelName].initialize();
+				this.models[modelName].initialize(options);
 			} else {
 				this.models[modelName] = new model(options);
 			}
@@ -23087,10 +23087,7 @@ var stop_model = require("../backbone_models/stop_model");
 var stops_colletion = Backbone.Collection.extend({
 	model: stop_model,
 
-	initialize: function(opts) {
-
-		console.log("stop collection init");
-	},
+	initialize: function(opts) {},
 
 	addStop: function(index, opts, silent) {
 		var newStopModel = new stop_model(opts);
@@ -23101,7 +23098,7 @@ var stops_colletion = Backbone.Collection.extend({
 			stop.attributes.stopNum = index + 1;
 		});
 
-		//let's trip_view's trip_model know to update list of stops
+		//lets trip_view's trip_model know to update list of stops
 		this.trigger("change", newStopModel);
 		_.delay(_.bind(this.setStopsActive, this), 450);
 	},
@@ -23166,6 +23163,10 @@ var SearchModel = Backbone.Model.extend({
 		}
 
 		this.map_api.getQueryPredictions(options, _.bind( setModelQuery, this));
+	},
+
+	clear: function() {
+		this.set(this.defaults);
 	}
 });
 
@@ -23180,8 +23181,6 @@ var stop_model = Backbone.Model.extend({
 	},
 
 	initialize: function(opts) {
-
-		console.log("stop model init");
 	}
 });
 
@@ -23202,8 +23201,6 @@ var trip_model = Backbone.Model.extend({
 	url: "/trips",
 
 	initialize: function(opts) {
-
-		console.log("trip model init");
 	},
 
 	setUrl: function(TripId) {
@@ -23520,19 +23517,34 @@ var PageView = Backbone.View.extend({
 
 module.exports = PageView;
 },{"../../../renderer/client_renderer":164}],157:[function(require,module,exports){
+var search_model = require("../backbone_models/search_model");
+
 StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title": "onEditKeyDown",
+		"keyup .stop-location-title": "onEditKeyup",
 		"blur .stop-location-title": "onLocationTitleBlur",
+		"click .location-item": "onLocationItemClick",
 		"click .clear": "onClearClick"
 	},
 
 	initialize: function(opts) {
-		console.log("stop view init. el: ", this.$el);
+		this.map_api = opts.map_api;
+		this.search_model = new search_model({
+			map_api: this.map_api
+		});
 
 		this.model.on("active", _.bind(function() {
 			this.focus();
 		}, this));
+
+		this.search_model.on("change", _.bind(function() {
+			Backbone.trigger("trip_view:location_search", this.search_model, this.model);
+		}, this));
+
+		this.sendQuery = _.debounce( _.bind( function(options) {
+			this.search_model.getQueryPredictions(options);
+		}, this), 500);
 		
 	},
 
@@ -23549,7 +23561,95 @@ StopView = Backbone.View.extend({
 			if (e.preventDefault) { e.preventDefault(); }
 			$(e.currentTarget).blur();
 			this.clearAllRanges();
+			this.search_model.clear();
 		}
+	},
+
+	onEditKeyup: function(e) {
+		var target = e.currentTarget;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
+
+		switch(e.keyCode) {
+			case 40:
+				this.focusNextLocationItem(target);
+				break;
+			case 38:
+				this.focusPrevLocationItem(target);
+				break;
+			default: 
+				this.locationSearch(e);
+				break;
+		}
+		
+	},
+
+	focusNextLocationItem: function(target) {
+		var $locationsMenu = $(target).siblings(".locations-menu"),
+			$locationItems = $locationsMenu.find(".location-item"),
+			$activeItem = $locationItems.filter(".active"),
+			$next;
+
+		if ($activeItem.length <= 0) {
+			$locationItems.first().addClass("active");
+		} else {
+			$next = $activeItem.removeClass("active").next();
+
+			if ($next.length <= 0) {
+				$locationItems.first().addClass("active");
+			} else {	
+				$next.addClass("active");
+			}
+			
+		}
+	},
+
+	focusPrevLocationItem: function(target) {
+		var $locationsMenu = $(target).siblings(".locations-menu"),
+			$locationItems = $locationsMenu.find(".location-item"),
+			$activeItem = $locationItems.filter(".active"),
+			$prev;
+
+		if ($activeItem.length <= 0) {
+			$locationItems.last().addClass("active");
+		} else {
+			$prev = $activeItem.removeClass("active").prev();
+
+			if ($prev.length <= 0) {
+				$locationItems.last().addClass("active");
+			} else {	
+				$prev.addClass("active");
+			}
+		}
+	},
+
+	locationSearch: function(e) {
+		var target = e.currentTarget,
+			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;		
+
+		if (text) { this.sendQuery({input: text}); }
+	},
+
+	onLocationItemClick: function(e) {
+		var item = e.currentTarget,
+			$item = this.$(item),
+			placeDescription = $item.attr("data-place-description"),
+			placeId = $item.attr("data-place-id"),
+			offset_y = -0.7,
+			offset_x = 0;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
+
+		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
+			if (status === google.maps.places.PlacesServiceStatus.OK ) {
+				Backbone.trigger("map:setMarker", {
+					location: place.geometry.location
+				});
+
+				//TODO: set model with new location, re-render page
+			}
+		});
+
 	},
 
 	onClearClick: function(e) {
@@ -23575,7 +23675,7 @@ StopView = Backbone.View.extend({
 });
 
 module.exports = StopView;
-},{}],158:[function(require,module,exports){
+},{"../backbone_models/search_model":151}],158:[function(require,module,exports){
 var PageView = require("./page_view");
 var StopView = require("./stop_view");
 var trip_template = require("../../views/TripView");
@@ -23607,6 +23707,7 @@ var TripView = PageView.extend({
 				if (stopModel && stopModel instanceof Backbone.Model) {
 					new StopView({
 						model: stopModel,
+						map_api: this.map_api,
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
@@ -23620,6 +23721,18 @@ var TripView = PageView.extend({
 			this.map_view.setMode("trip-view");
 		}, this));
 
+		Backbone.on("trip_view:location_search", _.bind(function(location_model, stop_model) {
+			var data = {};
+
+			location_model || (location_model = {});
+			stop_model || (stop_model = {});
+
+			data.location_props = location_model.toJSON();
+			data.stop_props = stop_model.toJSON();
+
+			this.render(trip_template, data);
+		}, this));
+
 		Backbone.on("trip_view:render", _.bind(function(){
 			this.render(trip_template);
 			this.map_view.setMode("trip-view");
@@ -23630,12 +23743,13 @@ var TripView = PageView.extend({
 	},
 
 	createStopViews: function() {
-		_.each(this.stops_collection.models, function(stopModel) {
+		_.each(this.stops_collection.models, _.bind(function(stopModel) {
 			new StopView({
 				model: stopModel,
+				map_api: this.map_api,
 				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 			});
-		});
+		}, this));
 	},
 
 	onAddStopClick: function(e) {
@@ -23644,7 +23758,11 @@ var TripView = PageView.extend({
 		if (e.preventDefault) { e.preventDefault(); }
 
 		if (_.isNumber(stopIndex) ) {
-			this.stops_collection.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId("stop__") });
+			this.stops_collection.addStop(stopIndex + 1, {
+				isNew: true, 
+				stopNum: stopIndex + 2, 
+				_id: _.uniqueId("stop__") 
+			});
 		}
 		
 	},
@@ -23764,12 +23882,17 @@ var ViewOrchestrator = Backbone.View.extend({
 					]
 				});
 
+				this.loadModel(this.Models.search_model, "search_model", {
+					map_api: this.map_api
+				});
+
 				this.loadView(this.Views.trip_view, "trip_view", {
 					$parentEl: this.$el, 
 					el: $(".trip-page"), 
 					map_api: this.map_api,
 					map_view: this.views["map_view"],
 					model: this.models["trip_model"],
+					search_model: this.models["search_model"],
 					stops_collection: this.Collections.stops_collection
 				});
 
@@ -23869,12 +23992,17 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 module.exports = LocationsMenu;
 },{"react":149}],163:[function(require,module,exports){
 var React = require('react');
+var LocationsMenu = require('./LocationsMenu');
 
 var Stop = React.createClass({displayName: "Stop",
 	render: function() {
 		var data = this.props.data;
 		var isNew = data.isNew;
 		var index = this.props.index;
+		var locationProps = ( this.props.locationProps || {} );
+		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+		var stopProps = ( this.props.stopProps || {} );
+
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
@@ -23887,7 +24015,10 @@ var Stop = React.createClass({displayName: "Stop",
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
 							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
-							React.createElement("span", {className: "clear"})
+							React.createElement("span", {className: "clear"}), 
+							React.createElement("div", {className: queryPredictions.length > 0 && stopProps._id === data._id ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": "false", "aria-role": "listbox"}, 
+								React.createElement(LocationsMenu, {predictions: queryPredictions})
+							)
 						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
 						React.createElement("p", null, data.milesNum, " miles")
@@ -23929,6 +24060,8 @@ var Traveller = React.createClass({displayName: "Traveller",
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
+		var locationProps = this.props.location_props;
+		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
 
@@ -23940,7 +24073,7 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
-								return React.createElement(Stop, {data: stop, index: index, key: index});
+								return React.createElement(Stop, {data: stop, index: index, locationProps: locationProps, stopProps: stopProps, key: index});
 							})
 							)
 						), 
@@ -23974,7 +24107,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"react":149}],164:[function(require,module,exports){
+},{"./LocationsMenu":162,"react":149}],164:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

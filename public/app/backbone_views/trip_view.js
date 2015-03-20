@@ -29,6 +29,7 @@ var TripView = PageView.extend({
 				if (stopModel && stopModel instanceof Backbone.Model) {
 					new StopView({
 						model: stopModel,
+						map_api: this.map_api,
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
@@ -42,6 +43,18 @@ var TripView = PageView.extend({
 			this.map_view.setMode("trip-view");
 		}, this));
 
+		Backbone.on("trip_view:location_search", _.bind(function(location_model, stop_model) {
+			var data = {};
+
+			location_model || (location_model = {});
+			stop_model || (stop_model = {});
+
+			data.location_props = location_model.toJSON();
+			data.stop_props = stop_model.toJSON();
+
+			this.render(trip_template, data);
+		}, this));
+
 		Backbone.on("trip_view:render", _.bind(function(){
 			this.render(trip_template);
 			this.map_view.setMode("trip-view");
@@ -52,12 +65,13 @@ var TripView = PageView.extend({
 	},
 
 	createStopViews: function() {
-		_.each(this.stops_collection.models, function(stopModel) {
+		_.each(this.stops_collection.models, _.bind(function(stopModel) {
 			new StopView({
 				model: stopModel,
+				map_api: this.map_api,
 				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 			});
-		});
+		}, this));
 	},
 
 	onAddStopClick: function(e) {
@@ -66,7 +80,11 @@ var TripView = PageView.extend({
 		if (e.preventDefault) { e.preventDefault(); }
 
 		if (_.isNumber(stopIndex) ) {
-			this.stops_collection.addStop(stopIndex + 1, {isNew: true, stopNum: stopIndex + 2, _id: _.uniqueId("stop__") });
+			this.stops_collection.addStop(stopIndex + 1, {
+				isNew: true, 
+				stopNum: stopIndex + 2, 
+				_id: _.uniqueId("stop__") 
+			});
 		}
 		
 	},
