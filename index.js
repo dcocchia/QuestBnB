@@ -47,7 +47,7 @@ app.post('/trips', function(req, res){
 
 	trips.insertAsync(tripData).then(function(insertedDoc, err) {
 		if (err) {
-			res.status(500).send(err);
+			res.status(500).send({"error": error});
 		} else {
 			res.send(insertedDoc[0]);
 		}
@@ -80,12 +80,11 @@ app.get('/trips/:id', function(req, res){
 			}
 
 		} else {
-			res.sendStatus(404);
+			res.status(404).send({"error": e});
 		}
 		
 	}).catch(function(e) {
-		console.log("ERROR: ", e);
-		res.sendStatus(500);
+		res.status(500).send({"error": e});
 	});
 	
 });
@@ -111,12 +110,11 @@ app.put('/trips/:id', function(req, res) {
 			res.status(200).send(doc);
 
 		} else {
-			res.sendStatus(404);
+			res.status(404).send({"error": e});
 		}
 		
 	}).catch(function(e) {
-		console.log("ERROR: ", e);
-		res.sendStatus(500);
+		res.status(500).send({"error": e});
 	});
 });
 

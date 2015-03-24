@@ -23182,8 +23182,7 @@ var stop_model = Backbone.Model.extend({
 		"milesNum": 0
 	},
 
-	initialize: function(opts) {
-	}
+	initialize: function(opts) {}
 });
 
 module.exports = stop_model;
@@ -23531,7 +23530,6 @@ StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title": "onEditKeyDown",
 		"keyup .stop-location-title": "onEditKeyup",
-		"blur .stop-location-title": "onLocationTitleBlur",
 		"click .location-item": "onLocationItemClick",
 		"click .clear": "onClearClick"
 	},
@@ -23554,14 +23552,6 @@ StopView = Backbone.View.extend({
 			this.search_model.getQueryPredictions(options);
 		}, this), 500);
 		
-	},
-
-	onLocationTitleBlur: function(e) {
-		var target = e.currentTarget,
-			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
-
-		//TODO: save to db
-		console.log(text);
 	},
 
 	onEditKeyup: function(e) {
@@ -23666,6 +23656,9 @@ StopView = Backbone.View.extend({
 					location: place.geometry.location
 				});
 
+				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
+				this.clearAllRanges();
+
 				this.model.set({
 					location: placeDescription,
 					address: place.formatted_address,
@@ -23676,9 +23669,7 @@ StopView = Backbone.View.extend({
 						lng: place.geometry.location.lng()
 					}
 				});
-
-				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
-				this.clearAllRanges();
+				
 				this.search_model.clear();
 			}
 		}, this));
@@ -23733,6 +23724,7 @@ var TripView = PageView.extend({
 		this.model.once("sync", _.bind(function(data){
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
+			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
 
 			this.stops_collection.on("change", _.bind(function(stopModel){
 				this.model.set("stops", this.stops_collection.toJSON(), true);
@@ -23744,6 +23736,7 @@ var TripView = PageView.extend({
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
+				this.model.sync("update", this.model, {url: this.model.url});
 			}, this));
 
 			this.createStopViews();
@@ -23833,6 +23826,8 @@ module.exports = TripView;
 },{"../../views/TripView":163,"./page_view":156,"./stop_view":157}],159:[function(require,module,exports){
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
+	this.map = map;
+
 	this.autocompleteService = new google.maps.places.AutocompleteService({
 		componentRestrictions: { 
 			country: "us"
@@ -23840,6 +23835,8 @@ function Map(map) {
 	});
 
 	this.placeService = new google.maps.places.PlacesService(map);
+	this.directionsDisplay = new google.maps.DirectionsRenderer();
+	this.directionsService = new google.maps.DirectionsService();
 }
 
 Map.prototype = {
@@ -23849,6 +23846,36 @@ Map.prototype = {
 
 	getPlaceDetails: function(opts, callback) {
 		this.placeService.getDetails(opts, callback);
+	},
+
+	renderDirections: function(opts) {
+		this.directionsDisplay.setMap(this.map);
+		this.directionsService.route(opts, _.bind(function(result, status) {
+			if (status == google.maps.DirectionsStatus.OK) {
+				this.directionsDisplay.setDirections(result);
+			}
+		}, this));
+	},
+
+	renderDirectionsFromStopsCollection: function(stops_collection) {
+		var request;
+		var stops = stops_collection.toJSON();
+		var waypoints = stops.slice(1, -1);
+
+		_.each(waypoints, function(waypoint, index) {
+			waypoints[index] = { location: waypoint.location };
+		});
+
+		request = {
+			origin: _.first(stops).location,
+			destination: _.last(stops).location,
+			waypoints: waypoints,
+			provideRouteAlternatives: false,
+			travelMode: google.maps.TravelMode.DRIVING,
+			unitSystem: google.maps.UnitSystem.IMPERIAL
+		};
+
+		this.renderDirections(request);
 	}
 }
 

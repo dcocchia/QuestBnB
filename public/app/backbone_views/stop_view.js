@@ -4,7 +4,6 @@ StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title": "onEditKeyDown",
 		"keyup .stop-location-title": "onEditKeyup",
-		"blur .stop-location-title": "onLocationTitleBlur",
 		"click .location-item": "onLocationItemClick",
 		"click .clear": "onClearClick"
 	},
@@ -27,14 +26,6 @@ StopView = Backbone.View.extend({
 			this.search_model.getQueryPredictions(options);
 		}, this), 500);
 		
-	},
-
-	onLocationTitleBlur: function(e) {
-		var target = e.currentTarget,
-			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
-
-		//TODO: save to db
-		console.log(text);
 	},
 
 	onEditKeyup: function(e) {
@@ -139,6 +130,9 @@ StopView = Backbone.View.extend({
 					location: place.geometry.location
 				});
 
+				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
+				this.clearAllRanges();
+
 				this.model.set({
 					location: placeDescription,
 					address: place.formatted_address,
@@ -149,9 +143,7 @@ StopView = Backbone.View.extend({
 						lng: place.geometry.location.lng()
 					}
 				});
-
-				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
-				this.clearAllRanges();
+				
 				this.search_model.clear();
 			}
 		}, this));

@@ -6,8 +6,7 @@ var stop_model = Backbone.Model.extend({
 		"milesNum": 0
 	},
 
-	initialize: function(opts) {
-	}
+	initialize: function(opts) {}
 });
 
 module.exports = stop_model;
