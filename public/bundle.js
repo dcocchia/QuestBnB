@@ -23652,10 +23652,6 @@ StopView = Backbone.View.extend({
 
 		this.map_api.getPlaceDetails({placeId: placeId}, _.bind(function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
-				Backbone.trigger("map:setMarker", {
-					location: place.geometry.location
-				});
-
 				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
 				this.clearAllRanges();
 
@@ -23736,7 +23732,12 @@ var TripView = PageView.extend({
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
-				this.model.sync("update", this.model, {url: this.model.url});
+				this.model.sync("update", this.model, {
+					url: this.model.url,
+					success: _.bind(function(data) {
+						this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+					}, this)
+				});
 			}, this));
 
 			this.createStopViews();

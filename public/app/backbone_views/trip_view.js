@@ -34,7 +34,12 @@ var TripView = PageView.extend({
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
-				this.model.sync("update", this.model, {url: this.model.url});
+				this.model.sync("update", this.model, {
+					url: this.model.url,
+					success: _.bind(function(data) {
+						this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+					}, this)
+				});
 			}, this));
 
 			this.createStopViews();

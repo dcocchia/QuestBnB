@@ -56,7 +56,6 @@ app.post('/trips', function(req, res){
 
 app.get('/trips/:id', function(req, res){
 	var tripId = req.params.id;
-	var wantsJSON = req.accepts('html', 'json') === 'json';
 	var ObjectId = mongojs.ObjectId;
 	var doc;
 
@@ -64,20 +63,18 @@ app.get('/trips/:id', function(req, res){
 		if (docs && docs.length > 0) {
 			
 			doc = docs[0];
-
-			console.log("doc found: ", doc);
 			
-			_.extend(doc, {
-				mapStyleClasses: "map trip-view"
+			_.extend(doc, { mapStyleClasses: "map trip-view" });
 
+			res.format({
+				json: function() {
+					res.send(doc);
+				},
+				html: function() {
+					var html = self.renderer.render(tripView, doc);
+					res.send(html);
+				}
 			});
-
-			if (wantsJSON) {
-				res.send(doc);
-			} else {
-				var html = self.renderer.render(tripView, doc);
-				res.send(html);
-			}
 
 		} else {
 			res.status(404).send({"error": e});

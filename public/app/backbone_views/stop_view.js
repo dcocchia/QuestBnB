@@ -126,10 +126,6 @@ StopView = Backbone.View.extend({
 
 		this.map_api.getPlaceDetails({placeId: placeId}, _.bind(function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
-				Backbone.trigger("map:setMarker", {
-					location: place.geometry.location
-				});
-
 				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
 				this.clearAllRanges();
 
