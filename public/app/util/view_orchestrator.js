@@ -44,17 +44,15 @@ var ViewOrchestrator = Backbone.View.extend({
 						}
 					],
 					stops: [
-						{
+						{	//TODO: find a better default first stop. This won't work very well
 							location: "Home",
 							stopNum: 1,
-							dayNum: 1,
-							milesNum: 0
+							dayNum: 1
 						},
 						{
 							location: data.location,
 							stopNum: 2,
-							dayNum: 1,
-							milesNum: 0
+							dayNum: 1
 						}
 					]
 				});

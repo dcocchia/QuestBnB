@@ -34,12 +34,14 @@ var TripView = PageView.extend({
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
-				this.model.sync("update", this.model, {
-					url: this.model.url,
-					success: _.bind(function(data) {
-						this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
-					}, this)
-				});
+
+				this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
+					.then(_.bind(function(result) {
+						this.stops_collection.mergeMapData(result);
+						this.model.set("stops", this.stops_collection.toJSON(), true);
+						this.model.sync("update", this.model, { url: this.model.url });
+					}, this));
+
 			}, this));
 
 			this.createStopViews();

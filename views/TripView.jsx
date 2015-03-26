@@ -10,6 +10,7 @@ var Stop = React.createClass({
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
+		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
@@ -29,7 +30,7 @@ var Stop = React.createClass({
 							</div>
 						</div>
 						<p>Day {data.dayNum}</p>
-						<p>{data.milesNum} miles</p>
+						<p>{data.distance.text}</p>
 					</div>
 				</div>
 				<div className="stop-lodging left-full-height">

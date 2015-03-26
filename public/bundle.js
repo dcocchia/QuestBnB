@@ -23124,6 +23124,72 @@ var stops_colletion = Backbone.Collection.extend({
 		if (returnedStop) {
 			this.trigger("change", returnedStop);
 		}
+	},
+
+	mergeMapData: function(result) {
+		var thisStop;
+		var lastStop;
+		var legs;
+		var thisLeg;
+
+		var lastStopDefaults = {
+			distance: {
+				text: "0",
+				value: 0
+			},
+			duration: {
+				text: "0",
+				value: 0
+			},
+			totals: {
+				distance: {
+					text: "0",
+					value: 0
+				},
+				duration: {
+					text: "0",
+					value: 0
+				}
+			}
+		}
+
+		result || (result = {});
+		result.routes || (result.routes = [{legs:[]}]);
+		legs = result.routes[0].legs;
+
+		if (legs.length === this.models.length - 1) {
+
+			_.each(this.models, _.bind(function(stop, index) {
+				if (index > 0) {
+					lastStop = (this.models[index - 1] ? this.models[index - 1].attributes : lastStopDefaults);
+					thisStop = stop.attributes;
+					thisLeg = legs[index - 1];
+
+					thisStop.distance = { 
+						text: thisLeg.distance.text,
+						value: thisLeg.distance.value
+					}
+
+					thisStop.duration = { 
+						text: thisLeg.duration.text,
+						value: thisLeg.duration.value
+					}
+
+					thisStop.totals = {
+						distance: { 
+							value: lastStop.totals.distance.value + thisLeg.distance.value,
+							text: (lastStop.totals.distance.value + thisLeg.distance.value).toString()
+						},
+						duration: {
+							value: lastStop.totals.duration.value + thisLeg.duration.value,
+							text: (lastStop.totals.duration.value + thisLeg.duration.value).toString()
+						}
+					}
+				}
+
+			}, this));
+
+		}
 	}
 });
 
@@ -23179,7 +23245,24 @@ var stop_model = Backbone.Model.extend({
 		"location": "",
 		"stopNum": 1,
 		"dayNum": 1,
-		"milesNum": 0
+		"distance": {
+			"text": "0 mi",
+			"value": 0
+		},
+		"duration": {
+			"text": "0",
+			"value": 0
+		},
+		"totals": {
+			"distance": {
+				"text": "0 mi",
+				"value": 0
+			},
+			"duration": {
+				"text": "0",
+				"value": 0
+			}
+		}
 	},
 
 	initialize: function(opts) {}
@@ -23732,12 +23815,14 @@ var TripView = PageView.extend({
 						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
 					});
 				}
-				this.model.sync("update", this.model, {
-					url: this.model.url,
-					success: _.bind(function(data) {
-						this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
-					}, this)
-				});
+
+				this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
+					.then(_.bind(function(result) {
+						this.stops_collection.mergeMapData(result);
+						this.model.set("stops", this.stops_collection.toJSON(), true);
+						this.model.sync("update", this.model, { url: this.model.url });
+					}, this));
+
 			}, this));
 
 			this.createStopViews();
@@ -23825,6 +23910,7 @@ var TripView = PageView.extend({
 
 module.exports = TripView;
 },{"../../views/TripView":163,"./page_view":156,"./stop_view":157}],159:[function(require,module,exports){
+var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
 	this.map = map;
@@ -23849,13 +23935,22 @@ Map.prototype = {
 		this.placeService.getDetails(opts, callback);
 	},
 
-	renderDirections: function(opts) {
-		this.directionsDisplay.setMap(this.map);
-		this.directionsService.route(opts, _.bind(function(result, status) {
-			if (status == google.maps.DirectionsStatus.OK) {
-				this.directionsDisplay.setDirections(result);
-			}
+	renderDirections: function(opts, promise) {
+		var renderPromise = new Promise(_.bind(function(resolve, reject) {
+
+			this.directionsDisplay.setMap(this.map);
+			this.directionsService.route(opts, _.bind(function(result, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
+					this.directionsDisplay.setDirections(result);
+					resolve(result);
+				} else {
+					reject(status);
+				}
+			}, this));
+
 		}, this));
+
+		return renderPromise;
 	},
 
 	renderDirectionsFromStopsCollection: function(stops_collection) {
@@ -23876,12 +23971,13 @@ Map.prototype = {
 			unitSystem: google.maps.UnitSystem.IMPERIAL
 		};
 
-		this.renderDirections(request);
+		return this.renderDirections(request);
+		
 	}
 }
 
 module.exports = Map;
-},{}],160:[function(require,module,exports){
+},{"bluebird":2}],160:[function(require,module,exports){
 var Promise = require("bluebird");
 
 var ViewOrchestrator = Backbone.View.extend({
@@ -23928,17 +24024,15 @@ var ViewOrchestrator = Backbone.View.extend({
 						}
 					],
 					stops: [
-						{
+						{	//TODO: find a better default first stop. This won't work very well
 							location: "Home",
 							stopNum: 1,
-							dayNum: 1,
-							milesNum: 0
+							dayNum: 1
 						},
 						{
 							location: data.location,
 							stopNum: 2,
-							dayNum: 1,
-							milesNum: 0
+							dayNum: 1
 						}
 					]
 				});
@@ -24064,6 +24158,7 @@ var Stop = React.createClass({displayName: "Stop",
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
+		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
@@ -24083,7 +24178,7 @@ var Stop = React.createClass({displayName: "Stop",
 							)
 						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
-						React.createElement("p", null, data.milesNum, " miles")
+						React.createElement("p", null, data.distance.text)
 					)
 				), 
 				React.createElement("div", {className: "stop-lodging left-full-height"}

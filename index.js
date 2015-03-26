@@ -77,7 +77,7 @@ app.get('/trips/:id', function(req, res){
 			});
 
 		} else {
-			res.status(404).send({"error": e});
+			res.status(404).send({"error": "Trip document not found."});
 		}
 		
 	}).catch(function(e) {

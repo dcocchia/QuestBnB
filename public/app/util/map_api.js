@@ -1,3 +1,4 @@
+var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
 	this.map = map;
@@ -22,13 +23,22 @@ Map.prototype = {
 		this.placeService.getDetails(opts, callback);
 	},
 
-	renderDirections: function(opts) {
-		this.directionsDisplay.setMap(this.map);
-		this.directionsService.route(opts, _.bind(function(result, status) {
-			if (status == google.maps.DirectionsStatus.OK) {
-				this.directionsDisplay.setDirections(result);
-			}
+	renderDirections: function(opts, promise) {
+		var renderPromise = new Promise(_.bind(function(resolve, reject) {
+
+			this.directionsDisplay.setMap(this.map);
+			this.directionsService.route(opts, _.bind(function(result, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
+					this.directionsDisplay.setDirections(result);
+					resolve(result);
+				} else {
+					reject(status);
+				}
+			}, this));
+
 		}, this));
+
+		return renderPromise;
 	},
 
 	renderDirectionsFromStopsCollection: function(stops_collection) {
@@ -49,7 +59,8 @@ Map.prototype = {
 			unitSystem: google.maps.UnitSystem.IMPERIAL
 		};
 
-		this.renderDirections(request);
+		return this.renderDirections(request);
+		
 	}
 }
 
