@@ -179,7 +179,13 @@ StopView = Backbone.View.extend({
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		this.model.remove(stopId);
+		this.$el.addClass("removing");
+
+		//wait for animation
+		_.delay(_.bind(function() {
+			this.model.remove(stopId);	
+		}, this), 500);
+		
 	},
 
 	destroy: function() {

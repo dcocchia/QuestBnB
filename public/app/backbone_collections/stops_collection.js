@@ -101,11 +101,8 @@ var stops_colletion = Backbone.Collection.extend({
 					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
-					totalDistance = Math.round((lastStop.totals.distance.value + thisLeg.distance.value) / METERCONVERT);
+					totalDistance = Math.round(lastStop.totals.distance.value + (thisLeg.distance.value / METERCONVERT));
 					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
-
-					console.log("totalDuration: ", totalDuration);
-					console.log("totalDistance: ", totalDistance);
 
 					stop.set("distance", { 
 						text: thisLeg.distance.text,
@@ -117,7 +114,9 @@ var stops_colletion = Backbone.Collection.extend({
 						value: thisLeg.duration.value
 					}, {silent: true});
 
-					stop.set("totals", {
+					//NOTE: backbone does not do deep/nested models
+					//Since I'm setting the models above silently, I'm ok with directly affecting attributes here
+					stop.attributes.totals = {
 						distance: { 
 							value: totalDistance,
 							text: totalDistance.toString() + " mi"
@@ -126,9 +125,11 @@ var stops_colletion = Backbone.Collection.extend({
 							value: totalDuration,
 							text: totalDuration.toString()
 						}
-					}, {silent: true});
+					};
 				}
 			}, this));
+
+			this.trigger("change");
 		}
 	}
 });

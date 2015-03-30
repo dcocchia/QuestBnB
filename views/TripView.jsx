@@ -12,12 +12,13 @@ var Stop = React.createClass({
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
 		var totals = ( data.totals || {} );
+		var canAddStop = this.props.canAddStop;
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
 				<div className="remove" role="button" aria-label="remove stop"></div>
 				<div className="stop-bar left-full-height">
-					<button className="add-stop-btn">&#43;</button>
+					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}>&#43;</button>
 				</div>
 				<div className="stop-num-wrapper left-full-height">
 					<div className="stop-num center">{data.stopNum}</div>
@@ -72,6 +73,7 @@ var Traveller = React.createClass({
 var TripView = React.createClass({
 	render: function() {
 		var stops = this.props.stops;
+		var canAddStop = (this.props.stops.length >= 10) ? false : true; 
 		var locationProps = this.props.location_props;
 		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
@@ -85,7 +87,7 @@ var TripView = React.createClass({
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
-								return <Stop data={stop} index={index} locationProps={locationProps} stopProps={stopProps} key={index}/>;
+								return <Stop data={stop} index={index} locationProps={locationProps} stopProps={stopProps} canAddStop={canAddStop} key={index}/>;
 							})}
 							</ol>
 						</div>

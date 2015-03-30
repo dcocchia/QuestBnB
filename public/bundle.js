@@ -23185,11 +23185,8 @@ var stops_colletion = Backbone.Collection.extend({
 					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
-					totalDistance = Math.round((lastStop.totals.distance.value + thisLeg.distance.value) / METERCONVERT);
+					totalDistance = Math.round(lastStop.totals.distance.value + (thisLeg.distance.value / METERCONVERT));
 					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
-
-					console.log("totalDuration: ", totalDuration);
-					console.log("totalDistance: ", totalDistance);
 
 					stop.set("distance", { 
 						text: thisLeg.distance.text,
@@ -23201,7 +23198,9 @@ var stops_colletion = Backbone.Collection.extend({
 						value: thisLeg.duration.value
 					}, {silent: true});
 
-					stop.set("totals", {
+					//NOTE: backbone does not do deep/nested models
+					//Since I'm setting the models above silently, I'm ok with directly affecting attributes here
+					stop.attributes.totals = {
 						distance: { 
 							value: totalDistance,
 							text: totalDistance.toString() + " mi"
@@ -23210,9 +23209,11 @@ var stops_colletion = Backbone.Collection.extend({
 							value: totalDuration,
 							text: totalDuration.toString()
 						}
-					}, {silent: true});
+					};
 				}
 			}, this));
+
+			this.trigger("change");
 		}
 	}
 });
@@ -23819,7 +23820,13 @@ StopView = Backbone.View.extend({
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		this.model.remove(stopId);
+		this.$el.addClass("removing");
+
+		//wait for animation
+		_.delay(_.bind(function() {
+			this.model.remove(stopId);	
+		}, this), 500);
+		
 	},
 
 	destroy: function() {
@@ -24239,12 +24246,13 @@ var Stop = React.createClass({displayName: "Stop",
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
 		var totals = ( data.totals || {} );
+		var canAddStop = this.props.canAddStop;
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
 				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop"}), 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
-					React.createElement("button", {className: "add-stop-btn"}, "+")
+					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}, "+")
 				), 
 				React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
 					React.createElement("div", {className: "stop-num center"}, data.stopNum)
@@ -24299,6 +24307,7 @@ var Traveller = React.createClass({displayName: "Traveller",
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
+		var canAddStop = (this.props.stops.length >= 10) ? false : true; 
 		var locationProps = this.props.location_props;
 		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
@@ -24312,7 +24321,7 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
-								return React.createElement(Stop, {data: stop, index: index, locationProps: locationProps, stopProps: stopProps, key: index});
+								return React.createElement(Stop, {data: stop, index: index, locationProps: locationProps, stopProps: stopProps, canAddStop: canAddStop, key: index});
 							})
 							)
 						), 
