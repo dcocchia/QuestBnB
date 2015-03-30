@@ -3,18 +3,26 @@ var stop_model = require("../backbone_models/stop_model");
 var stops_colletion = Backbone.Collection.extend({
 	model: stop_model,
 
-	initialize: function(opts) {},
+	_numberStops: function() {
+		_.each(this.models, function(stop, index) {
+			stop.set("stopNum", {index: index + 1}, {silent: true});
+		});
+	},
 
-	addStop: function(index, opts, silent) {
+	initialize: function(opts) {
+		this.on("removeStop", _.bind(function(stopId) {
+			this.removeStop(stopId);
+		}, this));
+	},
+
+	addStop: function(index, opts) {
 		var newStopModel = new stop_model(opts);
 		
 		this.add(newStopModel, {
 			at: index
 		});
 
-		_.each(this.models, function(stop, index) {
-			stop.attributes.stopNum = index + 1;
-		});
+		this._numberStops();
 
 		//lets trip_view's trip_model know to update list of stops
 		this.trigger("change", newStopModel);
@@ -29,7 +37,7 @@ var stops_colletion = Backbone.Collection.extend({
 
 			if (thisStop.isNew === true) {
 				thisStop.isNew = false;
-				returnedStop = thisStop;
+				returnedStop = stop;
 				thisStopModel = stop;
 			}
 			
@@ -42,9 +50,21 @@ var stops_colletion = Backbone.Collection.extend({
 		}
 	},
 
+	removeStop: function(stopId, opts) {
+		this.remove( this.where({_id: stopId}) );
+		this._numberStops();
+		this.trigger("change");
+
+		//listeners will destroy related view
+		Backbone.trigger("removeStop", stopId);
+	},
+
 	mergeMapData: function(result) {
+		var METERCONVERT = 1609.344;
 		var thisStop;
 		var lastStop;
+		var totalDistance;
+		var totalDuration;
 		var legs;
 		var thisLeg;
 
@@ -81,30 +101,34 @@ var stops_colletion = Backbone.Collection.extend({
 					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
-					thisStop.distance = { 
+					totalDistance = Math.round((lastStop.totals.distance.value + thisLeg.distance.value) / METERCONVERT);
+					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
+
+					console.log("totalDuration: ", totalDuration);
+					console.log("totalDistance: ", totalDistance);
+
+					stop.set("distance", { 
 						text: thisLeg.distance.text,
 						value: thisLeg.distance.value
-					}
+					}, {silent: true});
 
-					thisStop.duration = { 
+					stop.set("duration", {
 						text: thisLeg.duration.text,
 						value: thisLeg.duration.value
-					}
+					}, {silent: true});
 
-					thisStop.totals = {
+					stop.set("totals", {
 						distance: { 
-							value: lastStop.totals.distance.value + thisLeg.distance.value,
-							text: (lastStop.totals.distance.value + thisLeg.distance.value).toString()
+							value: totalDistance,
+							text: totalDistance.toString() + " mi"
 						},
 						duration: {
-							value: lastStop.totals.duration.value + thisLeg.duration.value,
-							text: (lastStop.totals.duration.value + thisLeg.duration.value).toString()
+							value: totalDuration,
+							text: totalDuration.toString()
 						}
-					}
+					}, {silent: true});
 				}
-
 			}, this));
-
 		}
 	}
 });

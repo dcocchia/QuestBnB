@@ -50,16 +50,24 @@ Map.prototype = {
 			waypoints[index] = { location: waypoint.location };
 		});
 
-		request = {
-			origin: _.first(stops).location,
-			destination: _.last(stops).location,
-			waypoints: waypoints,
-			provideRouteAlternatives: false,
-			travelMode: google.maps.TravelMode.DRIVING,
-			unitSystem: google.maps.UnitSystem.IMPERIAL
-		};
+		if (stops && stops.length > 0) {
+				request = {
+				origin: _.first(stops).location,
+				destination: _.last(stops).location,
+				waypoints: waypoints,
+				provideRouteAlternatives: false,
+				travelMode: google.maps.TravelMode.DRIVING,
+				unitSystem: google.maps.UnitSystem.IMPERIAL
+			};
 
-		return this.renderDirections(request);
+			return this.renderDirections(request);
+		} else {
+			var promise = new Promise(function(resolve, reject) {
+				reject();
+			});
+
+			return promise;
+		}
 		
 	}
 }

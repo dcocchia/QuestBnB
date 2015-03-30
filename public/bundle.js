@@ -23087,18 +23087,26 @@ var stop_model = require("../backbone_models/stop_model");
 var stops_colletion = Backbone.Collection.extend({
 	model: stop_model,
 
-	initialize: function(opts) {},
+	_numberStops: function() {
+		_.each(this.models, function(stop, index) {
+			stop.set("stopNum", {index: index + 1}, {silent: true});
+		});
+	},
 
-	addStop: function(index, opts, silent) {
+	initialize: function(opts) {
+		this.on("removeStop", _.bind(function(stopId) {
+			this.removeStop(stopId);
+		}, this));
+	},
+
+	addStop: function(index, opts) {
 		var newStopModel = new stop_model(opts);
 		
 		this.add(newStopModel, {
 			at: index
 		});
 
-		_.each(this.models, function(stop, index) {
-			stop.attributes.stopNum = index + 1;
-		});
+		this._numberStops();
 
 		//lets trip_view's trip_model know to update list of stops
 		this.trigger("change", newStopModel);
@@ -23113,7 +23121,7 @@ var stops_colletion = Backbone.Collection.extend({
 
 			if (thisStop.isNew === true) {
 				thisStop.isNew = false;
-				returnedStop = thisStop;
+				returnedStop = stop;
 				thisStopModel = stop;
 			}
 			
@@ -23126,9 +23134,21 @@ var stops_colletion = Backbone.Collection.extend({
 		}
 	},
 
+	removeStop: function(stopId, opts) {
+		this.remove( this.where({_id: stopId}) );
+		this._numberStops();
+		this.trigger("change");
+
+		//listeners will destroy related view
+		Backbone.trigger("removeStop", stopId);
+	},
+
 	mergeMapData: function(result) {
+		var METERCONVERT = 1609.344;
 		var thisStop;
 		var lastStop;
+		var totalDistance;
+		var totalDuration;
 		var legs;
 		var thisLeg;
 
@@ -23165,30 +23185,34 @@ var stops_colletion = Backbone.Collection.extend({
 					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
-					thisStop.distance = { 
+					totalDistance = Math.round((lastStop.totals.distance.value + thisLeg.distance.value) / METERCONVERT);
+					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
+
+					console.log("totalDuration: ", totalDuration);
+					console.log("totalDistance: ", totalDistance);
+
+					stop.set("distance", { 
 						text: thisLeg.distance.text,
 						value: thisLeg.distance.value
-					}
+					}, {silent: true});
 
-					thisStop.duration = { 
+					stop.set("duration", {
 						text: thisLeg.duration.text,
 						value: thisLeg.duration.value
-					}
+					}, {silent: true});
 
-					thisStop.totals = {
+					stop.set("totals", {
 						distance: { 
-							value: lastStop.totals.distance.value + thisLeg.distance.value,
-							text: (lastStop.totals.distance.value + thisLeg.distance.value).toString()
+							value: totalDistance,
+							text: totalDistance.toString() + " mi"
 						},
 						duration: {
-							value: lastStop.totals.duration.value + thisLeg.duration.value,
-							text: (lastStop.totals.duration.value + thisLeg.duration.value).toString()
+							value: totalDuration,
+							text: totalDuration.toString()
 						}
-					}
+					}, {silent: true});
 				}
-
 			}, this));
-
 		}
 	}
 });
@@ -23265,7 +23289,12 @@ var stop_model = Backbone.Model.extend({
 		}
 	},
 
-	initialize: function(opts) {}
+	initialize: function(opts) {},
+
+	remove: function(stopId) {
+		//collection deals with overhead
+		this.trigger("removeStop", stopId);
+	}
 });
 
 module.exports = stop_model;
@@ -23602,6 +23631,8 @@ var PageView = Backbone.View.extend({
 		renderer.render(template, data, this.elms.$parentEl[0]);
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
+
+		Backbone.trigger(template.displayName + ":render");
 	}
 });
 
@@ -23614,10 +23645,12 @@ StopView = Backbone.View.extend({
 		"keydown .stop-location-title": "onEditKeyDown",
 		"keyup .stop-location-title": "onEditKeyup",
 		"click .location-item": "onLocationItemClick",
-		"click .clear": "onClearClick"
+		"click .clear": "onClearClick",
+		"click .remove": "onRemoveClick"
 	},
 
 	initialize: function(opts) {
+		this.stopId = opts.stopId;
 		this.map_api = opts.map_api;
 		this.search_model = new search_model({
 			map_api: this.map_api
@@ -23625,6 +23658,10 @@ StopView = Backbone.View.extend({
 
 		this.model.on("active", _.bind(function() {
 			this.focus();
+		}, this));
+
+		Backbone.on("TripView:render", _.bind(function() {
+			this.setElement(this.$el.selector);
 		}, this));
 
 		this.search_model.on("change", _.bind(function() {
@@ -23774,6 +23811,24 @@ StopView = Backbone.View.extend({
 
 	focus: function(stop) {
 		this.$(".stop-location-title").focus();
+	},
+
+	onRemoveClick: function(e) {
+		var $target = $(e.currentTarget),
+			stopId = $target.closest(".stop").data("stop-id");
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		this.model.remove(stopId);
+	},
+
+	destroy: function() {
+		this.undelegateEvents();
+
+		this.$el.removeData().unbind(); 
+
+		this.remove();  
+		Backbone.View.prototype.remove.call(this);
 	}
 });
 
@@ -23799,6 +23854,7 @@ var TripView = PageView.extend({
 	initialize: function(opts) {
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
+		this.views = [];
 
 		this.model.once("sync", _.bind(function(data){
 			this.stops_collection = new opts.stops_collection;
@@ -23806,22 +23862,30 @@ var TripView = PageView.extend({
 			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
 
 			this.stops_collection.on("change", _.bind(function(stopModel){
-				this.model.set("stops", this.stops_collection.toJSON(), true);
+				this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
 				this.render(trip_template);
 				if (stopModel && stopModel.get && stopModel.get("isNew") === true) {
-					new StopView({
-						model: stopModel,
-						map_api: this.map_api,
-						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
-					});
-				}
-
-				this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
+					this.views.push( 
+						new StopView({
+							model: stopModel,
+							map_api: this.map_api,
+							el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
+							stopId: stopModel.get("_id")
+						})
+					);
+				} else if (!stopModel || stopModel.get("location") !== "") {
+					this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
 					.then(_.bind(function(result) {
 						this.stops_collection.mergeMapData(result);
-						this.model.set("stops", this.stops_collection.toJSON(), true);
+						this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
+						this.model.set({
+							tripDistance: this.stops_collection.last().get("totals").distance.value,
+							tripDuration: this.stops_collection.last().get("totals").duration.value,
+							numStops: this.stops_collection.length
+						}, {silent: true});
 						this.model.sync("update", this.model, { url: this.model.url });
 					}, this));
+				}
 
 			}, this));
 
@@ -23845,10 +23909,13 @@ var TripView = PageView.extend({
 			this.render(trip_template, data);
 		}, this));
 
-		Backbone.on("trip_view:render", _.bind(function(){
-			this.render(trip_template);
-			this.map_view.setMode("trip-view");
-		}, this));
+		Backbone.on("removeStop", _.bind(function(stopId) {
+			var view = _.find(this.views, function(view, index) {
+				return view.stopId === stopId;
+			});
+
+			if (view) { view.destroy(); }
+		}, this))
 
 		this._findElms(opts.$parentEl);
 
@@ -23856,11 +23923,14 @@ var TripView = PageView.extend({
 
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
-			new StopView({
-				model: stopModel,
-				map_api: this.map_api,
-				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
-			});
+			this.views.push( 
+				new StopView({
+					model: stopModel,
+					map_api: this.map_api,
+					el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
+					stopId: stopModel.get("_id")
+				})
+			);
 		}, this));
 	},
 
@@ -23962,16 +24032,24 @@ Map.prototype = {
 			waypoints[index] = { location: waypoint.location };
 		});
 
-		request = {
-			origin: _.first(stops).location,
-			destination: _.last(stops).location,
-			waypoints: waypoints,
-			provideRouteAlternatives: false,
-			travelMode: google.maps.TravelMode.DRIVING,
-			unitSystem: google.maps.UnitSystem.IMPERIAL
-		};
+		if (stops && stops.length > 0) {
+				request = {
+				origin: _.first(stops).location,
+				destination: _.last(stops).location,
+				waypoints: waypoints,
+				provideRouteAlternatives: false,
+				travelMode: google.maps.TravelMode.DRIVING,
+				unitSystem: google.maps.UnitSystem.IMPERIAL
+			};
 
-		return this.renderDirections(request);
+			return this.renderDirections(request);
+		} else {
+			var promise = new Promise(function(resolve, reject) {
+				reject();
+			});
+
+			return promise;
+		}
 		
 	}
 }
@@ -24069,6 +24147,7 @@ var ViewOrchestrator = Backbone.View.extend({
 				trip_model.setUrl(tripId);
 				trip_model.fetch();
 				this.router.navigate("/trips/" + tripId);
+				this.models["trip_model"].trigger("change");
 				Backbone.trigger("trip_view:render", true);
 			}, this));
 			
@@ -24159,9 +24238,11 @@ var Stop = React.createClass({displayName: "Stop",
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
+		var totals = ( data.totals || {} );
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
+				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop"}), 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
 					React.createElement("button", {className: "add-stop-btn"}, "+")
 				), 
@@ -24178,7 +24259,8 @@ var Stop = React.createClass({displayName: "Stop",
 							)
 						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
-						React.createElement("p", null, data.distance.text)
+						React.createElement("p", null, "From last ", data.distance.text), 
+						React.createElement("p", null, "Total distance ", (totals.distance && totals.distance.text) ? totals.distance.text : "0 mi")
 					)
 				), 
 				React.createElement("div", {className: "stop-lodging left-full-height"}

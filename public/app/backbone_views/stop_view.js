@@ -5,10 +5,12 @@ StopView = Backbone.View.extend({
 		"keydown .stop-location-title": "onEditKeyDown",
 		"keyup .stop-location-title": "onEditKeyup",
 		"click .location-item": "onLocationItemClick",
-		"click .clear": "onClearClick"
+		"click .clear": "onClearClick",
+		"click .remove": "onRemoveClick"
 	},
 
 	initialize: function(opts) {
+		this.stopId = opts.stopId;
 		this.map_api = opts.map_api;
 		this.search_model = new search_model({
 			map_api: this.map_api
@@ -16,6 +18,10 @@ StopView = Backbone.View.extend({
 
 		this.model.on("active", _.bind(function() {
 			this.focus();
+		}, this));
+
+		Backbone.on("TripView:render", _.bind(function() {
+			this.setElement(this.$el.selector);
 		}, this));
 
 		this.search_model.on("change", _.bind(function() {
@@ -165,6 +171,24 @@ StopView = Backbone.View.extend({
 
 	focus: function(stop) {
 		this.$(".stop-location-title").focus();
+	},
+
+	onRemoveClick: function(e) {
+		var $target = $(e.currentTarget),
+			stopId = $target.closest(".stop").data("stop-id");
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		this.model.remove(stopId);
+	},
+
+	destroy: function() {
+		this.undelegateEvents();
+
+		this.$el.removeData().unbind(); 
+
+		this.remove();  
+		Backbone.View.prototype.remove.call(this);
 	}
 });
 

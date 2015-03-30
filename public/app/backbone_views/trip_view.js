@@ -18,6 +18,7 @@ var TripView = PageView.extend({
 	initialize: function(opts) {
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
+		this.views = [];
 
 		this.model.once("sync", _.bind(function(data){
 			this.stops_collection = new opts.stops_collection;
@@ -25,22 +26,30 @@ var TripView = PageView.extend({
 			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
 
 			this.stops_collection.on("change", _.bind(function(stopModel){
-				this.model.set("stops", this.stops_collection.toJSON(), true);
+				this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
 				this.render(trip_template);
 				if (stopModel && stopModel.get && stopModel.get("isNew") === true) {
-					new StopView({
-						model: stopModel,
-						map_api: this.map_api,
-						el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
-					});
-				}
-
-				this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
+					this.views.push( 
+						new StopView({
+							model: stopModel,
+							map_api: this.map_api,
+							el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
+							stopId: stopModel.get("_id")
+						})
+					);
+				} else if (!stopModel || stopModel.get("location") !== "") {
+					this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
 					.then(_.bind(function(result) {
 						this.stops_collection.mergeMapData(result);
-						this.model.set("stops", this.stops_collection.toJSON(), true);
+						this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
+						this.model.set({
+							tripDistance: this.stops_collection.last().get("totals").distance.value,
+							tripDuration: this.stops_collection.last().get("totals").duration.value,
+							numStops: this.stops_collection.length
+						}, {silent: true});
 						this.model.sync("update", this.model, { url: this.model.url });
 					}, this));
+				}
 
 			}, this));
 
@@ -64,10 +73,13 @@ var TripView = PageView.extend({
 			this.render(trip_template, data);
 		}, this));
 
-		Backbone.on("trip_view:render", _.bind(function(){
-			this.render(trip_template);
-			this.map_view.setMode("trip-view");
-		}, this));
+		Backbone.on("removeStop", _.bind(function(stopId) {
+			var view = _.find(this.views, function(view, index) {
+				return view.stopId === stopId;
+			});
+
+			if (view) { view.destroy(); }
+		}, this))
 
 		this._findElms(opts.$parentEl);
 
@@ -75,11 +87,14 @@ var TripView = PageView.extend({
 
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
-			new StopView({
-				model: stopModel,
-				map_api: this.map_api,
-				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']"
-			});
+			this.views.push( 
+				new StopView({
+					model: stopModel,
+					map_api: this.map_api,
+					el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
+					stopId: stopModel.get("_id")
+				})
+			);
 		}, this));
 	},
 

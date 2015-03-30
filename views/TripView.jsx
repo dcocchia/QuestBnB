@@ -11,9 +11,11 @@ var Stop = React.createClass({
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
+		var totals = ( data.totals || {} );
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
+				<div className="remove" role="button" aria-label="remove stop"></div>
 				<div className="stop-bar left-full-height">
 					<button className="add-stop-btn">&#43;</button>
 				</div>
@@ -30,7 +32,8 @@ var Stop = React.createClass({
 							</div>
 						</div>
 						<p>Day {data.dayNum}</p>
-						<p>{data.distance.text}</p>
+						<p>From last {data.distance.text}</p>
+						<p>Total distance {(totals.distance && totals.distance.text) ? totals.distance.text : "0 mi"}</p>
 					</div>
 				</div>
 				<div className="stop-lodging left-full-height">

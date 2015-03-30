@@ -23,7 +23,12 @@ var stop_model = Backbone.Model.extend({
 		}
 	},
 
-	initialize: function(opts) {}
+	initialize: function(opts) {},
+
+	remove: function(stopId) {
+		//collection deals with overhead
+		this.trigger("removeStop", stopId);
+	}
 });
 
 module.exports = stop_model;

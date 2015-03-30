@@ -89,6 +89,7 @@ var ViewOrchestrator = Backbone.View.extend({
 				trip_model.setUrl(tripId);
 				trip_model.fetch();
 				this.router.navigate("/trips/" + tripId);
+				this.models["trip_model"].trigger("change");
 				Backbone.trigger("trip_view:render", true);
 			}, this));
 			

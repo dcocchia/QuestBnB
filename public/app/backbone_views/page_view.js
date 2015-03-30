@@ -13,6 +13,8 @@ var PageView = Backbone.View.extend({
 		renderer.render(template, data, this.elms.$parentEl[0]);
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
+
+		Backbone.trigger(template.displayName + ":render");
 	}
 });
 
