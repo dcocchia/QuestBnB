@@ -48,7 +48,7 @@ var Stop = React.createClass({
 var TripBlurb = React.createClass({
 	render: function() {
 		return (
-			<div className="trip-blurb">
+			<div className={(this.props.editable) ? "trip-blurb editable" : "trip-blurb"}>
 				<h3>{this.props.text}</h3>
 			</div>
 		)
@@ -92,10 +92,10 @@ var TripView = React.createClass({
 							</ol>
 						</div>
 						<div className="trip-blurbs left-full-width">
-							<TripBlurb text={this.props.tripLength + " days"} />
-							<TripBlurb text={this.props.tripDistance  + " miles"} />
-							<TripBlurb text={this.props.numStops + " stops"}/>
-							<TripBlurb text={"$" + this.props.cost} />
+							<TripBlurb text={this.props.tripDuration} editable={false}/>
+							<TripBlurb text={this.props.tripDistance  + " miles"} editable={false}/>
+							<TripBlurb text={this.props.numStops + " stops"} editable={false}/>
+							<TripBlurb text={"$" + this.props.cost} editable={true}/>
 						</div>
 					</div>
 				</div>

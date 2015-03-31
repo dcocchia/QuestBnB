@@ -123,7 +123,7 @@ var stops_colletion = Backbone.Collection.extend({
 						},
 						duration: {
 							value: totalDuration,
-							text: totalDuration.toString()
+							text: moment.duration(totalDuration, "seconds").format("y [years] d [days] h [hours] m [mins]")
 						}
 					};
 				}

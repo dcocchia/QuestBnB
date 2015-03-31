@@ -144,14 +144,23 @@ var TripView = PageView.extend({
 		.then(_.bind(function(result) {
 			this.stops_collection.mergeMapData(result);
 			this.setStopsCollectionInModel();
-			this.model.set({
-				tripDistance: this.stops_collection.last().get("totals").distance.value,
-				tripDuration: this.stops_collection.last().get("totals").duration.value,
-				numStops: this.stops_collection.length
-			}, {silent: true});
+			this.setModel();
 			this.render(trip_template);
 			this.model.sync("update", this.model, { url: this.model.url });
 		}, this));
+	},
+
+	setModel: function() {
+		var distance = this.stops_collection.last().get("totals").distance.value;
+		var duration = this.stops_collection.last().get("totals").duration.text;
+		var cost = (distance / this.model.get("mpg")) * this.model.get("gasPrice");
+
+		this.model.set({
+			tripDistance: distance,
+			tripDuration: duration,
+			numStops: this.stops_collection.length,
+			cost: cost
+		}, {silent: true});	
 	}
 });
 

@@ -2,6 +2,10 @@
 	var React = require('react');
 	window.React = React;
 
+	var moment = require("moment");
+	require("moment-duration-format");
+	window.moment = moment;
+
 	var Promise = require("bluebird");
 	
 	//view/event orchestrator

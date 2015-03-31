@@ -210,10 +210,34 @@
 	.trip-blurb {
 		height: 45px;
 		padding: 10px 20px;
+		position: relative;
 		border-bottom: 1px solid @panel-border-grey;
 
 		h3 {
 			margin: 0;
+		}
+	}
+
+	.trip-blurb.editable {
+		&:after {
+			content: ">";
+			position: absolute;
+			right: 10px;
+			top: 5px;
+			font-weight: bold;
+			font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+			font-size: 20px;
+			line-height: 1.43;
+			color: #565a5c;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		&:hover {
+			cursor: pointer;
+			background-color: @panel-border-light-grey;
+			&:after {
+				color: @light-red;
+			}
 		}
 	}
 

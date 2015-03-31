@@ -48,7 +48,7 @@ var Stop = React.createClass({displayName: "Stop",
 var TripBlurb = React.createClass({displayName: "TripBlurb",
 	render: function() {
 		return (
-			React.createElement("div", {className: "trip-blurb"}, 
+			React.createElement("div", {className: (this.props.editable) ? "trip-blurb editable" : "trip-blurb"}, 
 				React.createElement("h3", null, this.props.text)
 			)
 		)
@@ -92,10 +92,10 @@ var TripView = React.createClass({displayName: "TripView",
 							)
 						), 
 						React.createElement("div", {className: "trip-blurbs left-full-width"}, 
-							React.createElement(TripBlurb, {text: this.props.tripLength + " days"}), 
-							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles"}), 
-							React.createElement(TripBlurb, {text: this.props.numStops + " stops"}), 
-							React.createElement(TripBlurb, {text: "$" + this.props.cost})
+							React.createElement(TripBlurb, {text: this.props.tripDuration, editable: false}), 
+							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles", editable: false}), 
+							React.createElement(TripBlurb, {text: this.props.numStops + " stops", editable: false}), 
+							React.createElement(TripBlurb, {text: "$" + this.props.cost, editable: true})
 						)
 					)
 				), 

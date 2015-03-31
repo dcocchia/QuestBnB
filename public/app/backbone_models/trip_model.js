@@ -3,9 +3,11 @@ var trip_model = Backbone.Model.extend({
 		start: "",
 		end: "",
 		tripLength: 0,
-		tripDistance: 0,
+		tripDuration: 0,
 		numStops: 0,
 		cost: 0,
+		mpg: 25,
+		gasPrice: 3.50,
 		travellers: [],
 		stops: []
 	},
