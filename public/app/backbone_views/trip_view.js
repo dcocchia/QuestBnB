@@ -153,7 +153,7 @@ var TripView = PageView.extend({
 	setModel: function() {
 		var distance = this.stops_collection.last().get("totals").distance.value;
 		var duration = this.stops_collection.last().get("totals").duration.text;
-		var cost = (distance / this.model.get("mpg")) * this.model.get("gasPrice");
+		var cost = ((distance / this.model.get("mpg")) * this.model.get("gasPrice")).toFixed(2);
 
 		this.model.set({
 			tripDistance: distance,
