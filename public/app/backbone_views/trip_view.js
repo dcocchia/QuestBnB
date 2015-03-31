@@ -24,36 +24,19 @@ var TripView = PageView.extend({
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
 			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+			this.createStopViews();
 
 			this.stops_collection.on("change", _.bind(function(stopModel){
-				this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
+				this.setStopsCollectionInModel();
 				this.render(trip_template);
+				
 				if (stopModel && stopModel.get && stopModel.get("isNew") === true) {
-					this.views.push( 
-						new StopView({
-							model: stopModel,
-							map_api: this.map_api,
-							el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
-							stopId: stopModel.get("_id")
-						})
-					);
+					this.createNewStopView(stopModel);
 				} else if (!stopModel || stopModel.get("location") !== "") {
-					this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
-					.then(_.bind(function(result) {
-						this.stops_collection.mergeMapData(result);
-						this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
-						this.model.set({
-							tripDistance: this.stops_collection.last().get("totals").distance.value,
-							tripDuration: this.stops_collection.last().get("totals").duration.value,
-							numStops: this.stops_collection.length
-						}, {silent: true});
-						this.model.sync("update", this.model, { url: this.model.url });
-					}, this));
+					this.renderNewMapStop();
 				}
-
 			}, this));
-
-			this.createStopViews();
+			
 		}, this));
 
 		this.model.on("change", _.bind(function() {
@@ -85,6 +68,10 @@ var TripView = PageView.extend({
 
 	},
 
+	setStopsCollectionInModel: function() {
+		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
+	},
+
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
 			this.views.push( 
@@ -96,6 +83,17 @@ var TripView = PageView.extend({
 				})
 			);
 		}, this));
+	},
+
+	createNewStopView: function(stopModel) {
+		this.views.push( 
+			new StopView({
+				model: stopModel,
+				map_api: this.map_api,
+				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
+				stopId: stopModel.get("_id")
+			})
+		);
 	},
 
 	onAddStopClick: function(e) {
@@ -139,6 +137,21 @@ var TripView = PageView.extend({
 			var range = document.selection.createRange();
 			document.selection.empty();
 		}
+	},
+
+	renderNewMapStop: function() {
+		this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
+		.then(_.bind(function(result) {
+			this.stops_collection.mergeMapData(result);
+			this.setStopsCollectionInModel();
+			this.model.set({
+				tripDistance: this.stops_collection.last().get("totals").distance.value,
+				tripDuration: this.stops_collection.last().get("totals").duration.value,
+				numStops: this.stops_collection.length
+			}, {silent: true});
+			this.render(trip_template);
+			this.model.sync("update", this.model, { url: this.model.url });
+		}, this));
 	}
 });
 

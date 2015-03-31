@@ -128,8 +128,6 @@ var stops_colletion = Backbone.Collection.extend({
 					};
 				}
 			}, this));
-
-			this.trigger("change");
 		}
 	}
 });
