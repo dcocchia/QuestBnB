@@ -94,7 +94,7 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "trip-blurbs left-full-width"}, 
 							React.createElement(TripBlurb, {text: this.props.tripDuration, editable: false}), 
 							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles", editable: false}), 
-							React.createElement(TripBlurb, {text: this.props.numStops + " stops", editable: false}), 
+							React.createElement(TripBlurb, {text: this.props.numStops + " destinations", editable: false}), 
 							React.createElement(TripBlurb, {text: "$" + this.props.cost, editable: true})
 						)
 					)

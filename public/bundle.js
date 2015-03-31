@@ -27536,7 +27536,7 @@ var TripView = PageView.extend({
 		this.model.set({
 			tripDistance: distance,
 			tripDuration: duration,
-			numStops: this.stops_collection.length,
+			numStops: this.stops_collection.length - 1,
 			cost: cost
 		}, {silent: true});	
 	}
@@ -27885,7 +27885,7 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "trip-blurbs left-full-width"}, 
 							React.createElement(TripBlurb, {text: this.props.tripDuration, editable: false}), 
 							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles", editable: false}), 
-							React.createElement(TripBlurb, {text: this.props.numStops + " stops", editable: false}), 
+							React.createElement(TripBlurb, {text: this.props.numStops + " destinations", editable: false}), 
 							React.createElement(TripBlurb, {text: "$" + this.props.cost, editable: true})
 						)
 					)

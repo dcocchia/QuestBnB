@@ -158,7 +158,7 @@ var TripView = PageView.extend({
 		this.model.set({
 			tripDistance: distance,
 			tripDuration: duration,
-			numStops: this.stops_collection.length,
+			numStops: this.stops_collection.length - 1,
 			cost: cost
 		}, {silent: true});	
 	}
