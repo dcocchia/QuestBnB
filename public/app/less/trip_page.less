@@ -209,16 +209,56 @@
 
 	.trip-blurb {
 		height: 45px;
-		padding: 10px 20px;
 		position: relative;
 		border-bottom: 1px solid @panel-border-grey;
 
 		h3 {
+			padding: 10px 20px;
 			margin: 0;
+			z-index: 2;
+			position: relative;
+
+			&:hover {
+				cursor: pointer;
+			}
 		}
 	}
 
 	.trip-blurb.editable {
+		.drawer {
+			width: 100%;
+			max-height: 0;
+			position: absolute;
+			top: 100%;
+			overflow: hidden;
+			z-index: 1;
+			background-color: #fff;
+
+			-webkit-transition: max-height .5s ease;
+			-moz-transition: max-height .5s ease;
+			-o-transition: max-height .5s ease;
+			transition: max-height .5s ease;
+
+			.inner {
+				padding: 10px 20px;
+			}
+
+			.form-group {
+				width: 200px;
+				float: left;
+				margin-left: 20px;
+
+				&:first-child {
+					margin-left: 0;
+				}
+			}
+
+			.form-control {
+				height: 44px;
+				border-radius: 0;
+			}
+		}
+
 		&:after {
 			content: ">";
 			position: absolute;
@@ -230,13 +270,30 @@
 			line-height: 1.43;
 			color: #565a5c;
 			-webkit-font-smoothing: antialiased;
+
+			-webkit-transition: -webkit-transform .5s ease;
+			-moz-transition: -moz-transform .5s ease;
+			-o-transition: -o-transform .5s ease;
+			transition: transform .5s ease;
 		}
 
 		&:hover {
-			cursor: pointer;
-			background-color: @panel-border-light-grey;
 			&:after {
 				color: @light-red;
+			}
+		}
+
+		&.active {
+			&:after {
+				-webkit-transform: rotate(90deg);
+				-moz-transform: rotate(90deg);
+				-o-transform: rotate(90deg);
+				-ms-transform: rotate(90deg);
+				transform: rotate(90deg);
+			}
+
+			.drawer {
+				max-height: 500px;
 			}
 		}
 	}

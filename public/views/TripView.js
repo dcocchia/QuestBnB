@@ -45,11 +45,34 @@ var Stop = React.createClass({displayName: "Stop",
 	}
 });
 
+var Drawer = React.createClass({displayName: "Drawer",
+	render: function() {
+		var data = this.props.data;
+		return (
+			React.createElement("div", {className: "drawer"}, 
+				React.createElement("div", {className: "inner"}, 
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("label", {for: "mpg"}, "MPG"), 
+						React.createElement("input", {type: "number", min: "0", step: "1", id: "mpg", name: "mpg", className: "mpg form-control", placeholder: "MPG", value: data.mpg})
+					), 
+					
+					React.createElement("div", {className: "form-group"}, 
+						React.createElement("label", {for: "gasPrice"}, "Gas Price"), 
+						React.createElement("input", {type: "number", min: "0", step: "0.5", id: "gasPrice", name: "gasPrice", className: "gas-price form-control", placeholder: "Gas Price", value: data.gasPrice})
+					)
+				)
+			)
+		)
+	}
+});
+
 var TripBlurb = React.createClass({displayName: "TripBlurb",
 	render: function() {
+		var drawer = (this.props.editable) ? React.createElement(Drawer, {data: this.props.data}) : undefined;
 		return (
 			React.createElement("div", {className: (this.props.editable) ? "trip-blurb editable" : "trip-blurb"}, 
-				React.createElement("h3", null, this.props.text)
+				React.createElement("h3", null, this.props.text), 
+				drawer
 			)
 		)
 	}
@@ -95,7 +118,7 @@ var TripView = React.createClass({displayName: "TripView",
 							React.createElement(TripBlurb, {text: this.props.tripDuration, editable: false}), 
 							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles", editable: false}), 
 							React.createElement(TripBlurb, {text: this.props.numStops + " destinations", editable: false}), 
-							React.createElement(TripBlurb, {text: "$" + this.props.cost, editable: true})
+							React.createElement(TripBlurb, {text: "$" + this.props.cost, editable: true, data: this.props})
 						)
 					)
 				), 

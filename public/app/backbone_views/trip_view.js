@@ -12,7 +12,8 @@ var TripView = PageView.extend({
 	events: {
 		"click .add-stop-btn": "onAddStopClick",
 		"blur .title": "onTitleBlur",
-		"keydown .title": "onEditKeyDown"
+		"keydown .title": "onEditKeyDown",
+		"click .trip-blurb.editable h3": "onTripBlurbClick"
 	},
 
 	initialize: function(opts) {
@@ -120,6 +121,14 @@ var TripView = PageView.extend({
 			this.model.sync("update", this.model, {url: this.model.url});
 		}
 		
+	},
+
+	onTripBlurbClick: function(e) {
+		var $target = $(e.currentTarget);
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		$target.closest(".trip-blurb").toggleClass("active");
 	},
 
 	onEditKeyDown: function(e) {

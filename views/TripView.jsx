@@ -45,11 +45,34 @@ var Stop = React.createClass({
 	}
 });
 
+var Drawer = React.createClass({
+	render: function() {
+		var data = this.props.data;
+		return (
+			<div className="drawer">
+				<div className="inner">
+					<div className="form-group">
+						<label for="mpg">MPG</label>
+						<input type="number" min="0" step="1" id="mpg" name="mpg" className="mpg form-control" placeholder="MPG" value={data.mpg}/>
+					</div>
+					
+					<div className="form-group">
+						<label for="gasPrice">Gas Price</label>
+						<input type="number" min="0" step="0.5" id="gasPrice" name="gasPrice" className="gas-price form-control" placeholder="Gas Price" value={data.gasPrice}/>
+					</div>
+				</div>
+			</div>
+		)
+	}
+});
+
 var TripBlurb = React.createClass({
 	render: function() {
+		var drawer = (this.props.editable) ? <Drawer data={this.props.data}/> : undefined;
 		return (
 			<div className={(this.props.editable) ? "trip-blurb editable" : "trip-blurb"}>
 				<h3>{this.props.text}</h3>
+				{drawer}
 			</div>
 		)
 	}
@@ -95,7 +118,7 @@ var TripView = React.createClass({
 							<TripBlurb text={this.props.tripDuration} editable={false}/>
 							<TripBlurb text={this.props.tripDistance  + " miles"} editable={false}/>
 							<TripBlurb text={this.props.numStops + " destinations"} editable={false}/>
-							<TripBlurb text={"$" + this.props.cost} editable={true}/>
+							<TripBlurb text={"$" + this.props.cost} editable={true} data={this.props}/>
 						</div>
 					</div>
 				</div>
