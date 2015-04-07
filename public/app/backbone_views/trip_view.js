@@ -13,7 +13,9 @@ var TripView = PageView.extend({
 		"click .add-stop-btn": "onAddStopClick",
 		"blur .title": "onTitleBlur",
 		"keydown .title": "onEditKeyDown",
-		"click .trip-blurb.editable h3": "onTripBlurbClick"
+		"click .trip-blurb.editable h3": "onTripBlurbClick",
+		"change .gas-slider": "onGasSliderChange",
+		"input .gas-slider": "onGasSliderChange"
 	},
 
 	initialize: function(opts) {
@@ -139,6 +141,19 @@ var TripView = PageView.extend({
 		}
 	},
 
+	onGasSliderChange: function(e) {
+		var $target = $(e.currentTarget),
+			val = $target.val(),
+			modelAttr = $target.data("model-attr"),
+			toFixAttr = $target.data("to-fixed");
+
+		if (toFixAttr) {
+			val = parseFloat(val).toFixed(parseInt(toFixAttr));
+		}	
+
+		this.setModelThrottle(modelAttr, val);
+	},	
+
 	clearAllRanges: function() {
 		if (window.getSelection) {
 			window.getSelection().removeAllRanges();
@@ -153,23 +168,39 @@ var TripView = PageView.extend({
 		.then(_.bind(function(result) {
 			this.stops_collection.mergeMapData(result);
 			this.setStopsCollectionInModel();
-			this.setModel();
+			this.setModel(null, {silent: true});
 			this.render(trip_template);
 			this.model.sync("update", this.model, { url: this.model.url });
 		}, this));
 	},
 
-	setModel: function() {
+	setModelThrottle: _.throttle(function(modelAttr, val) {
+		this.model.set(modelAttr, val, {silent: true});
+		this.setModel();
+		this.syncModelDebounced();
+	}, 100),
+
+	syncModelDebounced: _.debounce(function() {
+		this.model.sync("update", this.model, { url: this.model.url });
+	}, 700),
+
+	setModel: function(opts, setOpts) {
+		var data;
 		var distance = this.stops_collection.last().get("totals").distance.value;
 		var duration = this.stops_collection.last().get("totals").duration.text;
 		var cost = ((distance / this.model.get("mpg")) * this.model.get("gasPrice")).toFixed(2);
 
-		this.model.set({
+		var defaults = {
 			tripDistance: distance,
 			tripDuration: duration,
 			numStops: this.stops_collection.length - 1,
 			cost: cost
-		}, {silent: true});	
+		}
+
+		opts || (opts = {});
+		data = _.defaults(opts, defaults);
+
+		this.model.set(data, setOpts);
 	}
 });
 

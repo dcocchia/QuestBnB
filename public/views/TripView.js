@@ -18,7 +18,7 @@ var Stop = React.createClass({displayName: "Stop",
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
 				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop"}), 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
-					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}, "+")
+					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
 				), 
 				React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
 					React.createElement("div", {className: "stop-num center"}, data.stopNum)
@@ -51,14 +51,15 @@ var Drawer = React.createClass({displayName: "Drawer",
 		return (
 			React.createElement("div", {className: "drawer"}, 
 				React.createElement("div", {className: "inner"}, 
-					React.createElement("div", {className: "form-group"}, 
+					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
 						React.createElement("label", {for: "mpg"}, "MPG"), 
-						React.createElement("input", {type: "number", min: "0", step: "1", id: "mpg", name: "mpg", className: "mpg form-control", placeholder: "MPG", value: data.mpg})
+						React.createElement("input", {type: "range", min: "1", max: "150", step: "1", id: "mpg", name: "mpg", className: "gas-slider mpg", placeholder: "MPG", defaultValue: data.mpg, "data-model-attr": "mpg", role: "slider", "aria-valuenow": data.mpg, "aria-valuemin": "1", "aria-valuemax": "150", "aria-valuetext": "miles per gallon"}), 
+						React.createElement("p", {className: "mpg-label"}, data.mpg)
 					), 
-					
-					React.createElement("div", {className: "form-group"}, 
+					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
 						React.createElement("label", {for: "gasPrice"}, "Gas Price"), 
-						React.createElement("input", {type: "number", min: "0", step: "0.5", id: "gasPrice", name: "gasPrice", className: "gas-price form-control", placeholder: "Gas Price", value: data.gasPrice})
+						React.createElement("input", {type: "range", min: ".10", max: "10.00", step: ".10", id: "gasPrice", name: "gasPrice", className: "gas-slider gas-price", placeholder: "Gas Price", defaultValue: data.gasPrice, "data-model-attr": "gasPrice", "data-to-fixed": "2", role: "slider", "aria-valuenow": data.gasPrice, "aria-valuemin": "1", "aria-valuemax": "10.00", "aria-valuetext": "gas price"}), 
+						React.createElement("p", {className: "mpg-label"}, data.gasPrice)
 					)
 				)
 			)
@@ -84,7 +85,7 @@ var Traveller = React.createClass({displayName: "Traveller",
 		return (
 			React.createElement("div", {className: "traveller", key: this.props.key}, 
 				React.createElement("div", {className: "profile-pic-wrapper img-wrapper"}, 
-					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center"})
+					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center", alt: "traveller profile picture"})
 				), 
 				React.createElement("p", {className: "name"}, traveller.name), 
 				React.createElement("p", null, traveller.bio)
@@ -106,7 +107,7 @@ var TripView = React.createClass({displayName: "TripView",
 			React.createElement("div", {className: "trip-page", "data-trip-id": this.props._id}, 
 				React.createElement("div", {className: "side-bar panel"}, 
 					React.createElement("div", {className: "bleed-width-20"}, 
-						React.createElement("h1", {className: "title left-full-width", contentEditable: "true"}, this.props.title), 
+						React.createElement("h1", {className: "title left-full-width", contentEditable: "true", role: "textbox"}, this.props.title), 
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
@@ -125,7 +126,7 @@ var TripView = React.createClass({displayName: "TripView",
 				React.createElement("div", {className: "bottom-bar panel slide-in"}, 
 					React.createElement("div", {className: "travellers"}, 
 						React.createElement("div", {className: "trip-traveller-text"}, "Travellers"), 
-						React.createElement("button", {className: "add-traveller"}, "+"), 
+						React.createElement("button", {className: "add-traveller", "aria-label": "add traveller"}, "+"), 
 						React.createElement("div", {className: "travellers-wrapper"}, 
 							travellers.map(function(traveller, index) {
 								return React.createElement(Traveller, {traveller: traveller, key: index})
@@ -133,8 +134,8 @@ var TripView = React.createClass({displayName: "TripView",
 						)
 					), 
 					React.createElement("div", {className: "trip-dates-wrapper search-box"}, 
-						React.createElement("input", {type: "text", name: "startDate", className: "date form-control", placeholder: "Leaving", value: this.props.start}), 
-						React.createElement("input", {type: "text", name: "endDate", className: "date form-control", placeholder: "Returning", value: this.props.end}), 
+						React.createElement("input", {type: "text", name: "startDate", className: "date form-control", placeholder: "Leaving", "aria-label": "date start", defaultValue: this.props.start}), 
+						React.createElement("input", {type: "text", name: "endDate", className: "date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end}), 
 						React.createElement("button", {className: "submit form-control btn btn-primary"}, "Done")
 					)
 				)

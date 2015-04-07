@@ -18,7 +18,7 @@ var Stop = React.createClass({
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
 				<div className="remove" role="button" aria-label="remove stop"></div>
 				<div className="stop-bar left-full-height">
-					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}>&#43;</button>
+					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
 				</div>
 				<div className="stop-num-wrapper left-full-height">
 					<div className="stop-num center">{data.stopNum}</div>
@@ -51,14 +51,15 @@ var Drawer = React.createClass({
 		return (
 			<div className="drawer">
 				<div className="inner">
-					<div className="form-group">
+					<div className="form-group col-lg-6 col-m-6 col-sm-6 col-xs-12">
 						<label for="mpg">MPG</label>
-						<input type="number" min="0" step="1" id="mpg" name="mpg" className="mpg form-control" placeholder="MPG" value={data.mpg}/>
+						<input type="range" min="1" max="150" step="1" id="mpg" name="mpg" className="gas-slider mpg" placeholder="MPG" defaultValue={data.mpg} data-model-attr="mpg" role="slider" aria-valuenow={data.mpg} aria-valuemin="1" aria-valuemax="150" aria-valuetext="miles per gallon"/>
+						<p className="mpg-label">{data.mpg}</p>
 					</div>
-					
-					<div className="form-group">
+					<div className="form-group col-lg-6 col-m-6 col-sm-6 col-xs-12">
 						<label for="gasPrice">Gas Price</label>
-						<input type="number" min="0" step="0.5" id="gasPrice" name="gasPrice" className="gas-price form-control" placeholder="Gas Price" value={data.gasPrice}/>
+						<input type="range" min=".10" max="10.00" step=".10" id="gasPrice" name="gasPrice" className="gas-slider gas-price" placeholder="Gas Price" defaultValue={data.gasPrice} data-model-attr="gasPrice" data-to-fixed="2" role="slider" aria-valuenow={data.gasPrice} aria-valuemin="1" aria-valuemax="10.00" aria-valuetext="gas price"/>
+						<p className="mpg-label">{data.gasPrice}</p>
 					</div>
 				</div>
 			</div>
@@ -84,7 +85,7 @@ var Traveller = React.createClass({
 		return (
 			<div className="traveller" key={this.props.key}>
 				<div className="profile-pic-wrapper img-wrapper">
-					<img src={traveller && traveller.img && traveller.img.src ? traveller.img.src : ''} className="center"/>
+					<img src={traveller && traveller.img && traveller.img.src ? traveller.img.src : ''} className="center" alt="traveller profile picture"/>
 				</div>
 				<p className="name">{traveller.name}</p>
 				<p>{traveller.bio}</p>
@@ -106,7 +107,7 @@ var TripView = React.createClass({
 			<div className="trip-page" data-trip-id={this.props._id}>
 				<div className="side-bar panel">
 					<div className="bleed-width-20">
-						<h1 className="title left-full-width" contentEditable="true">{this.props.title}</h1>
+						<h1 className="title left-full-width" contentEditable="true" role="textbox">{this.props.title}</h1>
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
@@ -125,7 +126,7 @@ var TripView = React.createClass({
 				<div className="bottom-bar panel slide-in">
 					<div className="travellers">
 						<div className="trip-traveller-text">Travellers</div>
-						<button className="add-traveller">&#43;</button>
+						<button className="add-traveller" aria-label="add traveller">&#43;</button>
 						<div className="travellers-wrapper">
 							{travellers.map(function(traveller, index) {
 								return <Traveller traveller={traveller} key={index}/>
@@ -133,8 +134,8 @@ var TripView = React.createClass({
 						</div>
 					</div>
 					<div className="trip-dates-wrapper search-box">
-						<input type="text" name="startDate" className="date form-control" placeholder="Leaving" value={this.props.start}/>
-						<input type="text" name="endDate" className="date form-control" placeholder="Returning" value={this.props.end}/>
+						<input type="text" name="startDate" className="date form-control" placeholder="Leaving" aria-label="date start" defaultValue={this.props.start}/>
+						<input type="text" name="endDate" className="date form-control" placeholder="Returning" aria-label="date end" defaultValue={this.props.end}/>
 						<button className="submit form-control btn btn-primary">Done</button>
 					</div>
 				</div>

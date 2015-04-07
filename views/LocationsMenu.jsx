@@ -5,7 +5,7 @@ var LocationItem = React.createClass({
 		var place_id = this.props.prediction.place_id;
 		var description = this.props.prediction.description;
 		return (
-			<div className="location-item" data-place-id={place_id} data-place-description={description}>
+			<div className="location-item" data-place-id={place_id} data-place-description={description} role="menuitem" aria-label="location auto-fill option">
 				<span className="location">{description}</span>
 			</div>
 		)
