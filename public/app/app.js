@@ -21,6 +21,7 @@
 
 	//backbone collections
 	var stops_collection = require("./backbone_collections/stops_collection");
+	var travellers_collection = require("./backbone_collections/travellers_collection");
 
 	//backbone models
 	var search_model = require("./backbone_models/search_model");
@@ -59,7 +60,8 @@
 					trip_view: trip_view
 				},
 				Collections: {
-					stops_collection: stops_collection
+					stops_collection: stops_collection,
+					travellers_collection: travellers_collection
 				}
 			});
 			Backbone.history.start({pushState: true});
@@ -88,7 +90,8 @@
 					map_api: this.map_api,
 					map_view: this.views["map_view"],
 					model: this.models["trip_model"],
-					stops_collection: stops_collection
+					stops_collection: stops_collection,
+					travellers_collection: travellers_collection
 				});
 
 				this.models["trip_model"].fetch();

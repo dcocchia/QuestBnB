@@ -1,6 +1,6 @@
 var search_model = require("../backbone_models/search_model");
 
-StopView = Backbone.View.extend({
+var StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title": "onEditKeyDown",
 		"keyup .stop-location-title": "onEditKeyup",

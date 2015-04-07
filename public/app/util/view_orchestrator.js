@@ -68,7 +68,8 @@ var ViewOrchestrator = Backbone.View.extend({
 					map_view: this.views["map_view"],
 					model: this.models["trip_model"],
 					search_model: this.models["search_model"],
-					stops_collection: this.Collections.stops_collection
+					stops_collection: this.Collections.stops_collection,
+					travellers_collection: this.Collections.travellers_collection
 				});
 
 				//TODO: validation in the model

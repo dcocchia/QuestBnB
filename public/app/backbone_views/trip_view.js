@@ -1,5 +1,6 @@
 var PageView = require("./page_view");
 var StopView = require("./stop_view");
+var TravellerView = require("./traveller_view");
 var trip_template = require("../../views/TripView");
 
 var TripView = PageView.extend({
@@ -11,6 +12,7 @@ var TripView = PageView.extend({
 
 	events: {
 		"click .add-stop-btn": "onAddStopClick",
+		"click .add-traveller": "onAddTravellerClick",
 		"blur .title": "onTitleBlur",
 		"keydown .title": "onEditKeyDown",
 		"click .trip-blurb.editable h3": "onTripBlurbClick",
@@ -21,9 +23,11 @@ var TripView = PageView.extend({
 	initialize: function(opts) {
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
-		this.views = [];
+		this.stop_views = [];
+		this.travellers_views = [];
 
 		this.model.once("sync", _.bind(function(data){
+			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
 			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
@@ -39,6 +43,15 @@ var TripView = PageView.extend({
 					this.renderNewMapStop();
 				}
 			}, this));
+
+			//travellers collection and related
+			this.travellers_collection = new opts.travellers_collection();
+			this.travellers_collection.add(this.model.get("travellers"));
+			this.createTravellersView();
+
+			this.travellers_collection.on("change", _.bind(function() {
+				this.model.set("travellers", this.travellers_collection.toJSON());
+			}, this))
 			
 		}, this));
 
@@ -60,7 +73,7 @@ var TripView = PageView.extend({
 		}, this));
 
 		Backbone.on("removeStop", _.bind(function(stopId) {
-			var view = _.find(this.views, function(view, index) {
+			var view = _.find(this.stop_views, function(view, index) {
 				return view.stopId === stopId;
 			});
 
@@ -77,24 +90,31 @@ var TripView = PageView.extend({
 
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
-			this.views.push( 
-				new StopView({
-					model: stopModel,
-					map_api: this.map_api,
-					el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
-					stopId: stopModel.get("_id")
-				})
-			);
+			this.createNewStopView(stopModel);
 		}, this));
 	},
 
 	createNewStopView: function(stopModel) {
-		this.views.push( 
+		this.stop_views.push( 
 			new StopView({
 				model: stopModel,
 				map_api: this.map_api,
 				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
 				stopId: stopModel.get("_id")
+			})
+		);
+	},
+
+	createTravellersView: function() {
+		_.each(this.travellers_collection.models, _.bind(function(travellerModel) {
+			this.createNewTravellerView(travellerModel);
+		}, this));
+	},
+
+	createNewTravellerView: function(travellerModel) {
+		this.travellers_views.push(
+			new TravellerView({
+				model: travellerModel
 			})
 		);
 	},
@@ -112,6 +132,12 @@ var TripView = PageView.extend({
 			});
 		}
 		
+	},
+
+	onAddTravellerClick: function(e) {
+		e.preventDefault();
+
+		console.log("add traveller! ", e);
 	},
 
 	onTitleBlur: function(e) {

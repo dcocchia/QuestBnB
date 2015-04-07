@@ -22,6 +22,7 @@
 
 	//backbone collections
 	var stops_collection = require("./backbone_collections/stops_collection");
+	var travellers_collection = require("./backbone_collections/travellers_collection");
 
 	//backbone models
 	var search_model = require("./backbone_models/search_model");
@@ -60,7 +61,8 @@
 					trip_view: trip_view
 				},
 				Collections: {
-					stops_collection: stops_collection
+					stops_collection: stops_collection,
+					travellers_collection: travellers_collection
 				}
 			});
 			Backbone.history.start({pushState: true});
@@ -89,7 +91,8 @@
 					map_api: this.map_api,
 					map_view: this.views["map_view"],
 					model: this.models["trip_model"],
-					stops_collection: stops_collection
+					stops_collection: stops_collection,
+					travellers_collection: travellers_collection
 				});
 
 				this.models["trip_model"].fetch();
@@ -129,7 +132,7 @@
 		});
 	});
 })(window);
-},{"./backbone_collections/stops_collection":152,"./backbone_models/search_model":153,"./backbone_models/trip_model":155,"./backbone_views/landing_view":156,"./backbone_views/map_view":157,"./backbone_views/trip_view":160,"./util/map_api":161,"./util/view_orchestrator":162,"bluebird":2,"moment":5,"moment-duration-format":4,"react":151}],2:[function(require,module,exports){
+},{"./backbone_collections/stops_collection":152,"./backbone_collections/travellers_collection":153,"./backbone_models/search_model":154,"./backbone_models/trip_model":157,"./backbone_views/landing_view":158,"./backbone_views/map_view":159,"./backbone_views/trip_view":163,"./util/map_api":164,"./util/view_orchestrator":165,"bluebird":2,"moment":5,"moment-duration-format":4,"react":151}],2:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -26752,7 +26755,19 @@ var stops_colletion = Backbone.Collection.extend({
 });
 
 module.exports = stops_colletion;
-},{"../backbone_models/stop_model":154}],153:[function(require,module,exports){
+},{"../backbone_models/stop_model":155}],153:[function(require,module,exports){
+var traveller_model = require("../backbone_models/traveller_model");
+
+var travellers_collection = Backbone.Collection.extend({
+	model: traveller_model,
+	
+	initalize: function() {
+		console.log("travellers_collection init!");
+	}
+});
+
+module.exports = travellers_collection;
+},{"../backbone_models/traveller_model":156}],154:[function(require,module,exports){
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
@@ -26797,7 +26812,7 @@ var SearchModel = Backbone.Model.extend({
 });
 
 module.exports = SearchModel;
-},{}],154:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 var stop_model = Backbone.Model.extend({
 	defaults: {
 		"location": "",
@@ -26832,7 +26847,15 @@ var stop_model = Backbone.Model.extend({
 });
 
 module.exports = stop_model;
-},{}],155:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
+var traveller_model = Backbone.Model.extend({
+	initialize: function() {
+		console.log("traveller_model init!");
+	}
+});
+
+module.exports = traveller_model;
+},{}],157:[function(require,module,exports){
 var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: "",
@@ -26858,7 +26881,7 @@ var trip_model = Backbone.Model.extend({
 });
 
 module.exports = trip_model;
-},{}],156:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
@@ -27101,7 +27124,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":166,"../../views/LandingView":163,"../../views/LocationsMenu":164,"./page_view":158}],157:[function(require,module,exports){
+},{"../../../renderer/client_renderer":169,"../../views/LandingView":166,"../../views/LocationsMenu":167,"./page_view":160}],159:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	mapMarkers: [],
 	events: {},
@@ -27151,7 +27174,7 @@ var map_view = Backbone.View.extend({
 });
 
 module.exports = map_view;
-},{}],158:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 var renderer = require("../../../renderer/client_renderer");
 var PageView = Backbone.View.extend({
 
@@ -27173,10 +27196,10 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":166}],159:[function(require,module,exports){
+},{"../../../renderer/client_renderer":169}],161:[function(require,module,exports){
 var search_model = require("../backbone_models/search_model");
 
-StopView = Backbone.View.extend({
+var StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title": "onEditKeyDown",
 		"keyup .stop-location-title": "onEditKeyup",
@@ -27375,9 +27398,18 @@ StopView = Backbone.View.extend({
 });
 
 module.exports = StopView;
-},{"../backbone_models/search_model":153}],160:[function(require,module,exports){
+},{"../backbone_models/search_model":154}],162:[function(require,module,exports){
+var TravellerView = Backbone.View.extend({
+	initialize: function() {
+		console.log("traveller view init!");
+	}
+});
+
+module.exports = TravellerView;
+},{}],163:[function(require,module,exports){
 var PageView = require("./page_view");
 var StopView = require("./stop_view");
+var TravellerView = require("./traveller_view");
 var trip_template = require("../../views/TripView");
 
 var TripView = PageView.extend({
@@ -27389,6 +27421,7 @@ var TripView = PageView.extend({
 
 	events: {
 		"click .add-stop-btn": "onAddStopClick",
+		"click .add-traveller": "onAddTravellerClick",
 		"blur .title": "onTitleBlur",
 		"keydown .title": "onEditKeyDown",
 		"click .trip-blurb.editable h3": "onTripBlurbClick",
@@ -27399,9 +27432,11 @@ var TripView = PageView.extend({
 	initialize: function(opts) {
 		this.map_api = opts.map_api;
 		this.map_view = opts.map_view;
-		this.views = [];
+		this.stop_views = [];
+		this.travellers_views = [];
 
 		this.model.once("sync", _.bind(function(data){
+			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
 			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
@@ -27417,6 +27452,15 @@ var TripView = PageView.extend({
 					this.renderNewMapStop();
 				}
 			}, this));
+
+			//travellers collection and related
+			this.travellers_collection = new opts.travellers_collection();
+			this.travellers_collection.add(this.model.get("travellers"));
+			this.createTravellersView();
+
+			this.travellers_collection.on("change", _.bind(function() {
+				this.model.set("travellers", this.travellers_collection.toJSON());
+			}, this))
 			
 		}, this));
 
@@ -27438,7 +27482,7 @@ var TripView = PageView.extend({
 		}, this));
 
 		Backbone.on("removeStop", _.bind(function(stopId) {
-			var view = _.find(this.views, function(view, index) {
+			var view = _.find(this.stop_views, function(view, index) {
 				return view.stopId === stopId;
 			});
 
@@ -27455,24 +27499,31 @@ var TripView = PageView.extend({
 
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
-			this.views.push( 
-				new StopView({
-					model: stopModel,
-					map_api: this.map_api,
-					el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
-					stopId: stopModel.get("_id")
-				})
-			);
+			this.createNewStopView(stopModel);
 		}, this));
 	},
 
 	createNewStopView: function(stopModel) {
-		this.views.push( 
+		this.stop_views.push( 
 			new StopView({
 				model: stopModel,
 				map_api: this.map_api,
 				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
 				stopId: stopModel.get("_id")
+			})
+		);
+	},
+
+	createTravellersView: function() {
+		_.each(this.travellers_collection.models, _.bind(function(travellerModel) {
+			this.createNewTravellerView(travellerModel);
+		}, this));
+	},
+
+	createNewTravellerView: function(travellerModel) {
+		this.travellers_views.push(
+			new TravellerView({
+				model: travellerModel
 			})
 		);
 	},
@@ -27490,6 +27541,12 @@ var TripView = PageView.extend({
 			});
 		}
 		
+	},
+
+	onAddTravellerClick: function(e) {
+		e.preventDefault();
+
+		console.log("add traveller! ", e);
 	},
 
 	onTitleBlur: function(e) {
@@ -27583,7 +27640,7 @@ var TripView = PageView.extend({
 });
 
 module.exports = TripView;
-},{"../../views/TripView":165,"./page_view":158,"./stop_view":159}],161:[function(require,module,exports){
+},{"../../views/TripView":168,"./page_view":160,"./stop_view":161,"./traveller_view":162}],164:[function(require,module,exports){
 var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
@@ -27659,7 +27716,7 @@ Map.prototype = {
 }
 
 module.exports = Map;
-},{"bluebird":2}],162:[function(require,module,exports){
+},{"bluebird":2}],165:[function(require,module,exports){
 var Promise = require("bluebird");
 
 var ViewOrchestrator = Backbone.View.extend({
@@ -27730,7 +27787,8 @@ var ViewOrchestrator = Backbone.View.extend({
 					map_view: this.views["map_view"],
 					model: this.models["trip_model"],
 					search_model: this.models["search_model"],
-					stops_collection: this.Collections.stops_collection
+					stops_collection: this.Collections.stops_collection,
+					travellers_collection: this.Collections.travellers_collection
 				});
 
 				//TODO: validation in the model
@@ -27760,7 +27818,7 @@ var ViewOrchestrator = Backbone.View.extend({
 });
 
 module.exports = ViewOrchestrator;
-},{"bluebird":2}],163:[function(require,module,exports){
+},{"bluebird":2}],166:[function(require,module,exports){
 var React = require('react');
 
 var LandingView = React.createClass({displayName: "LandingView",
@@ -27799,7 +27857,7 @@ var LandingView = React.createClass({displayName: "LandingView",
 });
 
 module.exports = LandingView;
-},{"react":151}],164:[function(require,module,exports){
+},{"react":151}],167:[function(require,module,exports){
 var React = require("react");
 
 var LocationItem = React.createClass({displayName: "LocationItem",
@@ -27828,7 +27886,7 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 });
 
 module.exports = LocationsMenu;
-},{"react":151}],165:[function(require,module,exports){
+},{"react":151}],168:[function(require,module,exports){
 var React = require('react');
 var LocationsMenu = require('./LocationsMenu');
 
@@ -27976,7 +28034,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":164,"react":151}],166:[function(require,module,exports){
+},{"./LocationsMenu":167,"react":151}],169:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}
