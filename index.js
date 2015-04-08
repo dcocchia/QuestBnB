@@ -44,6 +44,7 @@ app.post('/trips', function(req, res){
 	//TODO: validate data before passing it along
 
 	addObjIds(tripData.stops);
+	addObjIds(tripData.travellers);
 
 	trips.insertAsync(tripData).then(function(insertedDoc, err) {
 		if (err) {
@@ -91,9 +92,11 @@ app.put('/trips/:id', function(req, res) {
 	var ObjectId = mongojs.ObjectId;
 	var data = req.body;
 
+	data || (data = {});
 	delete data._id;
 
 	addObjIds(data.stops);
+	addObjIds(data.travellers);
 
 	trips.findAndModifyAsync({
 		query: { _id: ObjectId(tripId) },

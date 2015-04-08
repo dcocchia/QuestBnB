@@ -1,6 +1,35 @@
 var TravellerView = Backbone.View.extend({
-	initialize: function() {
-		console.log("traveller view init!");
+	events: {
+		"click"						: "toggleEditCard",
+		"click .close-edit-card"	: "toggleEditCard",
+		"click .save-traveller-btn"	: "saveTraveller"
+	},
+
+	initialize: function(opts) {
+		this.travellerId = opts.travellerId;
+	},
+
+	toggleEditCard: function(e) {
+		console.log(e);
+	},
+
+	saveTraveller: function() {
+		var data = {};
+
+		this.model.set(data);
+	},
+
+	removeTraveller: function() {
+		this.model.removeTraveller();
+	},
+
+	destroy: function() {
+		this.undelegateEvents();
+
+		this.$el.removeData().unbind(); 
+
+		this.remove();  
+		Backbone.View.prototype.remove.call(this);
 	}
 });
 

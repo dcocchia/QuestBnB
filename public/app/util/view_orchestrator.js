@@ -45,6 +45,7 @@ var ViewOrchestrator = Backbone.View.extend({
 					],
 					stops: [
 						{	//TODO: find a better default first stop. This won't work very well
+							//if geo loc'ed use that, otherwise only use one stop
 							location: "Home",
 							stopNum: 1,
 							dayNum: 1

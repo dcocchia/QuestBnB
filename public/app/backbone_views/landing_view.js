@@ -18,13 +18,13 @@ var LandingView = PageView.extend({
 	},
 
 	events: {
-		"keyup .form-control.location": "onLocationKeyup",
-		"keydown .form-control.location": "onLocationKeydown",
-		"click .location-item": "onLocationItemClick",
-		"focusin .form-control.location": "renderSearchResults",
-		"focusin .form-control.date": "onCalendarInputFocus",
-		"change .form-control.travellers": "onTravellerChange",
-		"submit .search-form": "onSubmit"
+		"keyup .form-control.location"		: "onLocationKeyup",
+		"keydown .form-control.location"	: "onLocationKeydown",
+		"click .location-item"				: "onLocationItemClick",
+		"focusin .form-control.location"	: "renderSearchResults",
+		"focusin .form-control.date"		: "onCalendarInputFocus",
+		"change .form-control.travellers"	: "onTravellerChange",
+		"submit .search-form"				: "onSubmit"
 	},
 
 	initialize: function(opts) {

@@ -54,12 +54,12 @@ var Drawer = React.createClass({
 					<div className="form-group col-lg-6 col-m-6 col-sm-6 col-xs-12">
 						<label for="mpg">MPG</label>
 						<input type="range" min="1" max="150" step="1" id="mpg" name="mpg" className="gas-slider mpg" placeholder="MPG" defaultValue={data.mpg} data-model-attr="mpg" role="slider" aria-valuenow={data.mpg} aria-valuemin="1" aria-valuemax="150" aria-valuetext="miles per gallon"/>
-						<p className="mpg-label">{data.mpg}</p>
+						<p className="mpg-label">{data.mpg} mi / Gallon</p>
 					</div>
 					<div className="form-group col-lg-6 col-m-6 col-sm-6 col-xs-12">
 						<label for="gasPrice">Gas Price</label>
 						<input type="range" min=".10" max="10.00" step=".10" id="gasPrice" name="gasPrice" className="gas-slider gas-price" placeholder="Gas Price" defaultValue={data.gasPrice} data-model-attr="gasPrice" data-to-fixed="2" role="slider" aria-valuenow={data.gasPrice} aria-valuemin="1" aria-valuemax="10.00" aria-valuetext="gas price"/>
-						<p className="mpg-label">{data.gasPrice}</p>
+						<p className="mpg-label">${data.gasPrice} / Gallon</p>
 					</div>
 				</div>
 			</div>
@@ -83,12 +83,21 @@ var Traveller = React.createClass({
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
-			<div className="traveller" key={this.props.key}>
+			<div className="traveller" key={this.props.key} data-traveller-id={traveller._id}>
 				<div className="profile-pic-wrapper img-wrapper">
 					<img src={traveller && traveller.img && traveller.img.src ? traveller.img.src : ''} className="center" alt="traveller profile picture"/>
 				</div>
 				<p className="name">{traveller.name}</p>
 				<p>{traveller.bio}</p>
+				<div className="edit-card" area-hidden="true">
+					<form className="form-inline">
+					<h3>New Traveller</h3>
+						<div className="form-group col-sm-8 col-m-8 col-lg8">
+							<input type="text" name="travellerName" className="traveller-name" placeholder="Name" defaultValue={traveller.name} />
+						</div>
+						 <button type="submit" className="btn btn-primary col-sm-4 col-m-4 col-lg4">Save</button>
+					</form>
+				</div>
 			</div>
 		)
 	}

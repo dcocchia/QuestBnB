@@ -54,12 +54,12 @@ var Drawer = React.createClass({displayName: "Drawer",
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
 						React.createElement("label", {for: "mpg"}, "MPG"), 
 						React.createElement("input", {type: "range", min: "1", max: "150", step: "1", id: "mpg", name: "mpg", className: "gas-slider mpg", placeholder: "MPG", defaultValue: data.mpg, "data-model-attr": "mpg", role: "slider", "aria-valuenow": data.mpg, "aria-valuemin": "1", "aria-valuemax": "150", "aria-valuetext": "miles per gallon"}), 
-						React.createElement("p", {className: "mpg-label"}, data.mpg)
+						React.createElement("p", {className: "mpg-label"}, data.mpg, " mi / Gallon")
 					), 
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
 						React.createElement("label", {for: "gasPrice"}, "Gas Price"), 
 						React.createElement("input", {type: "range", min: ".10", max: "10.00", step: ".10", id: "gasPrice", name: "gasPrice", className: "gas-slider gas-price", placeholder: "Gas Price", defaultValue: data.gasPrice, "data-model-attr": "gasPrice", "data-to-fixed": "2", role: "slider", "aria-valuenow": data.gasPrice, "aria-valuemin": "1", "aria-valuemax": "10.00", "aria-valuetext": "gas price"}), 
-						React.createElement("p", {className: "mpg-label"}, data.gasPrice)
+						React.createElement("p", {className: "mpg-label"}, "$", data.gasPrice, " / Gallon")
 					)
 				)
 			)
@@ -83,12 +83,21 @@ var Traveller = React.createClass({displayName: "Traveller",
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
-			React.createElement("div", {className: "traveller", key: this.props.key}, 
+			React.createElement("div", {className: "traveller", key: this.props.key, "data-traveller-id": traveller._id}, 
 				React.createElement("div", {className: "profile-pic-wrapper img-wrapper"}, 
 					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center", alt: "traveller profile picture"})
 				), 
 				React.createElement("p", {className: "name"}, traveller.name), 
-				React.createElement("p", null, traveller.bio)
+				React.createElement("p", null, traveller.bio), 
+				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
+					React.createElement("form", {className: "form-inline"}, 
+					React.createElement("h3", null, "New Traveller"), 
+						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg8"}, 
+							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Name", defaultValue: traveller.name})
+						), 
+						 React.createElement("button", {type: "submit", className: "btn btn-primary col-sm-4 col-m-4 col-lg4"}, "Save")
+					)
+				)
 			)
 		)
 	}

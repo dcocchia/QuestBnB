@@ -2,7 +2,7 @@ var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: "",
 		end: "",
-		tripLength: 0,
+		tripDistance: 0,
 		tripDuration: 0,
 		numStops: 0,
 		cost: 0,

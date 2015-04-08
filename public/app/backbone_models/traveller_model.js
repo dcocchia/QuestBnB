@@ -1,6 +1,15 @@
 var traveller_model = Backbone.Model.extend({
-	initialize: function() {
-		console.log("traveller_model init!");
+	defaults: {
+		name: "",
+		img: {
+			src: "/app/img/default-icon.jpg"
+		}
+	},
+
+	initialize: function() {},
+
+	removeTraveller: function() {
+		this.trigger("remove_traveler", this.get("_id"));
 	}
 });
 

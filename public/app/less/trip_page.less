@@ -331,6 +331,8 @@
 
 	.travellers {
 		height: 70px;
+		position: relative;
+		background-color: @panel-border-light-grey;
 
 		.trip-traveller-text,
 		.traveller {
@@ -349,6 +351,7 @@
 		.traveller {
 			width: 110px;
 			border-right: 1px solid @panel-border-grey;
+
 			.profile-pic-wrapper {
 				height: 35px;
   				top: 5px;
@@ -374,6 +377,50 @@
 					img {
 						transform: scale(1.1);
 					}
+				}
+			}
+
+			.edit-card {
+				width: 100%;
+				position: absolute;
+				background-color: #f4f4f4;
+				left: 0;
+				top: 0;
+				height: 87px;
+				border-bottom: 1px solid #ccc;
+				z-index: -1;
+
+				-webkit-transition: top .2s ease-in-out;
+				-moz-transition: top .2s ease-in-out;
+				-ms-transition: top .2s ease-in-out;
+				-o-transition: top .2s ease-in-out;
+				transition: top .2s ease-in-out;
+
+				.form-group {
+					padding: 0;
+				}
+
+				input {
+					display: inline-block;
+					width: 100%;
+					border-radius: 0;
+					border-left: 0;
+					border-bottom: 0;
+					height: 44px;
+				}
+
+				.btn-primary {
+					border-radius: 0;
+					height: 44px;
+				}
+
+				h3 {
+					margin: 0;
+					padding: 10px;
+				}
+
+				&.active {
+					top: -87px;
 				}
 			}
 		}

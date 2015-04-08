@@ -11,13 +11,13 @@ var TripView = PageView.extend({
 	},
 
 	events: {
-		"click .add-stop-btn": "onAddStopClick",
-		"click .add-traveller": "onAddTravellerClick",
-		"blur .title": "onTitleBlur",
-		"keydown .title": "onEditKeyDown",
-		"click .trip-blurb.editable h3": "onTripBlurbClick",
-		"change .gas-slider": "onGasSliderChange",
-		"input .gas-slider": "onGasSliderChange"
+		"click .add-stop-btn"			: "onAddStopClick",
+		"click .add-traveller"			: "onAddTravellerClick",
+		"blur .title"					: "onTitleBlur",
+		"keydown .title"				: "onEditKeyDown",
+		"click .trip-blurb.editable h3"	: "onTripBlurbClick",
+		"change .gas-slider"			: "onGasSliderChange",
+		"input .gas-slider"				: "onGasSliderChange"
 	},
 
 	initialize: function(opts) {
@@ -50,8 +50,18 @@ var TripView = PageView.extend({
 			this.createTravellersView();
 
 			this.travellers_collection.on("change", _.bind(function() {
-				this.model.set("travellers", this.travellers_collection.toJSON());
-			}, this))
+				this.setTravellersCollectionInModel();
+			}, this));
+
+			this.travellers_collection.on("add", _.bind(function(travellerModel) {
+				this.setTravellersCollectionInModel();
+				this.createNewTravellerView(travellerModel);
+			}, this));
+
+			this.travellers_collection.on("remove", _.bind(function(travellerModel) {
+				this.setTravellersCollectionInModel();
+				this.removeTravellerView(travellerModel);
+			}, this));
 			
 		}, this));
 
@@ -88,6 +98,11 @@ var TripView = PageView.extend({
 		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
 	},
 
+	setTravellersCollectionInModel: function(eventType) {
+		this.model.set("travellers", this.travellers_collection.toJSON());
+		this.model.sync("update", this.model, {url: this.model.url});
+	},
+
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
 			this.createNewStopView(stopModel);
@@ -114,9 +129,23 @@ var TripView = PageView.extend({
 	createNewTravellerView: function(travellerModel) {
 		this.travellers_views.push(
 			new TravellerView({
-				model: travellerModel
+				model: travellerModel,
+				el: ".traveller[data-traveller-id='" + travellerModel.get("_id") + "']",
 			})
 		);
+	},
+
+	removeTravellerView: function(travellerModel) {
+		var id = travellerModel.get("_id");
+
+		var view = _.find(this.travellers_views, _.bind(function(view, index) {
+			if (view.travellerId === id) {
+				if (view && view.destroy) { view.destroy(); }
+				this.travellers_views.splice(index, 1);
+				return;
+			}
+		}, this));
+
 	},
 
 	onAddStopClick: function(e) {
@@ -137,7 +166,10 @@ var TripView = PageView.extend({
 	onAddTravellerClick: function(e) {
 		e.preventDefault();
 
-		console.log("add traveller! ", e);
+		this.travellers_collection.add({
+			isNew: true,
+			_id: _.uniqueId("traveller__") 
+		});
 	},
 
 	onTitleBlur: function(e) {

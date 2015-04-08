@@ -2,11 +2,11 @@ var search_model = require("../backbone_models/search_model");
 
 var StopView = Backbone.View.extend({
 	events: {
-		"keydown .stop-location-title": "onEditKeyDown",
-		"keyup .stop-location-title": "onEditKeyup",
-		"click .location-item": "onLocationItemClick",
-		"click .clear": "onClearClick",
-		"click .remove": "onRemoveClick"
+		"keydown .stop-location-title"	: "onEditKeyDown",
+		"keyup .stop-location-title"	: "onEditKeyup",
+		"click .location-item"			: "onLocationItemClick",
+		"click .clear"					: "onClearClick",
+		"click .remove"					: "onRemoveClick"
 	},
 
 	initialize: function(opts) {

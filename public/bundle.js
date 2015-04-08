@@ -26760,9 +26760,15 @@ var traveller_model = require("../backbone_models/traveller_model");
 
 var travellers_collection = Backbone.Collection.extend({
 	model: traveller_model,
-	
+
 	initalize: function() {
-		console.log("travellers_collection init!");
+		this.on("remove_traveller", _.bind(function(id) {
+			this.removeTraveller(id);
+		}, this));
+	},
+
+	removeTraveller: function(id) {
+		this.remove(this.where({_id: id}) );
 	}
 });
 
@@ -26849,8 +26855,17 @@ var stop_model = Backbone.Model.extend({
 module.exports = stop_model;
 },{}],156:[function(require,module,exports){
 var traveller_model = Backbone.Model.extend({
-	initialize: function() {
-		console.log("traveller_model init!");
+	defaults: {
+		name: "",
+		img: {
+			src: "/app/img/default-icon.jpg"
+		}
+	},
+
+	initialize: function() {},
+
+	removeTraveller: function() {
+		this.trigger("remove_traveler", this.get("_id"));
 	}
 });
 
@@ -26860,7 +26875,7 @@ var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: "",
 		end: "",
-		tripLength: 0,
+		tripDistance: 0,
 		tripDuration: 0,
 		numStops: 0,
 		cost: 0,
@@ -26902,13 +26917,13 @@ var LandingView = PageView.extend({
 	},
 
 	events: {
-		"keyup .form-control.location": "onLocationKeyup",
-		"keydown .form-control.location": "onLocationKeydown",
-		"click .location-item": "onLocationItemClick",
-		"focusin .form-control.location": "renderSearchResults",
-		"focusin .form-control.date": "onCalendarInputFocus",
-		"change .form-control.travellers": "onTravellerChange",
-		"submit .search-form": "onSubmit"
+		"keyup .form-control.location"		: "onLocationKeyup",
+		"keydown .form-control.location"	: "onLocationKeydown",
+		"click .location-item"				: "onLocationItemClick",
+		"focusin .form-control.location"	: "renderSearchResults",
+		"focusin .form-control.date"		: "onCalendarInputFocus",
+		"change .form-control.travellers"	: "onTravellerChange",
+		"submit .search-form"				: "onSubmit"
 	},
 
 	initialize: function(opts) {
@@ -27201,11 +27216,11 @@ var search_model = require("../backbone_models/search_model");
 
 var StopView = Backbone.View.extend({
 	events: {
-		"keydown .stop-location-title": "onEditKeyDown",
-		"keyup .stop-location-title": "onEditKeyup",
-		"click .location-item": "onLocationItemClick",
-		"click .clear": "onClearClick",
-		"click .remove": "onRemoveClick"
+		"keydown .stop-location-title"	: "onEditKeyDown",
+		"keyup .stop-location-title"	: "onEditKeyup",
+		"click .location-item"			: "onLocationItemClick",
+		"click .clear"					: "onClearClick",
+		"click .remove"					: "onRemoveClick"
 	},
 
 	initialize: function(opts) {
@@ -27400,8 +27415,37 @@ var StopView = Backbone.View.extend({
 module.exports = StopView;
 },{"../backbone_models/search_model":154}],162:[function(require,module,exports){
 var TravellerView = Backbone.View.extend({
-	initialize: function() {
-		console.log("traveller view init!");
+	events: {
+		"click"						: "toggleEditCard",
+		"click .close-edit-card"	: "toggleEditCard",
+		"click .save-traveller-btn"	: "saveTraveller"
+	},
+
+	initialize: function(opts) {
+		this.travellerId = opts.travellerId;
+	},
+
+	toggleEditCard: function(e) {
+		console.log(e);
+	},
+
+	saveTraveller: function() {
+		var data = {};
+
+		this.model.set(data);
+	},
+
+	removeTraveller: function() {
+		this.model.removeTraveller();
+	},
+
+	destroy: function() {
+		this.undelegateEvents();
+
+		this.$el.removeData().unbind(); 
+
+		this.remove();  
+		Backbone.View.prototype.remove.call(this);
 	}
 });
 
@@ -27420,13 +27464,13 @@ var TripView = PageView.extend({
 	},
 
 	events: {
-		"click .add-stop-btn": "onAddStopClick",
-		"click .add-traveller": "onAddTravellerClick",
-		"blur .title": "onTitleBlur",
-		"keydown .title": "onEditKeyDown",
-		"click .trip-blurb.editable h3": "onTripBlurbClick",
-		"change .gas-slider": "onGasSliderChange",
-		"input .gas-slider": "onGasSliderChange"
+		"click .add-stop-btn"			: "onAddStopClick",
+		"click .add-traveller"			: "onAddTravellerClick",
+		"blur .title"					: "onTitleBlur",
+		"keydown .title"				: "onEditKeyDown",
+		"click .trip-blurb.editable h3"	: "onTripBlurbClick",
+		"change .gas-slider"			: "onGasSliderChange",
+		"input .gas-slider"				: "onGasSliderChange"
 	},
 
 	initialize: function(opts) {
@@ -27459,8 +27503,18 @@ var TripView = PageView.extend({
 			this.createTravellersView();
 
 			this.travellers_collection.on("change", _.bind(function() {
-				this.model.set("travellers", this.travellers_collection.toJSON());
-			}, this))
+				this.setTravellersCollectionInModel();
+			}, this));
+
+			this.travellers_collection.on("add", _.bind(function(travellerModel) {
+				this.setTravellersCollectionInModel();
+				this.createNewTravellerView(travellerModel);
+			}, this));
+
+			this.travellers_collection.on("remove", _.bind(function(travellerModel) {
+				this.setTravellersCollectionInModel();
+				this.removeTravellerView(travellerModel);
+			}, this));
 			
 		}, this));
 
@@ -27497,6 +27551,11 @@ var TripView = PageView.extend({
 		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
 	},
 
+	setTravellersCollectionInModel: function(eventType) {
+		this.model.set("travellers", this.travellers_collection.toJSON());
+		this.model.sync("update", this.model, {url: this.model.url});
+	},
+
 	createStopViews: function() {
 		_.each(this.stops_collection.models, _.bind(function(stopModel) {
 			this.createNewStopView(stopModel);
@@ -27523,9 +27582,23 @@ var TripView = PageView.extend({
 	createNewTravellerView: function(travellerModel) {
 		this.travellers_views.push(
 			new TravellerView({
-				model: travellerModel
+				model: travellerModel,
+				el: ".traveller[data-traveller-id='" + travellerModel.get("_id") + "']",
 			})
 		);
+	},
+
+	removeTravellerView: function(travellerModel) {
+		var id = travellerModel.get("_id");
+
+		var view = _.find(this.travellers_views, _.bind(function(view, index) {
+			if (view.travellerId === id) {
+				if (view && view.destroy) { view.destroy(); }
+				this.travellers_views.splice(index, 1);
+				return;
+			}
+		}, this));
+
 	},
 
 	onAddStopClick: function(e) {
@@ -27546,7 +27619,10 @@ var TripView = PageView.extend({
 	onAddTravellerClick: function(e) {
 		e.preventDefault();
 
-		console.log("add traveller! ", e);
+		this.travellers_collection.add({
+			isNew: true,
+			_id: _.uniqueId("traveller__") 
+		});
 	},
 
 	onTitleBlur: function(e) {
@@ -27764,6 +27840,7 @@ var ViewOrchestrator = Backbone.View.extend({
 					],
 					stops: [
 						{	//TODO: find a better default first stop. This won't work very well
+							//if geo loc'ed use that, otherwise only use one stop
 							location: "Home",
 							stopNum: 1,
 							dayNum: 1
@@ -27943,12 +28020,12 @@ var Drawer = React.createClass({displayName: "Drawer",
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
 						React.createElement("label", {for: "mpg"}, "MPG"), 
 						React.createElement("input", {type: "range", min: "1", max: "150", step: "1", id: "mpg", name: "mpg", className: "gas-slider mpg", placeholder: "MPG", defaultValue: data.mpg, "data-model-attr": "mpg", role: "slider", "aria-valuenow": data.mpg, "aria-valuemin": "1", "aria-valuemax": "150", "aria-valuetext": "miles per gallon"}), 
-						React.createElement("p", {className: "mpg-label"}, data.mpg)
+						React.createElement("p", {className: "mpg-label"}, data.mpg, " mi / Gallon")
 					), 
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
 						React.createElement("label", {for: "gasPrice"}, "Gas Price"), 
 						React.createElement("input", {type: "range", min: ".10", max: "10.00", step: ".10", id: "gasPrice", name: "gasPrice", className: "gas-slider gas-price", placeholder: "Gas Price", defaultValue: data.gasPrice, "data-model-attr": "gasPrice", "data-to-fixed": "2", role: "slider", "aria-valuenow": data.gasPrice, "aria-valuemin": "1", "aria-valuemax": "10.00", "aria-valuetext": "gas price"}), 
-						React.createElement("p", {className: "mpg-label"}, data.gasPrice)
+						React.createElement("p", {className: "mpg-label"}, "$", data.gasPrice, " / Gallon")
 					)
 				)
 			)
@@ -27972,12 +28049,21 @@ var Traveller = React.createClass({displayName: "Traveller",
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
-			React.createElement("div", {className: "traveller", key: this.props.key}, 
+			React.createElement("div", {className: "traveller", key: this.props.key, "data-traveller-id": traveller._id}, 
 				React.createElement("div", {className: "profile-pic-wrapper img-wrapper"}, 
 					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center", alt: "traveller profile picture"})
 				), 
 				React.createElement("p", {className: "name"}, traveller.name), 
-				React.createElement("p", null, traveller.bio)
+				React.createElement("p", null, traveller.bio), 
+				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
+					React.createElement("form", {className: "form-inline"}, 
+					React.createElement("h3", null, "New Traveller"), 
+						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg8"}, 
+							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Name", defaultValue: traveller.name})
+						), 
+						 React.createElement("button", {type: "submit", className: "btn btn-primary col-sm-4 col-m-4 col-lg4"}, "Save")
+					)
+				)
 			)
 		)
 	}
