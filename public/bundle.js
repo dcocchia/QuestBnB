@@ -26761,7 +26761,7 @@ var traveller_model = require("../backbone_models/traveller_model");
 var travellers_collection = Backbone.Collection.extend({
 	model: traveller_model,
 
-	initalize: function() {
+	initialize: function() {
 		this.on("remove_traveller", _.bind(function(id) {
 			this.removeTraveller(id);
 		}, this));
@@ -26865,7 +26865,7 @@ var traveller_model = Backbone.Model.extend({
 	initialize: function() {},
 
 	removeTraveller: function() {
-		this.trigger("remove_traveler", this.get("_id"));
+		this.trigger("remove_traveller", this.get("_id"));
 	}
 });
 
@@ -27417,35 +27417,72 @@ module.exports = StopView;
 var TravellerView = Backbone.View.extend({
 	events: {
 		"click"						: "toggleEditCard",
+		"click .edit-card"			: "clickEditCard",		
 		"click .close-edit-card"	: "toggleEditCard",
-		"click .save-traveller-btn"	: "saveTraveller"
+		"click .save-traveller"		: "saveTraveller",
+		"click .remove-traveller"	: "removeTraveller",
+		"keyup .edit-card input"	: "onEditNameKeyUp"
 	},
 
 	initialize: function(opts) {
+		opts || (opts = {});
 		this.travellerId = opts.travellerId;
+
+		if (opts.isNew) { _.delay( _.bind(this.toggleEditCard, this) , 300); }
+
+		Backbone.on("TripView:render", _.bind(function() {
+			this.setElement(this.$el.selector);
+		}, this));
 	},
 
-	toggleEditCard: function(e) {
-		console.log(e);
+	toggleEditCard: function() {
+		var $card = this.$(".edit-card");
+
+		if ($card.hasClass("active")) {
+			$card.removeClass("active");
+			$card.find("input").blur();	
+		} else {
+			$card.addClass("active");
+			_.delay(function() { $card.find("input").focus(); }, 220);
+		}
 	},
 
-	saveTraveller: function() {
-		var data = {};
+	clickEditCard: function(e) {
+		//required to stop toggleEditCard function from tirggering
+		e.preventDefault();
+		e.stopPropagation();
+	},	
 
+	saveTraveller: function(e) {
+		var data = {
+			name: this.$("input").val()
+		};
+
+		e.preventDefault();
+		this.toggleEditCard();
 		this.model.set(data);
 	},
 
-	removeTraveller: function() {
+	removeTraveller: function(e) {
+		e.preventDefault();
+		this.toggleEditCard();
 		this.model.removeTraveller();
 	},
 
-	destroy: function() {
-		this.undelegateEvents();
+	onEditNameKeyUp: function(e) {
+		if (e.keyCode === 13) {
+			this.clearAllRanges();
+			this.saveTraveller(e);
+		}
+	},
 
-		this.$el.removeData().unbind(); 
-
-		this.remove();  
-		Backbone.View.prototype.remove.call(this);
+	clearAllRanges: function() {
+		if (window.getSelection) {
+			window.getSelection().removeAllRanges();
+		} else if (document.selection.createRange) {
+			var range = document.selection.createRange();
+			document.selection.empty();
+		}
 	}
 });
 
@@ -27500,19 +27537,21 @@ var TripView = PageView.extend({
 			//travellers collection and related
 			this.travellers_collection = new opts.travellers_collection();
 			this.travellers_collection.add(this.model.get("travellers"));
-			this.createTravellersView();
+			this.createTravellersViews();
 
 			this.travellers_collection.on("change", _.bind(function() {
-				this.setTravellersCollectionInModel();
+				this.setTravellersCollectionInModel({sync: true});
 			}, this));
 
 			this.travellers_collection.on("add", _.bind(function(travellerModel) {
-				this.setTravellersCollectionInModel();
-				this.createNewTravellerView(travellerModel);
+				//view will call sync on model once user types in traveller name
+				//so, passing false flag here
+				this.setTravellersCollectionInModel({sync: false});
+				this.createNewTravellerView(travellerModel, {isNew: true});
 			}, this));
 
 			this.travellers_collection.on("remove", _.bind(function(travellerModel) {
-				this.setTravellersCollectionInModel();
+				this.setTravellersCollectionInModel({sync: true});
 				this.removeTravellerView(travellerModel);
 			}, this));
 			
@@ -27551,9 +27590,12 @@ var TripView = PageView.extend({
 		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
 	},
 
-	setTravellersCollectionInModel: function(eventType) {
+	setTravellersCollectionInModel: function(opts) {
+		opts || (opts = {});
 		this.model.set("travellers", this.travellers_collection.toJSON());
-		this.model.sync("update", this.model, {url: this.model.url});
+		if (opts.sync) {
+			this.model.sync("update", this.model, {url: this.model.url});
+		}
 	},
 
 	createStopViews: function() {
@@ -27573,17 +27615,20 @@ var TripView = PageView.extend({
 		);
 	},
 
-	createTravellersView: function() {
+	createTravellersViews: function() {
 		_.each(this.travellers_collection.models, _.bind(function(travellerModel) {
 			this.createNewTravellerView(travellerModel);
 		}, this));
 	},
 
-	createNewTravellerView: function(travellerModel) {
+	createNewTravellerView: function(travellerModel, opts) {
+		opts || (opts = {});
 		this.travellers_views.push(
 			new TravellerView({
 				model: travellerModel,
 				el: ".traveller[data-traveller-id='" + travellerModel.get("_id") + "']",
+				travellerId: travellerModel.get("_id"),
+				isNew: opts.isNew || false
 			})
 		);
 	},
@@ -27592,10 +27637,9 @@ var TripView = PageView.extend({
 		var id = travellerModel.get("_id");
 
 		var view = _.find(this.travellers_views, _.bind(function(view, index) {
-			if (view.travellerId === id) {
-				if (view && view.destroy) { view.destroy(); }
+			if (view && view.travellerId === id) {
 				this.travellers_views.splice(index, 1);
-				return;
+				return true;
 			}
 		}, this));
 
@@ -27620,7 +27664,6 @@ var TripView = PageView.extend({
 		e.preventDefault();
 
 		this.travellers_collection.add({
-			isNew: true,
 			_id: _.uniqueId("traveller__") 
 		});
 	},
@@ -28046,6 +28089,12 @@ var TripBlurb = React.createClass({displayName: "TripBlurb",
 });
 
 var Traveller = React.createClass({displayName: "Traveller",
+	handleChange: function(event) {
+		//TODO: seems a bit hacky
+		//using setState may be better here. 
+		this.props.traveller.name = event.target.value;
+		this.forceUpdate();
+	},
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
@@ -28057,11 +28106,11 @@ var Traveller = React.createClass({displayName: "Traveller",
 				React.createElement("p", null, traveller.bio), 
 				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
 					React.createElement("form", {className: "form-inline"}, 
-					React.createElement("h3", null, "New Traveller"), 
-						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg8"}, 
-							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Name", defaultValue: traveller.name})
+						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg-8"}, 
+							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Traveller Name", value: traveller.name, onChange: this.handleChange})
 						), 
-						 React.createElement("button", {type: "submit", className: "btn btn-primary col-sm-4 col-m-4 col-lg4"}, "Save")
+						 React.createElement("button", {type: "submit", className: "save-traveller btn btn-primary col-sm-2 col-m-2 col-lg-2"}, "Save"), 
+						  React.createElement("button", {type: "submit", className: "remove-traveller btn col-sm-2 col-m-2 col-lg-2"}, "Remove")
 					)
 				)
 			)

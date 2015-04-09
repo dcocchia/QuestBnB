@@ -47,19 +47,21 @@ var TripView = PageView.extend({
 			//travellers collection and related
 			this.travellers_collection = new opts.travellers_collection();
 			this.travellers_collection.add(this.model.get("travellers"));
-			this.createTravellersView();
+			this.createTravellersViews();
 
 			this.travellers_collection.on("change", _.bind(function() {
-				this.setTravellersCollectionInModel();
+				this.setTravellersCollectionInModel({sync: true});
 			}, this));
 
 			this.travellers_collection.on("add", _.bind(function(travellerModel) {
-				this.setTravellersCollectionInModel();
-				this.createNewTravellerView(travellerModel);
+				//view will call sync on model once user types in traveller name
+				//so, passing false flag here
+				this.setTravellersCollectionInModel({sync: false});
+				this.createNewTravellerView(travellerModel, {isNew: true});
 			}, this));
 
 			this.travellers_collection.on("remove", _.bind(function(travellerModel) {
-				this.setTravellersCollectionInModel();
+				this.setTravellersCollectionInModel({sync: true});
 				this.removeTravellerView(travellerModel);
 			}, this));
 			
@@ -98,9 +100,12 @@ var TripView = PageView.extend({
 		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
 	},
 
-	setTravellersCollectionInModel: function(eventType) {
+	setTravellersCollectionInModel: function(opts) {
+		opts || (opts = {});
 		this.model.set("travellers", this.travellers_collection.toJSON());
-		this.model.sync("update", this.model, {url: this.model.url});
+		if (opts.sync) {
+			this.model.sync("update", this.model, {url: this.model.url});
+		}
 	},
 
 	createStopViews: function() {
@@ -120,17 +125,20 @@ var TripView = PageView.extend({
 		);
 	},
 
-	createTravellersView: function() {
+	createTravellersViews: function() {
 		_.each(this.travellers_collection.models, _.bind(function(travellerModel) {
 			this.createNewTravellerView(travellerModel);
 		}, this));
 	},
 
-	createNewTravellerView: function(travellerModel) {
+	createNewTravellerView: function(travellerModel, opts) {
+		opts || (opts = {});
 		this.travellers_views.push(
 			new TravellerView({
 				model: travellerModel,
 				el: ".traveller[data-traveller-id='" + travellerModel.get("_id") + "']",
+				travellerId: travellerModel.get("_id"),
+				isNew: opts.isNew || false
 			})
 		);
 	},
@@ -139,10 +147,9 @@ var TripView = PageView.extend({
 		var id = travellerModel.get("_id");
 
 		var view = _.find(this.travellers_views, _.bind(function(view, index) {
-			if (view.travellerId === id) {
-				if (view && view.destroy) { view.destroy(); }
+			if (view && view.travellerId === id) {
 				this.travellers_views.splice(index, 1);
-				return;
+				return true;
 			}
 		}, this));
 
@@ -167,7 +174,6 @@ var TripView = PageView.extend({
 		e.preventDefault();
 
 		this.travellers_collection.add({
-			isNew: true,
 			_id: _.uniqueId("traveller__") 
 		});
 	},

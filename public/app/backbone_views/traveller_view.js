@@ -1,35 +1,72 @@
 var TravellerView = Backbone.View.extend({
 	events: {
 		"click"						: "toggleEditCard",
+		"click .edit-card"			: "clickEditCard",		
 		"click .close-edit-card"	: "toggleEditCard",
-		"click .save-traveller-btn"	: "saveTraveller"
+		"click .save-traveller"		: "saveTraveller",
+		"click .remove-traveller"	: "removeTraveller",
+		"keyup .edit-card input"	: "onEditNameKeyUp"
 	},
 
 	initialize: function(opts) {
+		opts || (opts = {});
 		this.travellerId = opts.travellerId;
+
+		if (opts.isNew) { _.delay( _.bind(this.toggleEditCard, this) , 300); }
+
+		Backbone.on("TripView:render", _.bind(function() {
+			this.setElement(this.$el.selector);
+		}, this));
 	},
 
-	toggleEditCard: function(e) {
-		console.log(e);
+	toggleEditCard: function() {
+		var $card = this.$(".edit-card");
+
+		if ($card.hasClass("active")) {
+			$card.removeClass("active");
+			$card.find("input").blur();	
+		} else {
+			$card.addClass("active");
+			_.delay(function() { $card.find("input").focus(); }, 220);
+		}
 	},
 
-	saveTraveller: function() {
-		var data = {};
+	clickEditCard: function(e) {
+		//required to stop toggleEditCard function from tirggering
+		e.preventDefault();
+		e.stopPropagation();
+	},	
 
+	saveTraveller: function(e) {
+		var data = {
+			name: this.$("input").val()
+		};
+
+		e.preventDefault();
+		this.toggleEditCard();
 		this.model.set(data);
 	},
 
-	removeTraveller: function() {
+	removeTraveller: function(e) {
+		e.preventDefault();
+		this.toggleEditCard();
 		this.model.removeTraveller();
 	},
 
-	destroy: function() {
-		this.undelegateEvents();
+	onEditNameKeyUp: function(e) {
+		if (e.keyCode === 13) {
+			this.clearAllRanges();
+			this.saveTraveller(e);
+		}
+	},
 
-		this.$el.removeData().unbind(); 
-
-		this.remove();  
-		Backbone.View.prototype.remove.call(this);
+	clearAllRanges: function() {
+		if (window.getSelection) {
+			window.getSelection().removeAllRanges();
+		} else if (document.selection.createRange) {
+			var range = document.selection.createRange();
+			document.selection.empty();
+		}
 	}
 });
 

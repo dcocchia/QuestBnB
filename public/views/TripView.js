@@ -80,6 +80,12 @@ var TripBlurb = React.createClass({displayName: "TripBlurb",
 });
 
 var Traveller = React.createClass({displayName: "Traveller",
+	handleChange: function(event) {
+		//TODO: seems a bit hacky
+		//using setState may be better here. 
+		this.props.traveller.name = event.target.value;
+		this.forceUpdate();
+	},
 	render: function() {
 		var traveller = this.props.traveller;
 		return (
@@ -91,11 +97,11 @@ var Traveller = React.createClass({displayName: "Traveller",
 				React.createElement("p", null, traveller.bio), 
 				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
 					React.createElement("form", {className: "form-inline"}, 
-					React.createElement("h3", null, "New Traveller"), 
-						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg8"}, 
-							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Name", defaultValue: traveller.name})
+						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg-8"}, 
+							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Traveller Name", value: traveller.name, onChange: this.handleChange})
 						), 
-						 React.createElement("button", {type: "submit", className: "btn btn-primary col-sm-4 col-m-4 col-lg4"}, "Save")
+						 React.createElement("button", {type: "submit", className: "save-traveller btn btn-primary col-sm-2 col-m-2 col-lg-2"}, "Save"), 
+						  React.createElement("button", {type: "submit", className: "remove-traveller btn col-sm-2 col-m-2 col-lg-2"}, "Remove")
 					)
 				)
 			)
