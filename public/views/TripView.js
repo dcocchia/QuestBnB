@@ -16,7 +16,7 @@ var Stop = React.createClass({displayName: "Stop",
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
-				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop"}), 
+				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
 					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
 				), 
@@ -26,7 +26,7 @@ var Stop = React.createClass({displayName: "Stop",
 				React.createElement("div", {className: "stop-info left-full-height"}, 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
-							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
+							React.createElement("h3", {className: "stop-location-title text-ellip", contentEditable: "true"}, data.location), 
 							React.createElement("span", {className: "clear"}), 
 							React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
 								React.createElement(LocationsMenu, {predictions: queryPredictions})
@@ -37,9 +37,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("p", null, "Total distance ", (totals.distance && totals.distance.text) ? totals.distance.text : "0 mi")
 					)
 				), 
-				React.createElement("div", {className: "stop-lodging left-full-height"}
-
-				)
+				React.createElement(Lodging, {lodging: data.lodging})
 			)
 		)
 	}
@@ -52,12 +50,12 @@ var Drawer = React.createClass({displayName: "Drawer",
 			React.createElement("div", {className: "drawer"}, 
 				React.createElement("div", {className: "inner"}, 
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
-						React.createElement("label", {for: "mpg"}, "MPG"), 
+						React.createElement("label", {htmlFor: "mpg"}, "MPG"), 
 						React.createElement("input", {type: "range", min: "1", max: "150", step: "1", id: "mpg", name: "mpg", className: "gas-slider mpg", placeholder: "MPG", defaultValue: data.mpg, "data-model-attr": "mpg", role: "slider", "aria-valuenow": data.mpg, "aria-valuemin": "1", "aria-valuemax": "150", "aria-valuetext": "miles per gallon"}), 
 						React.createElement("p", {className: "mpg-label"}, data.mpg, " mi / Gallon")
 					), 
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
-						React.createElement("label", {for: "gasPrice"}, "Gas Price"), 
+						React.createElement("label", {htmlFor: "gasPrice"}, "Gas Price"), 
 						React.createElement("input", {type: "range", min: ".10", max: "10.00", step: ".10", id: "gasPrice", name: "gasPrice", className: "gas-slider gas-price", placeholder: "Gas Price", defaultValue: data.gasPrice, "data-model-attr": "gasPrice", "data-to-fixed": "2", role: "slider", "aria-valuenow": data.gasPrice, "aria-valuemin": "1", "aria-valuemax": "10.00", "aria-valuetext": "gas price"}), 
 						React.createElement("p", {className: "mpg-label"}, "$", data.gasPrice, " / Gallon")
 					)
@@ -109,6 +107,55 @@ var Traveller = React.createClass({displayName: "Traveller",
 	}
 });
 
+var Lodging = React.createClass({displayName: "Lodging",
+	render: function() {
+		var lodging = (this.props.lodging || {} );
+		var isHome = (lodging.isHome || false);
+		var lodgingElm, bookingStatusElm;
+
+		bookingStatusElm = (
+			React.createElement("div", {className: "lodging-booking-status", role: "button"}, 
+				"Find a place >"
+			)
+		);
+
+		if (isHome) {
+			lodgingElm = ( 
+				React.createElement("div", {className: "lodging-wrapper"}, 
+					React.createElement("div", {className: "home-img-wrapper"}, 
+						React.createElement("img", {src: "/app/img/map-pin-home-icon-medium.png", className: "absolute-center"})
+					), 
+					React.createElement("h4", null, "Home")
+				)
+			);
+		} else {
+			lodgingElm = (
+				React.createElement("div", {className: "lodging-wrapper"}, 
+					React.createElement("div", {className: "lodging-post-card"}, 
+						React.createElement("div", {className: "lodging-img-wrapper col-sm-6 col-m-6 col-lg-6"}, 
+							React.createElement("img", {src: "/app/img/fake-place.jpg", className: "absolute-center"})
+						), 
+						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
+							React.createElement("h4", {className: "text-ellip"}, "Lodging Title"), 
+							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
+							React.createElement("p", {className: "text-ellip"}, "March 13th"), 
+							React.createElement("p", {className: "en-dash"}, "–"), 
+							React.createElement("p", {className: "text-ellip"}, "March 31st")
+						)
+					), 
+					bookingStatusElm
+				)
+			);
+		}
+
+		return (
+			React.createElement("div", {className: "stop-lodging left-full-height"}, 
+				lodgingElm
+			)
+		)
+	}
+}); 
+
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
@@ -149,8 +196,8 @@ var TripView = React.createClass({displayName: "TripView",
 						)
 					), 
 					React.createElement("div", {className: "trip-dates-wrapper search-box"}, 
-						React.createElement("input", {type: "text", name: "startDate", className: "date form-control", placeholder: "Leaving", "aria-label": "date start", defaultValue: this.props.start}), 
-						React.createElement("input", {type: "text", name: "endDate", className: "date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end}), 
+						React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Leaving", "aria-label": "date start", defaultValue: this.props.start}), 
+						React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end}), 
 						React.createElement("button", {className: "submit form-control btn btn-primary"}, "Done")
 					)
 				)

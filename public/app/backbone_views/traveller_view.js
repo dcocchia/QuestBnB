@@ -5,7 +5,8 @@ var TravellerView = Backbone.View.extend({
 		"click .close-edit-card"	: "toggleEditCard",
 		"click .save-traveller"		: "saveTraveller",
 		"click .remove-traveller"	: "removeTraveller",
-		"keyup .edit-card input"	: "onEditNameKeyUp"
+		"keyup .edit-card input"	: "onEditNameKeyUp",
+		"focus .edit-card input"	: "onFocusEditCardInput"
 	},
 
 	initialize: function(opts) {
@@ -58,6 +59,11 @@ var TravellerView = Backbone.View.extend({
 			this.clearAllRanges();
 			this.saveTraveller(e);
 		}
+	},
+
+	onFocusEditCardInput: function(e) {
+		//places cursor at end of text
+		e.currentTarget.value = e.currentTarget.value;
 	},
 
 	clearAllRanges: function() {

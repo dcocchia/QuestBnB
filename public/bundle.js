@@ -26858,7 +26858,7 @@ var traveller_model = Backbone.Model.extend({
 	defaults: {
 		name: "",
 		img: {
-			src: "/app/img/default-icon.jpg"
+			src: "/app/img/default-icon.png"
 		}
 	},
 
@@ -27217,7 +27217,6 @@ var search_model = require("../backbone_models/search_model");
 var StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title"	: "onEditKeyDown",
-		"keyup .stop-location-title"	: "onEditKeyup",
 		"click .location-item"			: "onLocationItemClick",
 		"click .clear"					: "onClearClick",
 		"click .remove"					: "onRemoveClick"
@@ -27248,17 +27247,15 @@ var StopView = Backbone.View.extend({
 		
 	},
 
-	onEditKeyup: function(e) {
+	onEditKeyDown: function(e) {
 		var target = e.currentTarget;
-
-		if (e && e.preventDefault) { e.preventDefault(); }
 
 		switch(e.keyCode) {
 			case 40:
-				this.focusNextLocationItem(target);
+				this.focusNextLocationItem(target, e);
 				break;
 			case 38:
-				this.focusPrevLocationItem(target);
+				this.focusPrevLocationItem(target, e);
 				break;
 			case 13: 
 				this.onLocationKeydown(e);
@@ -27288,11 +27285,13 @@ var StopView = Backbone.View.extend({
 		}
 	},
 
-	focusNextLocationItem: function(target) {
+	focusNextLocationItem: function(target, e) {
 		var $locationsMenu = $(target).siblings(".locations-menu"),
 			$locationItems = $locationsMenu.find(".location-item"),
 			$activeItem = $locationItems.filter(".active"),
 			$next;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
 			$locationItems.first().addClass("active");
@@ -27308,11 +27307,13 @@ var StopView = Backbone.View.extend({
 		}
 	},
 
-	focusPrevLocationItem: function(target) {
+	focusPrevLocationItem: function(target, e) {
 		var $locationsMenu = $(target).siblings(".locations-menu"),
 			$locationItems = $locationsMenu.find(".location-item"),
 			$activeItem = $locationItems.filter(".active"),
 			$prev;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
 			$locationItems.last().addClass("active");
@@ -27421,7 +27422,8 @@ var TravellerView = Backbone.View.extend({
 		"click .close-edit-card"	: "toggleEditCard",
 		"click .save-traveller"		: "saveTraveller",
 		"click .remove-traveller"	: "removeTraveller",
-		"keyup .edit-card input"	: "onEditNameKeyUp"
+		"keyup .edit-card input"	: "onEditNameKeyUp",
+		"focus .edit-card input"	: "onFocusEditCardInput"
 	},
 
 	initialize: function(opts) {
@@ -27476,6 +27478,11 @@ var TravellerView = Backbone.View.extend({
 		}
 	},
 
+	onFocusEditCardInput: function(e) {
+		//places cursor at end of text
+		e.currentTarget.value = e.currentTarget.value;
+	},
+
 	clearAllRanges: function() {
 		if (window.getSelection) {
 			window.getSelection().removeAllRanges();
@@ -27497,7 +27504,6 @@ var TripView = PageView.extend({
 
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
-		this.elms.$stops = this.$(".stops");
 	},
 
 	events: {
@@ -27574,17 +27580,43 @@ var TripView = PageView.extend({
 			this.render(trip_template, data);
 		}, this));
 
+		Backbone.on("TripView:render", _.bind(function() {
+			//rebind date pickers, but wait for renders to finish
+			this.bindDatePickersDebounced();
+		}, this));
+
 		Backbone.on("removeStop", _.bind(function(stopId) {
 			var view = _.find(this.stop_views, function(view, index) {
 				return view.stopId === stopId;
 			});
 
 			if (view) { view.destroy(); }
-		}, this))
+		}, this));
 
 		this._findElms(opts.$parentEl);
 
+		this.bindDatePickers();
+
 	},
+
+	bindDatePickers: function() {
+		var $dateWrapper = this.$(".trip-dates-wrapper");
+
+		$dateWrapper.find(".date.start").datepicker({ 
+			onSelect: _.bind( function(resp) {
+				//re calc stuff
+			}, this)
+		});
+		$dateWrapper.find(".date.end").datepicker({ 
+			onSelect: _.bind( function(resp) {
+				//re calc stuff
+			}, this)
+		});
+	},
+
+	bindDatePickersDebounced: _.debounce(function() { 
+		this.bindDatePickers();
+	}, 500),
 
 	setStopsCollectionInModel: function() {
 		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
@@ -27877,7 +27909,7 @@ var ViewOrchestrator = Backbone.View.extend({
 						{
 							name: "You",
 							img: {
-								src: "/app/img/default-icon.jpg"
+								src: "/app/img/default-icon.png"
 							}
 						}
 					],
@@ -27886,7 +27918,10 @@ var ViewOrchestrator = Backbone.View.extend({
 							//if geo loc'ed use that, otherwise only use one stop
 							location: "Home",
 							stopNum: 1,
-							dayNum: 1
+							dayNum: 1,
+							lodging: {
+								isHome: true
+							}
 						},
 						{
 							location: data.location,
@@ -28025,7 +28060,7 @@ var Stop = React.createClass({displayName: "Stop",
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
-				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop"}), 
+				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 
 				React.createElement("div", {className: "stop-bar left-full-height"}, 
 					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
 				), 
@@ -28035,7 +28070,7 @@ var Stop = React.createClass({displayName: "Stop",
 				React.createElement("div", {className: "stop-info left-full-height"}, 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
-							React.createElement("h3", {className: "stop-location-title", contentEditable: "true"}, data.location), 
+							React.createElement("h3", {className: "stop-location-title text-ellip", contentEditable: "true"}, data.location), 
 							React.createElement("span", {className: "clear"}), 
 							React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
 								React.createElement(LocationsMenu, {predictions: queryPredictions})
@@ -28046,9 +28081,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("p", null, "Total distance ", (totals.distance && totals.distance.text) ? totals.distance.text : "0 mi")
 					)
 				), 
-				React.createElement("div", {className: "stop-lodging left-full-height"}
-
-				)
+				React.createElement(Lodging, {lodging: data.lodging})
 			)
 		)
 	}
@@ -28061,12 +28094,12 @@ var Drawer = React.createClass({displayName: "Drawer",
 			React.createElement("div", {className: "drawer"}, 
 				React.createElement("div", {className: "inner"}, 
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
-						React.createElement("label", {for: "mpg"}, "MPG"), 
+						React.createElement("label", {htmlFor: "mpg"}, "MPG"), 
 						React.createElement("input", {type: "range", min: "1", max: "150", step: "1", id: "mpg", name: "mpg", className: "gas-slider mpg", placeholder: "MPG", defaultValue: data.mpg, "data-model-attr": "mpg", role: "slider", "aria-valuenow": data.mpg, "aria-valuemin": "1", "aria-valuemax": "150", "aria-valuetext": "miles per gallon"}), 
 						React.createElement("p", {className: "mpg-label"}, data.mpg, " mi / Gallon")
 					), 
 					React.createElement("div", {className: "form-group col-lg-6 col-m-6 col-sm-6 col-xs-12"}, 
-						React.createElement("label", {for: "gasPrice"}, "Gas Price"), 
+						React.createElement("label", {htmlFor: "gasPrice"}, "Gas Price"), 
 						React.createElement("input", {type: "range", min: ".10", max: "10.00", step: ".10", id: "gasPrice", name: "gasPrice", className: "gas-slider gas-price", placeholder: "Gas Price", defaultValue: data.gasPrice, "data-model-attr": "gasPrice", "data-to-fixed": "2", role: "slider", "aria-valuenow": data.gasPrice, "aria-valuemin": "1", "aria-valuemax": "10.00", "aria-valuetext": "gas price"}), 
 						React.createElement("p", {className: "mpg-label"}, "$", data.gasPrice, " / Gallon")
 					)
@@ -28118,6 +28151,55 @@ var Traveller = React.createClass({displayName: "Traveller",
 	}
 });
 
+var Lodging = React.createClass({displayName: "Lodging",
+	render: function() {
+		var lodging = (this.props.lodging || {} );
+		var isHome = (lodging.isHome || false);
+		var lodgingElm, bookingStatusElm;
+
+		bookingStatusElm = (
+			React.createElement("div", {className: "lodging-booking-status", role: "button"}, 
+				"Find a place >"
+			)
+		);
+
+		if (isHome) {
+			lodgingElm = ( 
+				React.createElement("div", {className: "lodging-wrapper"}, 
+					React.createElement("div", {className: "home-img-wrapper"}, 
+						React.createElement("img", {src: "/app/img/map-pin-home-icon-medium.png", className: "absolute-center"})
+					), 
+					React.createElement("h4", null, "Home")
+				)
+			);
+		} else {
+			lodgingElm = (
+				React.createElement("div", {className: "lodging-wrapper"}, 
+					React.createElement("div", {className: "lodging-post-card"}, 
+						React.createElement("div", {className: "lodging-img-wrapper col-sm-6 col-m-6 col-lg-6"}, 
+							React.createElement("img", {src: "/app/img/fake-place.jpg", className: "absolute-center"})
+						), 
+						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
+							React.createElement("h4", {className: "text-ellip"}, "Lodging Title"), 
+							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
+							React.createElement("p", {className: "text-ellip"}, "March 13th"), 
+							React.createElement("p", {className: "en-dash"}, "–"), 
+							React.createElement("p", {className: "text-ellip"}, "March 31st")
+						)
+					), 
+					bookingStatusElm
+				)
+			);
+		}
+
+		return (
+			React.createElement("div", {className: "stop-lodging left-full-height"}, 
+				lodgingElm
+			)
+		)
+	}
+}); 
+
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var stops = this.props.stops;
@@ -28158,8 +28240,8 @@ var TripView = React.createClass({displayName: "TripView",
 						)
 					), 
 					React.createElement("div", {className: "trip-dates-wrapper search-box"}, 
-						React.createElement("input", {type: "text", name: "startDate", className: "date form-control", placeholder: "Leaving", "aria-label": "date start", defaultValue: this.props.start}), 
-						React.createElement("input", {type: "text", name: "endDate", className: "date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end}), 
+						React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Leaving", "aria-label": "date start", defaultValue: this.props.start}), 
+						React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end}), 
 						React.createElement("button", {className: "submit form-control btn btn-primary"}, "Done")
 					)
 				)

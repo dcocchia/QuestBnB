@@ -1,4 +1,11 @@
+try {
+	var config = require("./config");
+} catch(e) {
+	console.log("error loading config", e);
+	console.error("\033[31m config file is required! Calls to /lodgings will not work.\033[0m");
+}
 var express = require('express');
+var request = require('request');
 var app = express();
 var bodyParser = require('body-parser');
 var Promise = require("bluebird");
@@ -118,17 +125,6 @@ app.put('/trips/:id', function(req, res) {
 	});
 });
 
-app.get('/trips/:id/stops', function(req, res) {
-	var html = self.renderer.render(stopsView, {
-		title: "Stops Page"
-	});
-	res.send(html);
-});
-
-app.put('/trips/:id/stops', function(req, res) {
-
-});
-
 app.get('/trips/:id/stops/:id', function(req, res) {
 	var html = self.renderer.render(stopsView, {
 		title: "Stop Page"
@@ -136,15 +132,20 @@ app.get('/trips/:id/stops/:id', function(req, res) {
 	res.send(html);
 });
 
-app.patch('/trips/:id/stops/:id', function(req, res){
+app.put('/trips/:id/stops/:id', function(req, res) {
 
 });
 
-app.get("/trips/:id/overview", function(req, res) {
-	var html = self.renderer.render(overviewView, {
-		title: "Overview Page"
-	});
-	res.send(html);
+app.get('/lodgings', function(req, res) {
+	var options = {
+		url: "https://zilyo.p.mashape.com/search",
+		headers: {
+			"X-Mashape-Key"	:	config.ZilyoApiKey,
+			"Accept"		:	"application/json"
+		}
+	};
+
+	req.pipe(request(options)).pipe(res);
 });
 
 var addObjIds = function(items) {

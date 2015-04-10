@@ -2,7 +2,7 @@ var traveller_model = Backbone.Model.extend({
 	defaults: {
 		name: "",
 		img: {
-			src: "/app/img/default-icon.jpg"
+			src: "/app/img/default-icon.png"
 		}
 	},
 

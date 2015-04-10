@@ -3,7 +3,6 @@ var search_model = require("../backbone_models/search_model");
 var StopView = Backbone.View.extend({
 	events: {
 		"keydown .stop-location-title"	: "onEditKeyDown",
-		"keyup .stop-location-title"	: "onEditKeyup",
 		"click .location-item"			: "onLocationItemClick",
 		"click .clear"					: "onClearClick",
 		"click .remove"					: "onRemoveClick"
@@ -34,17 +33,15 @@ var StopView = Backbone.View.extend({
 		
 	},
 
-	onEditKeyup: function(e) {
+	onEditKeyDown: function(e) {
 		var target = e.currentTarget;
-
-		if (e && e.preventDefault) { e.preventDefault(); }
 
 		switch(e.keyCode) {
 			case 40:
-				this.focusNextLocationItem(target);
+				this.focusNextLocationItem(target, e);
 				break;
 			case 38:
-				this.focusPrevLocationItem(target);
+				this.focusPrevLocationItem(target, e);
 				break;
 			case 13: 
 				this.onLocationKeydown(e);
@@ -74,11 +71,13 @@ var StopView = Backbone.View.extend({
 		}
 	},
 
-	focusNextLocationItem: function(target) {
+	focusNextLocationItem: function(target, e) {
 		var $locationsMenu = $(target).siblings(".locations-menu"),
 			$locationItems = $locationsMenu.find(".location-item"),
 			$activeItem = $locationItems.filter(".active"),
 			$next;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
 			$locationItems.first().addClass("active");
@@ -94,11 +93,13 @@ var StopView = Backbone.View.extend({
 		}
 	},
 
-	focusPrevLocationItem: function(target) {
+	focusPrevLocationItem: function(target, e) {
 		var $locationsMenu = $(target).siblings(".locations-menu"),
 			$locationItems = $locationsMenu.find(".location-item"),
 			$activeItem = $locationItems.filter(".active"),
 			$prev;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
 			$locationItems.last().addClass("active");

@@ -39,7 +39,7 @@ var ViewOrchestrator = Backbone.View.extend({
 						{
 							name: "You",
 							img: {
-								src: "/app/img/default-icon.jpg"
+								src: "/app/img/default-icon.png"
 							}
 						}
 					],
@@ -48,7 +48,10 @@ var ViewOrchestrator = Backbone.View.extend({
 							//if geo loc'ed use that, otherwise only use one stop
 							location: "Home",
 							stopNum: 1,
-							dayNum: 1
+							dayNum: 1,
+							lodging: {
+								isHome: true
+							}
 						},
 						{
 							location: data.location,

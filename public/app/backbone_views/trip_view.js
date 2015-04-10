@@ -7,7 +7,6 @@ var TripView = PageView.extend({
 
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
-		this.elms.$stops = this.$(".stops");
 	},
 
 	events: {
@@ -84,17 +83,43 @@ var TripView = PageView.extend({
 			this.render(trip_template, data);
 		}, this));
 
+		Backbone.on("TripView:render", _.bind(function() {
+			//rebind date pickers, but wait for renders to finish
+			this.bindDatePickersDebounced();
+		}, this));
+
 		Backbone.on("removeStop", _.bind(function(stopId) {
 			var view = _.find(this.stop_views, function(view, index) {
 				return view.stopId === stopId;
 			});
 
 			if (view) { view.destroy(); }
-		}, this))
+		}, this));
 
 		this._findElms(opts.$parentEl);
 
+		this.bindDatePickers();
+
 	},
+
+	bindDatePickers: function() {
+		var $dateWrapper = this.$(".trip-dates-wrapper");
+
+		$dateWrapper.find(".date.start").datepicker({ 
+			onSelect: _.bind( function(resp) {
+				//re calc stuff
+			}, this)
+		});
+		$dateWrapper.find(".date.end").datepicker({ 
+			onSelect: _.bind( function(resp) {
+				//re calc stuff
+			}, this)
+		});
+	},
+
+	bindDatePickersDebounced: _.debounce(function() { 
+		this.bindDatePickers();
+	}, 500),
 
 	setStopsCollectionInModel: function() {
 		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});

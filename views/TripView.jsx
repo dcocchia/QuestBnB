@@ -16,7 +16,7 @@ var Stop = React.createClass({
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
-				<div className="remove" role="button" aria-label="remove stop"></div>
+				<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
 				<div className="stop-bar left-full-height">
 					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
 				</div>
@@ -26,7 +26,7 @@ var Stop = React.createClass({
 				<div className="stop-info left-full-height">
 					<div className="stop-place-info left-full-height">
 						<div className="stop-location-title-wrapper">
-							<h3 className="stop-location-title" contentEditable="true">{data.location}</h3>
+							<h3 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h3>
 							<span className="clear"></span>
 							<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
 								<LocationsMenu predictions={queryPredictions} />
@@ -37,9 +37,7 @@ var Stop = React.createClass({
 						<p>Total distance {(totals.distance && totals.distance.text) ? totals.distance.text : "0 mi"}</p>
 					</div>
 				</div>
-				<div className="stop-lodging left-full-height">
-
-				</div>
+				<Lodging lodging={data.lodging}/>
 			</li>
 		)
 	}
@@ -52,12 +50,12 @@ var Drawer = React.createClass({
 			<div className="drawer">
 				<div className="inner">
 					<div className="form-group col-lg-6 col-m-6 col-sm-6 col-xs-12">
-						<label for="mpg">MPG</label>
+						<label htmlFor="mpg">MPG</label>
 						<input type="range" min="1" max="150" step="1" id="mpg" name="mpg" className="gas-slider mpg" placeholder="MPG" defaultValue={data.mpg} data-model-attr="mpg" role="slider" aria-valuenow={data.mpg} aria-valuemin="1" aria-valuemax="150" aria-valuetext="miles per gallon"/>
 						<p className="mpg-label">{data.mpg} mi / Gallon</p>
 					</div>
 					<div className="form-group col-lg-6 col-m-6 col-sm-6 col-xs-12">
-						<label for="gasPrice">Gas Price</label>
+						<label htmlFor="gasPrice">Gas Price</label>
 						<input type="range" min=".10" max="10.00" step=".10" id="gasPrice" name="gasPrice" className="gas-slider gas-price" placeholder="Gas Price" defaultValue={data.gasPrice} data-model-attr="gasPrice" data-to-fixed="2" role="slider" aria-valuenow={data.gasPrice} aria-valuemin="1" aria-valuemax="10.00" aria-valuetext="gas price"/>
 						<p className="mpg-label">${data.gasPrice} / Gallon</p>
 					</div>
@@ -109,6 +107,55 @@ var Traveller = React.createClass({
 	}
 });
 
+var Lodging = React.createClass({
+	render: function() {
+		var lodging = (this.props.lodging || {} );
+		var isHome = (lodging.isHome || false);
+		var lodgingElm, bookingStatusElm;
+
+		bookingStatusElm = (
+			<div className="lodging-booking-status" role="button">
+				Find a place &gt;
+			</div>
+		);
+
+		if (isHome) {
+			lodgingElm = ( 
+				<div className="lodging-wrapper">
+					<div className="home-img-wrapper">
+						<img src="/app/img/map-pin-home-icon-medium.png" className="absolute-center"/>
+					</div>
+					<h4>Home</h4>
+				</div>
+			);
+		} else {
+			lodgingElm = (
+				<div className="lodging-wrapper">
+					<div className="lodging-post-card">
+						<div className="lodging-img-wrapper col-sm-6 col-m-6 col-lg-6">
+							<img src="/app/img/fake-place.jpg" className="absolute-center"/>
+						</div>
+						<div className="lodging-post-card-text col-sm-6 col-m-6 col-lg-6">
+							<h4 className="text-ellip">Lodging Title</h4>
+							<p className="text-ellip">$999.99</p>
+							<p className="text-ellip">March 13th</p>
+							<p className="en-dash">&#8211;</p>
+							<p className="text-ellip">March 31st</p>
+						</div>
+					</div>
+					{bookingStatusElm}
+				</div>
+			);
+		}
+
+		return (
+			<div className="stop-lodging left-full-height">
+				{lodgingElm}
+			</div>
+		)
+	}
+}); 
+
 var TripView = React.createClass({
 	render: function() {
 		var stops = this.props.stops;
@@ -149,8 +196,8 @@ var TripView = React.createClass({
 						</div>
 					</div>
 					<div className="trip-dates-wrapper search-box">
-						<input type="text" name="startDate" className="date form-control" placeholder="Leaving" aria-label="date start" defaultValue={this.props.start}/>
-						<input type="text" name="endDate" className="date form-control" placeholder="Returning" aria-label="date end" defaultValue={this.props.end}/>
+						<input type="text" name="startDate" className="start date form-control" placeholder="Leaving" aria-label="date start" defaultValue={this.props.start}/>
+						<input type="text" name="endDate" className="end date form-control" placeholder="Returning" aria-label="date end" defaultValue={this.props.end}/>
 						<button className="submit form-control btn btn-primary">Done</button>
 					</div>
 				</div>
