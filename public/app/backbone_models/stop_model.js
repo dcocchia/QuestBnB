@@ -20,6 +20,9 @@ var stop_model = Backbone.Model.extend({
 				"text": "0",
 				"value": 0
 			}
+		},
+		"lodging": {
+			
 		}
 	},
 

@@ -50,7 +50,7 @@ var ViewOrchestrator = Backbone.View.extend({
 							stopNum: 1,
 							dayNum: 1,
 							lodging: {
-								isHome: true
+								id: "quest_home"
 							}
 						},
 						{

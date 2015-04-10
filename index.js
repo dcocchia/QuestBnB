@@ -98,6 +98,7 @@ app.put('/trips/:id', function(req, res) {
 	var tripId = req.params.id;
 	var ObjectId = mongojs.ObjectId;
 	var data = req.body;
+	var doc;
 
 	data || (data = {});
 	delete data._id;
@@ -125,24 +126,60 @@ app.put('/trips/:id', function(req, res) {
 	});
 });
 
-app.get('/trips/:id/stops/:id', function(req, res) {
-	var html = self.renderer.render(stopsView, {
-		title: "Stop Page"
+app.get('/trips/:id/stops/:stopId', function(req, res) {
+	var ObjectId = mongojs.ObjectId;
+	var tripId = req.params.id;
+	var stopId = req.params.stopId;
+	var stopDoc;
+
+	trips.findAsync({_id: ObjectId(tripId)}).then(function(docs) {
+		if (docs && docs.length > 0) {
+			
+			doc = docs[0];
+			
+			_.extend(doc, { mapStyleClasses: "map stop-view" });
+
+			stopDoc = _.find(doc.stops, function(stop) {
+				return (stop._id === stopId);
+			});
+
+			res.format({
+				json: function() {
+					res.send(stopDoc);
+				},
+				html: function() {
+					var html = self.renderer.render(stopView, stopDoc);
+					res.send(html);
+				}
+			});
+
+		} else {
+			res.status(404).send({"error": "Stop document not found."});
+		}
+		
+	}).catch(function(e) {
+		res.status(500).send({"error": e});
 	});
-	res.send(html);
 });
 
-app.put('/trips/:id/stops/:id', function(req, res) {
+app.put('/trips/:id/stops/:stopId', function(req, res) {
 
 });
 
 app.get('/lodgings', function(req, res) {
+	var queryDefaults = {
+		provider: "airbnb"
+	};
+
+	var queries = _.defaults(req.query , queryDefaults);
+
 	var options = {
 		url: "https://zilyo.p.mashape.com/search",
 		headers: {
 			"X-Mashape-Key"	:	config.ZilyoApiKey,
 			"Accept"		:	"application/json"
-		}
+		},
+		qs: queries
 	};
 
 	req.pipe(request(options)).pipe(res);

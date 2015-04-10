@@ -26841,6 +26841,9 @@ var stop_model = Backbone.Model.extend({
 				"text": "0",
 				"value": 0
 			}
+		},
+		"lodging": {
+			
 		}
 	},
 
@@ -27920,7 +27923,7 @@ var ViewOrchestrator = Backbone.View.extend({
 							stopNum: 1,
 							dayNum: 1,
 							lodging: {
-								isHome: true
+								id: "quest_home"
 							}
 						},
 						{
@@ -28081,7 +28084,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("p", null, "Total distance ", (totals.distance && totals.distance.text) ? totals.distance.text : "0 mi")
 					)
 				), 
-				React.createElement(Lodging, {lodging: data.lodging})
+				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id})
 			)
 		)
 	}
@@ -28154,15 +28157,50 @@ var Traveller = React.createClass({displayName: "Traveller",
 var Lodging = React.createClass({displayName: "Lodging",
 	render: function() {
 		var lodging = (this.props.lodging || {} );
-		var isHome = (lodging.isHome || false);
-		var lodgingElm, bookingStatusElm;
+		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
+		var lodgingElm, bookingStatusElm, stopUrl;
 
-		bookingStatusElm = (
-			React.createElement("div", {className: "lodging-booking-status", role: "button"}, 
-				"Find a place >"
-			)
-		);
-
+		if (!isHome) {
+			stopUrl = "/trips/" + this.props.tripId + "/stops/" + this.props.stopId + "";
+			switch(lodging.bookingStatus) {
+				case "pending":
+					bookingStatusElm = (
+						React.createElement("div", {className: "lodging-booking-status pending", role: "button"}, 
+							React.createElement("a", {href: stopUrl}, "Pending host approval >")
+						)
+					);
+					break;
+				case "approved":
+					bookingStatusElm = (
+						React.createElement("div", {className: "lodging-booking-status approved", role: "button"}, 
+							React.createElement("a", {href: stopUrl}, "Approved >")
+						)
+					);
+					break;
+				case "declined":
+					bookingStatusElm = (
+						React.createElement("div", {className: "lodging-booking-status declined", role: "button"}, 
+							React.createElement("a", {href: stopUrl}, "Declined >")
+						)
+					);
+					break;
+				case "epired":
+					bookingStatusElm = (
+						React.createElement("div", {className: "lodging-booking-status declined", role: "button"}, 
+							React.createElement("a", {href: stopUrl}, "Request Expired >")
+						)
+					);
+					break;
+				default: 
+					bookingStatusElm = (
+						React.createElement("div", {className: "lodging-booking-status", role: "button"}, 
+							React.createElement("a", {href: stopUrl}, "Find a place >")
+						)
+					);
+					break;
+			}
+		}
+		
 		if (isHome) {
 			lodgingElm = ( 
 				React.createElement("div", {className: "lodging-wrapper"}, 
@@ -28202,6 +28240,7 @@ var Lodging = React.createClass({displayName: "Lodging",
 
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
+		var tripId = this.props._id;
 		var stops = this.props.stops;
 		var canAddStop = (this.props.stops.length >= 10) ? false : true; 
 		var locationProps = this.props.location_props;
@@ -28210,14 +28249,14 @@ var TripView = React.createClass({displayName: "TripView",
 		var slideInBottom = this.props.slideInBottom;
 
 		return (
-			React.createElement("div", {className: "trip-page", "data-trip-id": this.props._id}, 
+			React.createElement("div", {className: "trip-page", "data-trip-id": tripId}, 
 				React.createElement("div", {className: "side-bar panel"}, 
 					React.createElement("div", {className: "bleed-width-20"}, 
 						React.createElement("h1", {className: "title left-full-width", contentEditable: "true", role: "textbox"}, this.props.title), 
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
-								return React.createElement(Stop, {data: stop, index: index, locationProps: locationProps, stopProps: stopProps, canAddStop: canAddStop, key: index});
+								return React.createElement(Stop, {tripId: tripId, data: stop, index: index, locationProps: locationProps, stopProps: stopProps, canAddStop: canAddStop, key: index});
 							})
 							)
 						), 

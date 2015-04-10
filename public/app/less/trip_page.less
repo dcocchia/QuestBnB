@@ -209,7 +209,7 @@
 			margin: 0;
 			text-align: center;
 		}
-		
+
 		.home-img-wrapper {
 			position: relative;
 			overflow: hidden;
@@ -257,25 +257,84 @@
 
 		.lodging-booking-status {
 			border-top: 1px solid @panel-border-grey;
-			background-color: #C0C0C0;
-			background-color: rgba(0 , 0, 0, .35);
+			background: #C0C0C0;
+			background: -webkit-linear-gradient(-50deg, #ccc 55%, #aaa 55%, #666 100%);
+			background: -o-linear-gradient(-50deg, #ccc 55%, #aaa 55%, #666 100%);
+			background: -ms-linear-gradient(-50deg, #ccc 55%, #aaa 55%, #666 100%);
+			background: linear-gradient(140deg, #ccc 55%, #aaa 55%, #666 100%);
 			height: 40px;
 			color: #fff;
 			font-size: 18px;
+			font-weight: bold;
 			text-align: center;
 			line-height: 40px;
 
+			a {
+				color: #fff;
+				width: 100%;
+				height: 100%;
+				display: block;
+
+				&:hover {
+					text-decoration: none;
+				}
+			}
+
 			&:hover {
-				background-color: rgba(0, 0, 0, .55);
+				background: #666;
+				background: -webkit-linear-gradient(-50deg, #BEBEBE 55%, #9E9E9E 45%, #5A5A5A 100%);
+				background: -o-linear-gradient(-50deg, #BEBEBE 55%, #9E9E9E 45%, #5A5A5A 100%);
+				background: -ms-linear-gradient(-50deg, #BEBEBE 55%, #9E9E9E 45%, #5A5A5A 100%);
+				background: linear-gradient(140deg, #BEBEBE 55%,#9E9E9E 55%,#5A5A5A 100%);
 				cursor: pointer;
 			}
 
 			&.pending {
-				background-color: green;
+				background: #ffb400;
+				background: -webkit-linear-gradient(-50deg, #ffc333 55%, #ffb400 55%, #ffb400 100%);
+				background: -o-linear-gradient(-50deg, #ffc333 55%, #ffb400 55%, #ffb400 100%);
+				background: -ms-linear-gradient(-50deg, #ffc333 55%, #ffb400 55%, #ffb400 100%);
+				background: linear-gradient(140deg, #ffc333 55%, #ffb400 55%, #ffb400 100%);
+
+				&:hover {
+					background: #FFBC1A;
+					background: -webkit-linear-gradient(-50deg, #FFBC1A 55%, #ECAA0A 55%, #F0BF47 100%);
+					background: -o-linear-gradient(-50deg, #FFBC1A 55%, #ECAA0A 55%, #F0BF47 100%);
+					background: -ms-linear-gradient(-50deg, #FFBC1A 55%, #ECAA0A 55%, #F0BF47 100%);
+					background: linear-gradient(140deg, #FFBC1A 55%,#ECAA0A 55%,#F0BF47 100%);
+				}
 			}
 
 			&.approved {
-				background-color: red;
+				background: #3fb34f;
+				background: -webkit-linear-gradient(-50deg, #3fb34f 55%, #379E45 55%, #128322 100%);
+				background: -o-linear-gradient(-50deg, #3fb34f 55%, #379E45 55%, #128322 100%);
+				background: -ms-linear-gradient(-50deg, #3fb34f 55%, #379E45 55%, #128322 100%);
+				background: linear-gradient(140deg, #3fb34f 55%, #379E45 55%, #128322 100%);
+
+				&:hover {
+					background: #3fb34f;
+					background: -webkit-linear-gradient(-50deg, #39A948 55%, #2C9039 55%, #0A791A 100%);
+					background: -o-linear-gradient(-50deg, #39A948 55%, #2C9039 55%, #0A791A 100%);
+					background: -ms-linear-gradient(-50deg, #39A948 55%, #2C9039 55%, #0A791A 100%);
+					background: linear-gradient(140deg, #39A948 55%, #2C9039 55%, #0A791A 100%);
+				}
+			}
+
+			&.declined {
+				background: #ff5a5f;
+				background: -webkit-linear-gradient(-50deg, #ff5a5f 55%,#EC4E52 55%,#EF3137 100%);
+				background: -o-linear-gradient(-50deg, #ff5a5f 55%,#EC4E52 55%,#EF3137 100%);
+				background: -ms-linear-gradient(-50deg, #ff5a5f 55%,#EC4E52 55%,#EF3137 100%);
+				background: linear-gradient(140deg, #ff5a5f 55%,#EC4E52 55%,#EF3137 100%);
+
+				&:hover {
+					background: #FD4A4F;
+					background: -webkit-linear-gradient(-50deg, #FD4A4F 55%,#EA4145 55%,#EC262C 100%);
+					background: -o-linear-gradient(-50deg, #FD4A4F 55%,#EA4145 55%,#EC262C 100%);
+					background: -ms-linear-gradient(-50deg, #FD4A4F 55%,#EA4145 55%,#EC262C 100%);
+					background: linear-gradient(140deg, #FD4A4F 55%,#EA4145 55%,#EC262C 100%);
+				}
 			}
 		}
 	}

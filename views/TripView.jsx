@@ -37,7 +37,7 @@ var Stop = React.createClass({
 						<p>Total distance {(totals.distance && totals.distance.text) ? totals.distance.text : "0 mi"}</p>
 					</div>
 				</div>
-				<Lodging lodging={data.lodging}/>
+				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id}/>
 			</li>
 		)
 	}
@@ -110,15 +110,50 @@ var Traveller = React.createClass({
 var Lodging = React.createClass({
 	render: function() {
 		var lodging = (this.props.lodging || {} );
-		var isHome = (lodging.isHome || false);
-		var lodgingElm, bookingStatusElm;
+		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
+		var lodgingElm, bookingStatusElm, stopUrl;
 
-		bookingStatusElm = (
-			<div className="lodging-booking-status" role="button">
-				Find a place &gt;
-			</div>
-		);
-
+		if (!isHome) {
+			stopUrl = "/trips/" + this.props.tripId + "/stops/" + this.props.stopId + "";
+			switch(lodging.bookingStatus) {
+				case "pending":
+					bookingStatusElm = (
+						<div className="lodging-booking-status pending" role="button">
+							<a href={stopUrl}>Pending host approval &gt;</a>
+						</div>
+					);
+					break;
+				case "approved":
+					bookingStatusElm = (
+						<div className="lodging-booking-status approved" role="button">
+							<a href={stopUrl}>Approved &gt;</a>
+						</div>
+					);
+					break;
+				case "declined":
+					bookingStatusElm = (
+						<div className="lodging-booking-status declined" role="button">
+							<a href={stopUrl}>Declined &gt;</a>
+						</div>
+					);
+					break;
+				case "epired":
+					bookingStatusElm = (
+						<div className="lodging-booking-status declined" role="button">
+							<a href={stopUrl}>Request Expired &gt;</a>
+						</div>
+					);
+					break;
+				default: 
+					bookingStatusElm = (
+						<div className="lodging-booking-status" role="button">
+							<a href={stopUrl}>Find a place &gt;</a>
+						</div>
+					);
+					break;
+			}
+		}
+		
 		if (isHome) {
 			lodgingElm = ( 
 				<div className="lodging-wrapper">
@@ -158,6 +193,7 @@ var Lodging = React.createClass({
 
 var TripView = React.createClass({
 	render: function() {
+		var tripId = this.props._id;
 		var stops = this.props.stops;
 		var canAddStop = (this.props.stops.length >= 10) ? false : true; 
 		var locationProps = this.props.location_props;
@@ -166,14 +202,14 @@ var TripView = React.createClass({
 		var slideInBottom = this.props.slideInBottom;
 
 		return (
-			<div className="trip-page" data-trip-id={this.props._id}>
+			<div className="trip-page" data-trip-id={tripId}>
 				<div className="side-bar panel">
 					<div className="bleed-width-20">
 						<h1 className="title left-full-width" contentEditable="true" role="textbox">{this.props.title}</h1>
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
-								return <Stop data={stop} index={index} locationProps={locationProps} stopProps={stopProps} canAddStop={canAddStop} key={index}/>;
+								return <Stop tripId={tripId} data={stop} index={index} locationProps={locationProps} stopProps={stopProps} canAddStop={canAddStop} key={index}/>;
 							})}
 							</ol>
 						</div>
