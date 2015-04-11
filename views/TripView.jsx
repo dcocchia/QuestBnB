@@ -91,7 +91,7 @@ var Traveller = React.createClass({
 				<div className="profile-pic-wrapper img-wrapper">
 					<img src={traveller && traveller.img && traveller.img.src ? traveller.img.src : ''} className="center" alt="traveller profile picture"/>
 				</div>
-				<p className="name">{traveller.name}</p>
+				<p className="name text-ellip">{traveller.name}</p>
 				<p>{traveller.bio}</p>
 				<div className="edit-card" area-hidden="true">
 					<form className="form-inline">

@@ -210,6 +210,7 @@ var TripView = PageView.extend({
 
 		if (this.model.get("title") !== text) {
 			this.model.set("title", text);
+			this.model.saveLocalStorageReference();
 			this.model.sync("update", this.model, {url: this.model.url});
 		}
 		

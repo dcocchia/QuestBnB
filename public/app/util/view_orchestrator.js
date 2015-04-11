@@ -101,6 +101,7 @@ var ViewOrchestrator = Backbone.View.extend({
 				trip_model.setUrl(tripId);
 				trip_model.trigger("ready");
 				this.router.navigate("/trips/" + tripId);
+				trip_model.saveLocalStorageReference();
 				Backbone.trigger("trip_view:render", true);
 			}, this));
 			

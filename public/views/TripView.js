@@ -91,7 +91,7 @@ var Traveller = React.createClass({displayName: "Traveller",
 				React.createElement("div", {className: "profile-pic-wrapper img-wrapper"}, 
 					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center", alt: "traveller profile picture"})
 				), 
-				React.createElement("p", {className: "name"}, traveller.name), 
+				React.createElement("p", {className: "name text-ellip"}, traveller.name), 
 				React.createElement("p", null, traveller.bio), 
 				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
 					React.createElement("form", {className: "form-inline"}, 

@@ -26899,6 +26899,32 @@ var trip_model = Backbone.Model.extend({
 
 	setUrl: function(TripId) {
 		this.url = this.url + "/" + TripId;
+	},
+
+	saveLocalStorageReference: function() {
+		var tripList = localStorage.getItem("tripList");
+		var newTrip = {
+			title: this.get("title"),
+			id: this.get("_id")
+		}
+		var prevTrip;
+
+		if (!tripList) { 
+			tripList = [newTrip];
+		} else {
+			tripList = JSON.parse(tripList);
+			prevTrip = _.find(tripList, function(trip, index) {
+				if (newTrip.id === trip.id) {
+					tripList.splice(index, 1);
+					return true;
+				}
+			});
+			//if this trip was already in local storage, just update it
+			if (prevTrip) { _.defaults(newTrip, prevTrip); }
+			tripList.push(newTrip);
+		}
+
+		localStorage.setItem("tripList", JSON.stringify(tripList));
 	}
 });
 
@@ -27771,6 +27797,7 @@ var TripView = PageView.extend({
 
 		if (this.model.get("title") !== text) {
 			this.model.set("title", text);
+			this.model.saveLocalStorageReference();
 			this.model.sync("update", this.model, {url: this.model.url});
 		}
 		
@@ -28045,6 +28072,7 @@ var ViewOrchestrator = Backbone.View.extend({
 				trip_model.setUrl(tripId);
 				trip_model.trigger("ready");
 				this.router.navigate("/trips/" + tripId);
+				trip_model.saveLocalStorageReference();
 				Backbone.trigger("trip_view:render", true);
 			}, this));
 			
@@ -28215,7 +28243,7 @@ var Traveller = React.createClass({displayName: "Traveller",
 				React.createElement("div", {className: "profile-pic-wrapper img-wrapper"}, 
 					React.createElement("img", {src: traveller && traveller.img && traveller.img.src ? traveller.img.src : '', className: "center", alt: "traveller profile picture"})
 				), 
-				React.createElement("p", {className: "name"}, traveller.name), 
+				React.createElement("p", {className: "name text-ellip"}, traveller.name), 
 				React.createElement("p", null, traveller.bio), 
 				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
 					React.createElement("form", {className: "form-inline"}, 

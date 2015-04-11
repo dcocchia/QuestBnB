@@ -19,6 +19,32 @@ var trip_model = Backbone.Model.extend({
 
 	setUrl: function(TripId) {
 		this.url = this.url + "/" + TripId;
+	},
+
+	saveLocalStorageReference: function() {
+		var tripList = localStorage.getItem("tripList");
+		var newTrip = {
+			title: this.get("title"),
+			id: this.get("_id")
+		}
+		var prevTrip;
+
+		if (!tripList) { 
+			tripList = [newTrip];
+		} else {
+			tripList = JSON.parse(tripList);
+			prevTrip = _.find(tripList, function(trip, index) {
+				if (newTrip.id === trip.id) {
+					tripList.splice(index, 1);
+					return true;
+				}
+			});
+			//if this trip was already in local storage, just update it
+			if (prevTrip) { _.defaults(newTrip, prevTrip); }
+			tripList.push(newTrip);
+		}
+
+		localStorage.setItem("tripList", JSON.stringify(tripList));
 	}
 });
 
