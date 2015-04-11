@@ -25,11 +25,12 @@ var TripView = PageView.extend({
 		this.stop_views = [];
 		this.travellers_views = [];
 
-		this.model.once("sync", _.bind(function(data){
+		this.model.once("ready", _.bind(function(data){
 			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
-			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+			//this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+			this.renderNewMapStop();
 			this.createStopViews();
 
 			this.stops_collection.on("change", _.bind(function(stopModel){
@@ -255,12 +256,16 @@ var TripView = PageView.extend({
 	renderNewMapStop: function() {
 		this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
 		.then(_.bind(function(result) {
-			this.stops_collection.mergeMapData(result);
-			this.setStopsCollectionInModel();
-			this.setModel(null, {silent: true});
-			this.render(trip_template);
-			this.model.sync("update", this.model, { url: this.model.url });
+			this.setViewNewMapStop(result);
 		}, this));
+	},
+
+	setViewNewMapStop: function(result) {
+		this.stops_collection.mergeMapData(result);
+		this.setStopsCollectionInModel();
+		this.setModel(null, {silent: true});
+		this.render(trip_template);
+		this.model.sync("update", this.model, { url: this.model.url });
 	},
 
 	setModelThrottle: _.throttle(function(modelAttr, val) {

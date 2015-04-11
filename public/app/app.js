@@ -94,7 +94,11 @@
 					travellers_collection: travellers_collection
 				});
 
-				this.models["trip_model"].fetch();
+				this.models["trip_model"].fetch({
+					success: _.bind(function(resp) {
+						this.models["trip_model"].trigger("ready");
+					}, this)
+				});
 
 			}, this));
 

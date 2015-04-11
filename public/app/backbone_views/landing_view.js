@@ -48,6 +48,59 @@ var LandingView = PageView.extend({
 		this.sendQuery = _.debounce( _.bind( function(options) {
 			this.model.getQueryPredictions(options);
 		}, this), 500);
+
+		this.storeClientGeo();
+	},
+
+	storeClientGeo: function() {
+		var localGeo = localStorage.getItem("geo");
+
+		if (!localGeo && navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				try{
+					localStorage.setItem("geo", JSON.stringify(position));
+				} catch(e) {/* safari private mode fails localStorage set calls */}
+			})
+		}
+	},
+
+	getClientGeo: function() {
+		var localGeo = localStorage.getItem("geo");
+		try{
+			return JSON.parse(localGeo);
+		} catch(e) {/* json parse fail. Just move on. */}
+	},
+
+	reverseGeocodeClientGeo: function(clientGeo) {
+		var clientGeo = localStorage.getItem("geoPlaceData");
+		var latLng, localGeo, result;
+		
+		var geoPromise = new Promise(_.bind(function(resolve, reject) {
+			localGeo = this.getClientGeo();
+
+			if (!localGeo) {
+				//user never accpeted geo request
+				//or geolocation api not supported
+				resolve();
+			} else {
+				if (!clientGeo) {
+					latLng = new google.maps.LatLng(localGeo.coords.latitude, localGeo.coords.longitude);
+					this.map_api.reverseGeoCode( { 'location': latLng}, function(results, status) {
+						if (status == google.maps.GeocoderStatus.OK) {
+							result = results[0];
+							localStorage.setItem("geoPlaceData", JSON.stringify(result));
+							resolve(result);
+						} else {
+							reject(status);
+						}
+					});
+				} else {
+					resolve(JSON.parse(clientGeo));
+				}
+			}
+		}, this));
+
+		return geoPromise;
 	},
 
 	bindDatePickers: function() {
@@ -225,15 +278,19 @@ var LandingView = PageView.extend({
 	},
 
 	onSubmit: function(e) {
-		if (e && e.preventDefault) { e.preventDefault(); }
-		
 		var data = {};
-		this.elms.$searchForm.serializeArray().map(function(x){data[x.name] = x.value;});
 
-		this.slideOutSearchArea();
+		if (e && e.preventDefault) { e.preventDefault(); }
 
-		Backbone.trigger("landing_view:submit", data);
-		
+		this.reverseGeocodeClientGeo()
+			.then(_.bind(function(result){
+				this.elms.$searchForm.serializeArray().map(function(x){data[x.name] = x.value;});
+				if (result && result.place_id) { data.home = result; }
+
+				this.slideOutSearchArea();
+
+				Backbone.trigger("landing_view:submit", data);
+			}, this));
 	}
 
 });

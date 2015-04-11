@@ -28,7 +28,29 @@ var ViewOrchestrator = Backbone.View.extend({
 				}, 1000);
 			});
 
-			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {			
+			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {
+				var homeStop = function() {
+					if (data.home) {
+						return {
+							location: data.home.formatted_address,
+							stopNum: 1,
+							dayNum: 1,
+							lodging: {
+								id: "quest_home"
+							}
+						}
+					} else {
+						return false;
+					}
+				}();
+
+				var stops = [];
+				if (homeStop) { stops.push(homeStop); }
+				stops.push({
+					location: data.location,
+					stopNum: stops.length + 1,
+					dayNum: 1
+				});
 
 				this.loadModel(this.Models.trip_model, "trip_model", {
 					title: "Your Next Adventure",
@@ -43,22 +65,7 @@ var ViewOrchestrator = Backbone.View.extend({
 							}
 						}
 					],
-					stops: [
-						{	//TODO: find a better default first stop. This won't work very well
-							//if geo loc'ed use that, otherwise only use one stop
-							location: "Home",
-							stopNum: 1,
-							dayNum: 1,
-							lodging: {
-								id: "quest_home"
-							}
-						},
-						{
-							location: data.location,
-							stopNum: 2,
-							dayNum: 1
-						}
-					]
+					stops: stops
 				});
 
 				this.loadModel(this.Models.search_model, "search_model", {
@@ -92,9 +99,8 @@ var ViewOrchestrator = Backbone.View.extend({
 				var trip_model = this.models["trip_model"];
 				var tripId = this.models["trip_model"].get("_id");
 				trip_model.setUrl(tripId);
-				trip_model.fetch();
+				trip_model.trigger("ready");
 				this.router.navigate("/trips/" + tripId);
-				this.models["trip_model"].trigger("change");
 				Backbone.trigger("trip_view:render", true);
 			}, this));
 			

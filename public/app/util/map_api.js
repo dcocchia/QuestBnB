@@ -12,6 +12,7 @@ function Map(map) {
 	this.placeService = new google.maps.places.PlacesService(map);
 	this.directionsDisplay = new google.maps.DirectionsRenderer();
 	this.directionsService = new google.maps.DirectionsService();
+	this.geocoder = new google.maps.Geocoder();
 }
 
 Map.prototype = {
@@ -21,6 +22,10 @@ Map.prototype = {
 
 	getPlaceDetails: function(opts, callback) {
 		this.placeService.getDetails(opts, callback);
+	},
+
+	reverseGeoCode: function(opts, callback) {
+		this.geocoder.geocode(opts, callback);
 	},
 
 	renderDirections: function(opts, promise) {

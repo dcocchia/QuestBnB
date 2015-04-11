@@ -95,7 +95,11 @@
 					travellers_collection: travellers_collection
 				});
 
-				this.models["trip_model"].fetch();
+				this.models["trip_model"].fetch({
+					success: _.bind(function(resp) {
+						this.models["trip_model"].trigger("ready");
+					}, this)
+				});
 
 			}, this));
 
@@ -26950,6 +26954,59 @@ var LandingView = PageView.extend({
 		this.sendQuery = _.debounce( _.bind( function(options) {
 			this.model.getQueryPredictions(options);
 		}, this), 500);
+
+		this.storeClientGeo();
+	},
+
+	storeClientGeo: function() {
+		var localGeo = localStorage.getItem("geo");
+
+		if (!localGeo && navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				try{
+					localStorage.setItem("geo", JSON.stringify(position));
+				} catch(e) {/* safari private mode fails localStorage set calls */}
+			})
+		}
+	},
+
+	getClientGeo: function() {
+		var localGeo = localStorage.getItem("geo");
+		try{
+			return JSON.parse(localGeo);
+		} catch(e) {/* json parse fail. Just move on. */}
+	},
+
+	reverseGeocodeClientGeo: function(clientGeo) {
+		var clientGeo = localStorage.getItem("geoPlaceData");
+		var latLng, localGeo, result;
+		
+		var geoPromise = new Promise(_.bind(function(resolve, reject) {
+			localGeo = this.getClientGeo();
+
+			if (!localGeo) {
+				//user never accpeted geo request
+				//or geolocation api not supported
+				resolve();
+			} else {
+				if (!clientGeo) {
+					latLng = new google.maps.LatLng(localGeo.coords.latitude, localGeo.coords.longitude);
+					this.map_api.reverseGeoCode( { 'location': latLng}, function(results, status) {
+						if (status == google.maps.GeocoderStatus.OK) {
+							result = results[0];
+							localStorage.setItem("geoPlaceData", JSON.stringify(result));
+							resolve(result);
+						} else {
+							reject(status);
+						}
+					});
+				} else {
+					resolve(JSON.parse(clientGeo));
+				}
+			}
+		}, this));
+
+		return geoPromise;
 	},
 
 	bindDatePickers: function() {
@@ -27127,15 +27184,19 @@ var LandingView = PageView.extend({
 	},
 
 	onSubmit: function(e) {
-		if (e && e.preventDefault) { e.preventDefault(); }
-		
 		var data = {};
-		this.elms.$searchForm.serializeArray().map(function(x){data[x.name] = x.value;});
 
-		this.slideOutSearchArea();
+		if (e && e.preventDefault) { e.preventDefault(); }
 
-		Backbone.trigger("landing_view:submit", data);
-		
+		this.reverseGeocodeClientGeo()
+			.then(_.bind(function(result){
+				this.elms.$searchForm.serializeArray().map(function(x){data[x.name] = x.value;});
+				if (result && result.place_id) { data.home = result; }
+
+				this.slideOutSearchArea();
+
+				Backbone.trigger("landing_view:submit", data);
+			}, this));
 	}
 
 });
@@ -27525,11 +27586,12 @@ var TripView = PageView.extend({
 		this.stop_views = [];
 		this.travellers_views = [];
 
-		this.model.once("sync", _.bind(function(data){
+		this.model.once("ready", _.bind(function(data){
 			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
-			this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+			//this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
+			this.renderNewMapStop();
 			this.createStopViews();
 
 			this.stops_collection.on("change", _.bind(function(stopModel){
@@ -27755,12 +27817,16 @@ var TripView = PageView.extend({
 	renderNewMapStop: function() {
 		this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
 		.then(_.bind(function(result) {
-			this.stops_collection.mergeMapData(result);
-			this.setStopsCollectionInModel();
-			this.setModel(null, {silent: true});
-			this.render(trip_template);
-			this.model.sync("update", this.model, { url: this.model.url });
+			this.setViewNewMapStop(result);
 		}, this));
+	},
+
+	setViewNewMapStop: function(result) {
+		this.stops_collection.mergeMapData(result);
+		this.setStopsCollectionInModel();
+		this.setModel(null, {silent: true});
+		this.render(trip_template);
+		this.model.sync("update", this.model, { url: this.model.url });
 	},
 
 	setModelThrottle: _.throttle(function(modelAttr, val) {
@@ -27809,6 +27875,7 @@ function Map(map) {
 	this.placeService = new google.maps.places.PlacesService(map);
 	this.directionsDisplay = new google.maps.DirectionsRenderer();
 	this.directionsService = new google.maps.DirectionsService();
+	this.geocoder = new google.maps.Geocoder();
 }
 
 Map.prototype = {
@@ -27818,6 +27885,10 @@ Map.prototype = {
 
 	getPlaceDetails: function(opts, callback) {
 		this.placeService.getDetails(opts, callback);
+	},
+
+	reverseGeoCode: function(opts, callback) {
+		this.geocoder.geocode(opts, callback);
 	},
 
 	renderDirections: function(opts, promise) {
@@ -27901,7 +27972,29 @@ var ViewOrchestrator = Backbone.View.extend({
 				}, 1000);
 			});
 
-			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {			
+			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {
+				var homeStop = function() {
+					if (data.home) {
+						return {
+							location: data.home.formatted_address,
+							stopNum: 1,
+							dayNum: 1,
+							lodging: {
+								id: "quest_home"
+							}
+						}
+					} else {
+						return false;
+					}
+				}();
+
+				var stops = [];
+				if (homeStop) { stops.push(homeStop); }
+				stops.push({
+					location: data.location,
+					stopNum: stops.length + 1,
+					dayNum: 1
+				});
 
 				this.loadModel(this.Models.trip_model, "trip_model", {
 					title: "Your Next Adventure",
@@ -27916,22 +28009,7 @@ var ViewOrchestrator = Backbone.View.extend({
 							}
 						}
 					],
-					stops: [
-						{	//TODO: find a better default first stop. This won't work very well
-							//if geo loc'ed use that, otherwise only use one stop
-							location: "Home",
-							stopNum: 1,
-							dayNum: 1,
-							lodging: {
-								id: "quest_home"
-							}
-						},
-						{
-							location: data.location,
-							stopNum: 2,
-							dayNum: 1
-						}
-					]
+					stops: stops
 				});
 
 				this.loadModel(this.Models.search_model, "search_model", {
@@ -27965,9 +28043,8 @@ var ViewOrchestrator = Backbone.View.extend({
 				var trip_model = this.models["trip_model"];
 				var tripId = this.models["trip_model"].get("_id");
 				trip_model.setUrl(tripId);
-				trip_model.fetch();
+				trip_model.trigger("ready");
 				this.router.navigate("/trips/" + tripId);
-				this.models["trip_model"].trigger("change");
 				Backbone.trigger("trip_view:render", true);
 			}, this));
 			
