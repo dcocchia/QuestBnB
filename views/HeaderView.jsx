@@ -5,9 +5,13 @@ var HeaderView = React.createClass({
 		return (
 			<nav className={(this.props.open) ? "header-nav open" : "header-nav"}>
 				<button className="burger-menu-btn"></button>
-				<ul className="nav-menu">
-					<li>What is this?</li>
-					<li>My Trips</li>
+				<ul className="nav-menu panel">
+					<li className="nav-menu-item explain">
+						<a href="#explain" Title="What is this?">What is this?</a>
+					</li>
+					<li className="nav-menu-item your-trips">
+						<a href="#yourTrips" Title="Your trips">Your trips</a>
+					</li>
 				</ul>
 			</nav>
 		)

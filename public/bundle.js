@@ -26922,7 +26922,9 @@ var trip_model = Backbone.Model.extend({
 		var tripList = localStorage.getItem("tripList");
 		var newTrip = {
 			title: this.get("title"),
-			id: this.get("_id")
+			id: this.get("_id"),
+			startDate: this.get("start"),
+			endDate: this.get("end")
 		}
 		var prevTrip;
 
@@ -26958,7 +26960,9 @@ var HeaderView = Backbone.View.extend({
 	elms: {},
 
 	events: {
-		"click" : "toggleMenu"
+		"click" 			: "toggleMenu",
+		"click .explain" 	: "onClickExplain",
+		"click .your-trips" : "onClickYourTrips"
 	},
 
 	initialize: function(opts) {
@@ -26969,6 +26973,8 @@ var HeaderView = Backbone.View.extend({
 		this.model.on("change", _.bind(function() {
 			this.render();
 		}, this));
+
+		this.render();
 	},
 
 	render: function() {
@@ -26981,6 +26987,18 @@ var HeaderView = Backbone.View.extend({
 		var opened = this.model.get("open") || false;
 
 		this.model.set({open: !opened})
+	},
+	
+	onClickExplain: function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
+	},
+
+	onClickYourTrips: function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
 	}
 });
 
@@ -28147,9 +28165,13 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 		return (
 			React.createElement("nav", {className: (this.props.open) ? "header-nav open" : "header-nav"}, 
 				React.createElement("button", {className: "burger-menu-btn"}), 
-				React.createElement("ul", {className: "nav-menu"}, 
-					React.createElement("li", null, "What is this?"), 
-					React.createElement("li", null, "My Trips")
+				React.createElement("ul", {className: "nav-menu panel"}, 
+					React.createElement("li", {className: "nav-menu-item explain"}, 
+						React.createElement("a", {href: "#explain", Title: "What is this?"}, "What is this?")
+					), 
+					React.createElement("li", {className: "nav-menu-item your-trips"}, 
+						React.createElement("a", {href: "#yourTrips", Title: "Your trips"}, "Your trips")
+					)
 				)
 			)
 		)

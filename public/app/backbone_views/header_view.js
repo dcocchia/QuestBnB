@@ -9,7 +9,9 @@ var HeaderView = Backbone.View.extend({
 	elms: {},
 
 	events: {
-		"click" : "toggleMenu"
+		"click" 			: "toggleMenu",
+		"click .explain" 	: "onClickExplain",
+		"click .your-trips" : "onClickYourTrips"
 	},
 
 	initialize: function(opts) {
@@ -20,6 +22,8 @@ var HeaderView = Backbone.View.extend({
 		this.model.on("change", _.bind(function() {
 			this.render();
 		}, this));
+
+		this.render();
 	},
 
 	render: function() {
@@ -32,6 +36,20 @@ var HeaderView = Backbone.View.extend({
 		var opened = this.model.get("open") || false;
 
 		this.model.set({open: !opened})
+	},
+	
+	onClickExplain: function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		
+	},
+
+	onClickYourTrips: function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		
 	}
 });
 

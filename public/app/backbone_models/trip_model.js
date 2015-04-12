@@ -25,7 +25,9 @@ var trip_model = Backbone.Model.extend({
 		var tripList = localStorage.getItem("tripList");
 		var newTrip = {
 			title: this.get("title"),
-			id: this.get("_id")
+			id: this.get("_id"),
+			startDate: this.get("start"),
+			endDate: this.get("end")
 		}
 		var prevTrip;
 
