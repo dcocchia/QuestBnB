@@ -16,6 +16,7 @@
 	var map_view = require("./backbone_views/map_view");
 
 	//backbone views
+	var header_view = require("./backbone_views/header_view");
 	var landing_view = require("./backbone_views/landing_view");
 	var trip_view = require("./backbone_views/trip_view");
 
@@ -24,6 +25,7 @@
 	var travellers_collection = require("./backbone_collections/travellers_collection");
 
 	//backbone models
+	var header_model = require("./backbone_models/header_model");
 	var search_model = require("./backbone_models/search_model");
 	var trip_model = require("./backbone_models/trip_model");
 
@@ -47,6 +49,11 @@
 			this.router = opts.router;
 			this.views = {};
 			this.models = {};
+			this.loadView(header_view, "header_view", {
+				$parentEl: $(".header-nav-wrapper"),
+				el: $(".header-nav"), 
+				model: this.loadModel(header_model, "header_model")
+			});
 			this.loadView(map_view, "map_view", { el: $(".map")});
 			this.map_api = new map_api(this.views["map_view"].map);
 			this.setRouteListeners();

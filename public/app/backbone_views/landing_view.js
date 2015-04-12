@@ -17,6 +17,8 @@ var LandingView = PageView.extend({
 		this.elms.$searchBtn = this.elms.$searchBox.find(".search-btn");
 	},
 
+	elms: {},
+
 	events: {
 		"keyup .form-control.location"		: "onLocationKeyup",
 		"keydown .form-control.location"	: "onLocationKeydown",

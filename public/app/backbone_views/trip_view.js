@@ -9,6 +9,8 @@ var TripView = PageView.extend({
 		this.elms.$parentEl = $parentEl;
 	},
 
+	elms: {},
+
 	events: {
 		"click .add-stop-btn"			: "onAddStopClick",
 		"click .add-traveller"			: "onAddTravellerClick",

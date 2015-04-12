@@ -17,6 +17,7 @@
 	var map_view = require("./backbone_views/map_view");
 
 	//backbone views
+	var header_view = require("./backbone_views/header_view");
 	var landing_view = require("./backbone_views/landing_view");
 	var trip_view = require("./backbone_views/trip_view");
 
@@ -25,6 +26,7 @@
 	var travellers_collection = require("./backbone_collections/travellers_collection");
 
 	//backbone models
+	var header_model = require("./backbone_models/header_model");
 	var search_model = require("./backbone_models/search_model");
 	var trip_model = require("./backbone_models/trip_model");
 
@@ -48,6 +50,11 @@
 			this.router = opts.router;
 			this.views = {};
 			this.models = {};
+			this.loadView(header_view, "header_view", {
+				$parentEl: $(".header-nav-wrapper"),
+				el: $(".header-nav"), 
+				model: this.loadModel(header_model, "header_model")
+			});
 			this.loadView(map_view, "map_view", { el: $(".map")});
 			this.map_api = new map_api(this.views["map_view"].map);
 			this.setRouteListeners();
@@ -136,7 +143,7 @@
 		});
 	});
 })(window);
-},{"./backbone_collections/stops_collection":152,"./backbone_collections/travellers_collection":153,"./backbone_models/search_model":154,"./backbone_models/trip_model":157,"./backbone_views/landing_view":158,"./backbone_views/map_view":159,"./backbone_views/trip_view":163,"./util/map_api":164,"./util/view_orchestrator":165,"bluebird":2,"moment":5,"moment-duration-format":4,"react":151}],2:[function(require,module,exports){
+},{"./backbone_collections/stops_collection":152,"./backbone_collections/travellers_collection":153,"./backbone_models/header_model":154,"./backbone_models/search_model":155,"./backbone_models/trip_model":158,"./backbone_views/header_view":159,"./backbone_views/landing_view":160,"./backbone_views/map_view":161,"./backbone_views/trip_view":165,"./util/map_api":166,"./util/view_orchestrator":167,"bluebird":2,"moment":5,"moment-duration-format":4,"react":151}],2:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -26759,7 +26766,7 @@ var stops_colletion = Backbone.Collection.extend({
 });
 
 module.exports = stops_colletion;
-},{"../backbone_models/stop_model":155}],153:[function(require,module,exports){
+},{"../backbone_models/stop_model":156}],153:[function(require,module,exports){
 var traveller_model = require("../backbone_models/traveller_model");
 
 var travellers_collection = Backbone.Collection.extend({
@@ -26777,7 +26784,17 @@ var travellers_collection = Backbone.Collection.extend({
 });
 
 module.exports = travellers_collection;
-},{"../backbone_models/traveller_model":156}],154:[function(require,module,exports){
+},{"../backbone_models/traveller_model":157}],154:[function(require,module,exports){
+var header_model = Backbone.Model.extend({
+	defaults: {
+		"open": false
+	},
+
+	initialize: function(opts) {}
+});
+
+module.exports = header_model;
+},{}],155:[function(require,module,exports){
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
@@ -26822,7 +26839,7 @@ var SearchModel = Backbone.Model.extend({
 });
 
 module.exports = SearchModel;
-},{}],155:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 var stop_model = Backbone.Model.extend({
 	defaults: {
 		"location": "",
@@ -26860,7 +26877,7 @@ var stop_model = Backbone.Model.extend({
 });
 
 module.exports = stop_model;
-},{}],156:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 var traveller_model = Backbone.Model.extend({
 	defaults: {
 		name: "",
@@ -26877,7 +26894,7 @@ var traveller_model = Backbone.Model.extend({
 });
 
 module.exports = traveller_model;
-},{}],157:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: "",
@@ -26929,7 +26946,46 @@ var trip_model = Backbone.Model.extend({
 });
 
 module.exports = trip_model;
-},{}],158:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
+var headerViewTemplate = require("../../views/HeaderView");
+var renderer = require("../../../renderer/client_renderer");
+
+var HeaderView = Backbone.View.extend({
+	_findElms: function($parentEl) {
+		this.elms.$parentEl = $parentEl;
+	},
+
+	elms: {},
+
+	events: {
+		"click" : "toggleMenu"
+	},
+
+	initialize: function(opts) {
+		opts || (opts = {});
+
+		this._findElms(opts.$parentEl);
+
+		this.model.on("change", _.bind(function() {
+			this.render();
+		}, this));
+	},
+
+	render: function() {
+		renderer.render(headerViewTemplate, this.model.attributes, this.elms.$parentEl[0]);
+
+		this.setElement(this.elms.$parentEl.children(this.$el.selector));
+	},
+
+	toggleMenu: function() {
+		var opened = this.model.get("open") || false;
+
+		this.model.set({open: !opened})
+	}
+});
+
+module.exports = HeaderView;
+},{"../../../renderer/client_renderer":172,"../../views/HeaderView":168}],160:[function(require,module,exports){
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
@@ -26948,6 +27004,8 @@ var LandingView = PageView.extend({
 		this.elms.$travellers = this.elms.$searchBox.find(".form-control.travellers");
 		this.elms.$searchBtn = this.elms.$searchBox.find(".search-btn");
 	},
+
+	elms: {},
 
 	events: {
 		"keyup .form-control.location"		: "onLocationKeyup",
@@ -27229,7 +27287,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":169,"../../views/LandingView":166,"../../views/LocationsMenu":167,"./page_view":160}],159:[function(require,module,exports){
+},{"../../../renderer/client_renderer":172,"../../views/LandingView":169,"../../views/LocationsMenu":170,"./page_view":162}],161:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	mapMarkers: [],
 	events: {},
@@ -27279,11 +27337,9 @@ var map_view = Backbone.View.extend({
 });
 
 module.exports = map_view;
-},{}],160:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 var renderer = require("../../../renderer/client_renderer");
 var PageView = Backbone.View.extend({
-
-	elms: {},
 
 	render: function(template, data) {
 		var modelData = (this.model) ? this.model.attributes : {};
@@ -27301,7 +27357,7 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":169}],161:[function(require,module,exports){
+},{"../../../renderer/client_renderer":172}],163:[function(require,module,exports){
 var search_model = require("../backbone_models/search_model");
 
 var StopView = Backbone.View.extend({
@@ -27504,7 +27560,7 @@ var StopView = Backbone.View.extend({
 });
 
 module.exports = StopView;
-},{"../backbone_models/search_model":154}],162:[function(require,module,exports){
+},{"../backbone_models/search_model":155}],164:[function(require,module,exports){
 var TravellerView = Backbone.View.extend({
 	events: {
 		"click"						: "toggleEditCard",
@@ -27584,7 +27640,7 @@ var TravellerView = Backbone.View.extend({
 });
 
 module.exports = TravellerView;
-},{}],163:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
 var PageView = require("./page_view");
 var StopView = require("./stop_view");
 var TravellerView = require("./traveller_view");
@@ -27595,6 +27651,8 @@ var TripView = PageView.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
 	},
+
+	elms: {},
 
 	events: {
 		"click .add-stop-btn"			: "onAddStopClick",
@@ -27887,7 +27945,7 @@ var TripView = PageView.extend({
 });
 
 module.exports = TripView;
-},{"../../views/TripView":168,"./page_view":160,"./stop_view":161,"./traveller_view":162}],164:[function(require,module,exports){
+},{"../../views/TripView":171,"./page_view":162,"./stop_view":163,"./traveller_view":164}],166:[function(require,module,exports){
 var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
@@ -27968,7 +28026,7 @@ Map.prototype = {
 }
 
 module.exports = Map;
-},{"bluebird":2}],165:[function(require,module,exports){
+},{"bluebird":2}],167:[function(require,module,exports){
 var Promise = require("bluebird");
 
 var ViewOrchestrator = Backbone.View.extend({
@@ -28081,7 +28139,25 @@ var ViewOrchestrator = Backbone.View.extend({
 });
 
 module.exports = ViewOrchestrator;
-},{"bluebird":2}],166:[function(require,module,exports){
+},{"bluebird":2}],168:[function(require,module,exports){
+var React = require('react');
+
+var HeaderView = React.createClass({displayName: "HeaderView",
+	render: function() {
+		return (
+			React.createElement("nav", {className: (this.props.open) ? "header-nav open" : "header-nav"}, 
+				React.createElement("button", {className: "burger-menu-btn"}), 
+				React.createElement("ul", {className: "nav-menu"}, 
+					React.createElement("li", null, "What is this?"), 
+					React.createElement("li", null, "My Trips")
+				)
+			)
+		)
+	}
+});
+
+module.exports = HeaderView;
+},{"react":151}],169:[function(require,module,exports){
 var React = require('react');
 
 var LandingView = React.createClass({displayName: "LandingView",
@@ -28120,7 +28196,7 @@ var LandingView = React.createClass({displayName: "LandingView",
 });
 
 module.exports = LandingView;
-},{"react":151}],167:[function(require,module,exports){
+},{"react":151}],170:[function(require,module,exports){
 var React = require("react");
 
 var LocationItem = React.createClass({displayName: "LocationItem",
@@ -28149,7 +28225,7 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 });
 
 module.exports = LocationsMenu;
-},{"react":151}],168:[function(require,module,exports){
+},{"react":151}],171:[function(require,module,exports){
 var React = require('react');
 var LocationsMenu = require('./LocationsMenu');
 
@@ -28395,7 +28471,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":167,"react":151}],169:[function(require,module,exports){
+},{"./LocationsMenu":170,"react":151}],172:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

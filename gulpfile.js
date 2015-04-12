@@ -24,7 +24,7 @@ gulp.task('jsx', function() {
     .pipe(gulp.dest('./public/views'));
 });
 
-gulp.task('browserify', function() {
+gulp.task('browserify', ['jsx'], function() {
   return browserify('./public/app/app.js')
   .bundle()
   .pipe(source('bundle.js'))
