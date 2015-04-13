@@ -1,3 +1,4 @@
+@import (reference) "common";
 .header-nav-wrapper {
 	overflow: hidden;
 	width: 165px;
@@ -103,6 +104,55 @@
 			-ms-transition: rotate(90deg);
 			-o-transition: rotate(90deg);
 			transform: rotate(90deg);
+		}
+	}
+}
+
+.nav-modals {
+	.panel {
+		width: 100%;
+		background-color: #edefed;
+		border-bottom: 0;
+		overflow: hidden;
+	}
+
+	.panel-header {
+		border-bottom: 0;
+		font-weight: 500;
+	}
+
+	button.close {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 5;
+		color: #fff;
+		background-color: @btn-dark;
+		font-size: 22px;
+		line-height: 20px;
+		height: 25px;
+		width: 25px;
+		padding: 0;
+		padding-bottom: 5px;
+
+		&:hover {
+			background-color: @btn-dark-hover;
+		}
+
+		&:active,
+		&:focus {
+			outline: none;
+		}
+	}
+
+	table {
+		>tbody {
+			>tr {
+				th,
+				td {
+					padding: 8px 40px;
+				}
+			}
 		}
 	}
 }

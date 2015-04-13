@@ -7,7 +7,7 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 				React.createElement("button", {className: "burger-menu-btn"}), 
 				React.createElement("ul", {className: "nav-menu panel"}, 
 					React.createElement("li", {className: "nav-menu-item explain"}, 
-						React.createElement("a", {href: "#explain", Title: "What is this?"}, "What is this?")
+						React.createElement("a", {href: "#explain", title: "What is this?"}, "What is this?")
 					), 
 					React.createElement("li", {className: "nav-menu-item your-trips"}, 
 						React.createElement("a", {href: "#yourTrips", Title: "Your trips"}, "Your trips")

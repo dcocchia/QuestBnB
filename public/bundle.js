@@ -26944,17 +26944,24 @@ var trip_model = Backbone.Model.extend({
 		}
 
 		localStorage.setItem("tripList", JSON.stringify(tripList));
-	}
+		this.updateTripReferences(tripList);
+	},
+
+	updateTripReferences: function(newTripList) {
+		Backbone.trigger("triplist:update", newTripList);
+	} 
 });
 
 module.exports = trip_model;
 },{}],159:[function(require,module,exports){
 var headerViewTemplate = require("../../views/HeaderView");
+var navModalsTemplate = require("../../views/ModalsView");
 var renderer = require("../../../renderer/client_renderer");
 
 var HeaderView = Backbone.View.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
+		this.elms.$navModals = $(".nav-modals");
 	},
 
 	elms: {},
@@ -26974,13 +26981,22 @@ var HeaderView = Backbone.View.extend({
 			this.render();
 		}, this));
 
+		Backbone.on("triplist:update", _.bind(function(newTripList) {
+			this.renderTripList(newTripList);
+		}, this));
+
 		this.render();
+		this.renderTripList(this.getTripList());
 	},
 
 	render: function() {
 		renderer.render(headerViewTemplate, this.model.attributes, this.elms.$parentEl[0]);
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
+	},
+
+	renderTripList: function(tripList) {
+		renderer.render(navModalsTemplate, {tripList: tripList}, this.elms.$navModals[0]);
 	},
 
 	toggleMenu: function() {
@@ -26992,18 +27008,33 @@ var HeaderView = Backbone.View.extend({
 	onClickExplain: function(e) {
 		e.preventDefault();
 		e.stopPropagation();
-		
+
+
 	},
 
 	onClickYourTrips: function(e) {
 		e.preventDefault();
 		e.stopPropagation();
-		
+
+		this.elms.$navModals.find(".nav-modal-your-trips").modal("show");
+	},
+
+	getTripList: function() {
+		var tripList = localStorage.getItem("tripList");
+
+		if (tripList) {
+			try { return JSON.parse(tripList) }
+			catch(e) {
+				return [];
+			}
+		} else {
+			return [];
+		}
 	}
 });
 
 module.exports = HeaderView;
-},{"../../../renderer/client_renderer":172,"../../views/HeaderView":168}],160:[function(require,module,exports){
+},{"../../../renderer/client_renderer":173,"../../views/HeaderView":168,"../../views/ModalsView":171}],160:[function(require,module,exports){
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
@@ -27305,7 +27336,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":172,"../../views/LandingView":169,"../../views/LocationsMenu":170,"./page_view":162}],161:[function(require,module,exports){
+},{"../../../renderer/client_renderer":173,"../../views/LandingView":169,"../../views/LocationsMenu":170,"./page_view":162}],161:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	mapMarkers: [],
 	events: {},
@@ -27375,7 +27406,7 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":172}],163:[function(require,module,exports){
+},{"../../../renderer/client_renderer":173}],163:[function(require,module,exports){
 var search_model = require("../backbone_models/search_model");
 
 var StopView = Backbone.View.extend({
@@ -27963,7 +27994,7 @@ var TripView = PageView.extend({
 });
 
 module.exports = TripView;
-},{"../../views/TripView":171,"./page_view":162,"./stop_view":163,"./traveller_view":164}],166:[function(require,module,exports){
+},{"../../views/TripView":172,"./page_view":162,"./stop_view":163,"./traveller_view":164}],166:[function(require,module,exports){
 var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
@@ -28167,7 +28198,7 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 				React.createElement("button", {className: "burger-menu-btn"}), 
 				React.createElement("ul", {className: "nav-menu panel"}, 
 					React.createElement("li", {className: "nav-menu-item explain"}, 
-						React.createElement("a", {href: "#explain", Title: "What is this?"}, "What is this?")
+						React.createElement("a", {href: "#explain", title: "What is this?"}, "What is this?")
 					), 
 					React.createElement("li", {className: "nav-menu-item your-trips"}, 
 						React.createElement("a", {href: "#yourTrips", Title: "Your trips"}, "Your trips")
@@ -28248,6 +28279,51 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 
 module.exports = LocationsMenu;
 },{"react":151}],171:[function(require,module,exports){
+var React = require('react');
+
+var ModalsView = React.createClass({displayName: "ModalsView",
+	render: function() {
+		return (
+			React.createElement("div", {className: "modals-inner-wrapper"}, 
+				React.createElement("div", {className: "nav-modal-explain modal fade", "aria-hidden": "true"}
+				), 
+				React.createElement("div", {className: "nav-modal-your-trips modal fade", "aria-hidden": "true"}, 
+					React.createElement("div", {className: "modal-dialog"}, 
+						React.createElement("div", {className: "modal-content"}, 
+							React.createElement("button", {type: "button", className: "close btn", "data-dismiss": "modal", "aria-label": "Close"}, React.createElement("span", {"aria-hidden": "true"}, "×")), 
+							React.createElement("div", {className: "panel"}, 
+								React.createElement("div", {className: "panel-header col-sm-12 col-md-12 col-lg-12"}, 
+								"Your Trips"
+								)
+							), 
+							React.createElement("table", {className: "table"}, 
+								React.createElement("tbody", null, 
+									React.createElement("tr", null, 
+										React.createElement("th", null, "Name"), 
+										React.createElement("th", null, "Dates")
+									), 
+									this.props.tripList.map(function(trip, index) {
+										return (
+											React.createElement("tr", null, 
+												React.createElement("td", null, 
+													React.createElement("a", {href: "/trips/" + trip.id, target: "_blank"}, trip.title)
+												), 
+												React.createElement("td", null, (trip.startDate) ? trip.startDate : "", " – ", (trip.endDate) ? trip.endDate : "")
+											)
+										)
+									})
+								)
+							)
+						)
+					)
+				)
+			)
+		)
+	}
+});
+
+module.exports = ModalsView;
+},{"react":151}],172:[function(require,module,exports){
 var React = require('react');
 var LocationsMenu = require('./LocationsMenu');
 
@@ -28493,7 +28569,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":170,"react":151}],172:[function(require,module,exports){
+},{"./LocationsMenu":170,"react":151}],173:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

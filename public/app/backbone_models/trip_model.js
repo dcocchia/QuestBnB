@@ -47,7 +47,12 @@ var trip_model = Backbone.Model.extend({
 		}
 
 		localStorage.setItem("tripList", JSON.stringify(tripList));
-	}
+		this.updateTripReferences(tripList);
+	},
+
+	updateTripReferences: function(newTripList) {
+		Backbone.trigger("triplist:update", newTripList);
+	} 
 });
 
 module.exports = trip_model;
