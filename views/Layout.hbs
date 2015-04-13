@@ -5,8 +5,25 @@
 		<title>{{{title}}}</title>
 		<link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 		<link href="/app/css/app.css" rel="stylesheet" />
+		<!--[if lt IE 9]>
+		<link href="/app/css/old_ie.css" rel="stylesheet" />
+		<![endif]-->
 	</head>
 	<body>
+		<!--[if lt IE 9]>
+		<div class="overlay">
+			<div class="old-browser-warning absolute-center">
+				<p>It looks like you're using a very outdated version of Internet Explorer!</p>
+				<p>Unfortunately, this site is only guaranteed to work on newer internet browsers. Please download the latest version of any of the below internet browsers to continue.</p>
+				<ul>
+					<li><a href="http://www.google.com/chrome/">Google Chrome</a></li>
+					<li><a href="https://www.mozilla.org/en-US/firefox/new/">Mozilla Firefox</a></li>
+					<li><a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie">Microsoft Internet Explorer</a></li>
+				</ul>
+			</div>
+		</div>
+		<![endif]-->
+		
 		<div class="header-nav-wrapper">
 			{{{header}}}
 		</div>			

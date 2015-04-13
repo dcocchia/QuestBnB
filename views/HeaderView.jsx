@@ -10,7 +10,7 @@ var HeaderView = React.createClass({
 						<a href="#explain" title="What is this?">What is this?</a>
 					</li>
 					<li className="nav-menu-item your-trips">
-						<a href="#yourTrips" Title="Your trips">Your trips</a>
+						<a href="#yourTrips" title="Your trips">Your trips</a>
 					</li>
 				</ul>
 			</nav>
