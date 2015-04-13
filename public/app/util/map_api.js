@@ -28,6 +28,10 @@ Map.prototype = {
 		this.geocoder.geocode(opts, callback);
 	},
 
+	triggerMapResize: function() {
+		google.maps.event.trigger(this.map, 'resize');
+	},
+
 	renderDirections: function(opts, promise) {
 		var renderPromise = new Promise(_.bind(function(resolve, reject) {
 

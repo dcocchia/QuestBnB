@@ -22,11 +22,12 @@ var ViewOrchestrator = Backbone.View.extend({
 
 	setViewListeners: function() {
 		Backbone.on("landing_view:submit", _.bind(function(data) {
-			var timeOutPromise = new Promise(function(resolve, reject) {
-				setTimeout(function() {
+			var timeOutPromise = new Promise(_.bind(function(resolve, reject) {
+				setTimeout(_.bind(function() {
+					this.map_api.triggerMapResize();
 					resolve();
-				}, 1000);
-			});
+				}, this), 1000);
+			}, this));
 
 			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {
 				var homeStop = function() {

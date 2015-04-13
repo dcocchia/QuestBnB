@@ -27723,6 +27723,8 @@ var TripView = PageView.extend({
 		this.stop_views = [];
 		this.travellers_views = [];
 
+		this.map_view.clearMarkers();
+
 		this.model.once("ready", _.bind(function(data){
 			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
@@ -28029,6 +28031,10 @@ Map.prototype = {
 		this.geocoder.geocode(opts, callback);
 	},
 
+	triggerMapResize: function() {
+		google.maps.event.trigger(this.map, 'resize');
+	},
+
 	renderDirections: function(opts, promise) {
 		var renderPromise = new Promise(_.bind(function(resolve, reject) {
 
@@ -28104,11 +28110,12 @@ var ViewOrchestrator = Backbone.View.extend({
 
 	setViewListeners: function() {
 		Backbone.on("landing_view:submit", _.bind(function(data) {
-			var timeOutPromise = new Promise(function(resolve, reject) {
-				setTimeout(function() {
+			var timeOutPromise = new Promise(_.bind(function(resolve, reject) {
+				setTimeout(_.bind(function() {
+					this.map_api.triggerMapResize();
 					resolve();
-				}, 1000);
-			});
+				}, this), 1000);
+			}, this));
 
 			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {
 				var homeStop = function() {
