@@ -53,14 +53,18 @@ var HeaderView = Backbone.View.extend({
 		e.preventDefault();
 		e.stopPropagation();
 
-
+		this.elms.$navModals.find(".nav-modal-explain").on("hide.bs.modal", _.bind(function(e) {
+			this.model.set({open: false});
+		}, this)).modal("show");
 	},
 
 	onClickYourTrips: function(e) {
 		e.preventDefault();
 		e.stopPropagation();
 
-		this.elms.$navModals.find(".nav-modal-your-trips").modal("show");
+		this.elms.$navModals.find(".nav-modal-your-trips").on("hide.bs.modal", _.bind(function(e) {
+			this.model.set({open: false});
+		}, this)).modal("show");
 	},
 
 	getTripList: function() {
