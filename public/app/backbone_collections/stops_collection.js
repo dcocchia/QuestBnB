@@ -43,11 +43,9 @@ var stops_colletion = Backbone.Collection.extend({
 			
 		});
 
-		thisStopModel.trigger("active");
+		if (thisStopModel) { thisStopModel.trigger("active"); }
 
-		if (returnedStop) {
-			this.trigger("change", returnedStop);
-		}
+		if (returnedStop) { this.trigger("change", returnedStop); }
 	},
 
 	removeStop: function(stopId, opts) {

@@ -110,14 +110,18 @@ var TripView = PageView.extend({
 	bindDatePickers: function() {
 		var $dateWrapper = this.$(".trip-dates-wrapper");
 
-		$dateWrapper.find(".date.start").datepicker({ 
+		$dateWrapper.find(".date.start").datepicker({
+			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				//re calc stuff
+				//then save to model
 			}, this)
 		});
-		$dateWrapper.find(".date.end").datepicker({ 
+		$dateWrapper.find(".date.end").datepicker({
+			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				//re calc stuff
+				//then save to model
 			}, this)
 		});
 	},

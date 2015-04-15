@@ -8,6 +8,7 @@ var react = require('gulp-react');
 var handlebars = require('gulp-handlebars');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var mocha = require('gulp-mocha');
 
 gulp.task('less', function () {
   return gulp.src('./public/app/less/**/*.less')
@@ -26,9 +27,14 @@ gulp.task('jsx', function() {
 
 gulp.task('browserify', ['jsx'], function() {
   return browserify('./public/app/app.js')
-  .bundle()
-  .pipe(source('bundle.js'))
-  .pipe(gulp.dest('./public/'));
+    .bundle()
+    .pipe(source('bundle.js'))
+    .pipe(gulp.dest('./public/'));
+});
+
+gulp.task('test', function () {
+  return gulp.src(['./tests/*.js'], {read: false})
+    .pipe(mocha());
 });
 
 gulp.task('develop', function() {

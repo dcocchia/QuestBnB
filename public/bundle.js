@@ -26676,11 +26676,9 @@ var stops_colletion = Backbone.Collection.extend({
 			
 		});
 
-		thisStopModel.trigger("active");
+		if (thisStopModel) { thisStopModel.trigger("active"); }
 
-		if (returnedStop) {
-			this.trigger("change", returnedStop);
-		}
+		if (returnedStop) { this.trigger("change", returnedStop); }
 	},
 
 	removeStop: function(stopId, opts) {
@@ -27806,14 +27804,18 @@ var TripView = PageView.extend({
 	bindDatePickers: function() {
 		var $dateWrapper = this.$(".trip-dates-wrapper");
 
-		$dateWrapper.find(".date.start").datepicker({ 
+		$dateWrapper.find(".date.start").datepicker({
+			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				//re calc stuff
+				//then save to model
 			}, this)
 		});
-		$dateWrapper.find(".date.end").datepicker({ 
+		$dateWrapper.find(".date.end").datepicker({
+			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				//re calc stuff
+				//then save to model
 			}, this)
 		});
 	},
@@ -28208,11 +28210,14 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 			React.createElement("nav", {className: (this.props.open) ? "header-nav open" : "header-nav"}, 
 				React.createElement("button", {className: "burger-menu-btn"}), 
 				React.createElement("ul", {className: "nav-menu panel"}, 
-					React.createElement("li", {className: "nav-menu-item explain"}, 
-						React.createElement("a", {href: "#explain", title: "What is this?"}, "What is this?")
+					React.createElement("li", {className: "nav-menu-item"}, 
+						React.createElement("a", {href: "/", title: "New trip"}, "New trip")
 					), 
 					React.createElement("li", {className: "nav-menu-item your-trips"}, 
 						React.createElement("a", {href: "#yourTrips", title: "Your trips"}, "Your trips")
+					), 
+					React.createElement("li", {className: "nav-menu-item explain"}, 
+						React.createElement("a", {href: "#explain", title: "What is this?"}, "What is this?")
 					)
 				)
 			)
