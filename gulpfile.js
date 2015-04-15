@@ -32,7 +32,7 @@ gulp.task('browserify', ['jsx'], function() {
     .pipe(gulp.dest('./public/'));
 });
 
-gulp.task('test', function () {
+gulp.task('test', ['less', 'jsx', 'browserify'], function () {
   return gulp.src(['./tests/*.js'], {read: false})
     .pipe(mocha());
 });
@@ -49,7 +49,7 @@ gulp.task('develop', function() {
       "./public/bundle.js"
 		]
 	})
-    .on('change', ['less', 'jsx', 'browserify'])
+    .on('change', ['less', 'jsx', 'browserify', 'test'])
 });
 
-gulp.task('default', ['less', 'jsx', 'browserify']);
+gulp.task('default', ['less', 'jsx', 'browserify', 'test']);

@@ -5,7 +5,7 @@ chai.use(sinonChai);
 var assert = require("assert");
 var expect = chai.expect;
 
-//usually found in libraries.js, but for testing we require in directly
+//usually found in libraries.js, but for testing let's require in directly
 _ = require("lodash");
 Backbone = require("backbone");
 
