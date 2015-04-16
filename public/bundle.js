@@ -26631,6 +26631,8 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":33}],152:[function(require,module,exports){
+var moment = require("moment");
+require("moment-duration-format");
 var stop_model = require("../backbone_models/stop_model");
 
 var stops_colletion = Backbone.Collection.extend({
@@ -26663,7 +26665,7 @@ var stops_colletion = Backbone.Collection.extend({
 	},
 
 	setStopsActive: function() {
-		var returnedStop, thisStop, thisStopModel;
+		var returnedStop, thisStop;
 
 		_.each(this.models, function(stop, index) {
 			thisStop = stop.attributes;
@@ -26671,14 +26673,14 @@ var stops_colletion = Backbone.Collection.extend({
 			if (thisStop.isNew === true) {
 				thisStop.isNew = false;
 				returnedStop = stop;
-				thisStopModel = stop;
 			}
 			
 		});
 
-		if (thisStopModel) { thisStopModel.trigger("active"); }
-
-		if (returnedStop) { this.trigger("change", returnedStop); }
+		if (returnedStop) { 
+			returnedStop.trigger("active");
+			this.trigger("change", returnedStop); 
+		}
 	},
 
 	removeStop: function(stopId, opts) {
@@ -26764,7 +26766,7 @@ var stops_colletion = Backbone.Collection.extend({
 });
 
 module.exports = stops_colletion;
-},{"../backbone_models/stop_model":156}],153:[function(require,module,exports){
+},{"../backbone_models/stop_model":156,"moment":5,"moment-duration-format":4}],153:[function(require,module,exports){
 var traveller_model = require("../backbone_models/traveller_model");
 
 var travellers_collection = Backbone.Collection.extend({

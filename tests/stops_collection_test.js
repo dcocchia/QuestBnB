@@ -8,6 +8,8 @@ var expect = chai.expect;
 //usually found in libraries.js, but for testing let's require in directly
 _ = require("lodash");
 Backbone = require("backbone");
+var moment = require("moment");
+require("moment-duration-format");
 
 //pull in necessary views/collections/models for testing
 var appSrc = "../public/app/";
@@ -47,6 +49,52 @@ describe('stops_collection', function(){
 			var spy = sinon.spy(stops, "removeStop");
 			stops.trigger("removeStop", "123");
 			expect(spy).to.have.been.called;
+		});
+	});
+
+	describe('_numberStops', function(){
+		var stops = new stops_collection();
+
+		it('should give index to stop models in numerical order', function(){
+			var stop1, stop2, stop3;
+			stops.add([
+				{
+					isNew: true, 
+					stopNum: 0, 
+					_id: 1 
+				},
+				{
+					isNew: true, 
+					stopNum: 0, 
+					_id: 2
+				},
+				{
+					isNew: true, 
+					stopNum: 0, 
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("stopNum")).to.be.equal(0);
+			expect(stop2.get("stopNum")).to.be.equal(0);
+			expect(stop3.get("stopNum")).to.be.equal(0);
+			stops._numberStops();
+			expect(stop1.get("stopNum")).to.deep.equal({index: 1});
+			expect(stop2.get("stopNum")).to.deep.equal({index: 2});
+			expect(stop3.get("stopNum")).to.deep.equal({index: 3});
+		});
+
+		it('should _not_ trigger change event on collection', function(){
+			var spy = sinon.spy();
+
+			stops.on("change", spy);
+			expect(spy).not.to.have.been.called;
+			stops._numberStops();
+			expect(spy).not.to.have.been.called;
 		});
 	});
 
@@ -139,6 +187,329 @@ describe('stops_collection', function(){
 			this.clock.tick(500);
 			expect(spy).to.have.been.called;
 			
+		});
+	});
+
+	describe('setStopsActive', function(){
+		var stops = new stops_collection();
+
+		it('should mark isNew to false on new models', function() {
+			stops.add([
+				{
+					isNew: true, 
+					stopNum: 1, 
+					_id: 1 
+				},
+				{
+					isNew: true, 
+					stopNum: 2, 
+					_id: 2
+				}
+			]);
+
+			expect(stops.models[0].get("isNew")).to.be.true;
+			expect(stops.models[1].get("isNew")).to.be.true;
+
+			stops.setStopsActive();
+
+			expect(stops.models[0].get("isNew")).to.be.false;
+			expect(stops.models[1].get("isNew")).to.be.false;
+		});
+
+		it('should trigger active event on model', function() {
+			var spy = sinon.spy();
+			var stop;
+
+			stops.add([
+				{
+					isNew: true, 
+					stopNum: 3, 
+					_id: 3 
+				}
+			]);
+
+			stop = stops.models[2];
+			stop.on("active", spy);
+
+			expect(spy).not.to.have.been.called;
+			stops.setStopsActive();
+			expect(spy).to.have.been.called;
+
+		});
+
+		it('should trigger change event on collection', function() {
+			var spy = sinon.spy();
+			var stop;
+
+			stops.add([
+				{
+					isNew: true, 
+					stopNum: 4, 
+					_id: 4 
+				}
+			]);
+
+			stop = stops.models[3];
+			stops.on("change", spy);
+
+			expect(spy).not.to.have.been.called;
+
+			stops.setStopsActive();
+
+			expect(spy).to.have.been.called;
+			expect(spy).to.have.been.calledWith(stop);
+
+		});
+					
+	});
+	
+	describe('removeStop', function(){
+		var stops = new stops_collection();
+
+		it('should remove the model with the specified id', function() {
+			var spy = sinon.spy(stops, "remove");
+			var stop;
+
+			stops.add([
+				{
+					isNew: true, 
+					stopNum: 1, 
+					_id: 1 
+				},
+				{
+					isNew: true, 
+					stopNum: 2, 
+					_id: 2
+				},
+				{
+					isNew: true, 
+					stopNum: 3, 
+					_id: 3
+				}
+			]);
+
+			expect(spy).not.to.have.been.called;
+			expect(stops.length).to.be.equal(3);
+
+			stop = stops.models[1];
+			stops.removeStop(2);
+
+			expect(spy).to.have.been.called;
+			expect(stops.length).to.be.equal(2);
+			expect(stops.models[0].get("_id")).to.be.equal(1);
+			expect(stops.models[1].get("_id")).to.be.equal(3);
+			expect(stops.models[2]).to.be.undefined;
+		});
+
+		it('should expect _numberStops to be called', function() {
+			var spy = sinon.spy(stops, "_numberStops");
+
+ 			stops.removeStop(1);
+
+			expect(spy).to.have.been.called;
+		});
+
+		it('should trigger change event on collection', function() {
+			var spy = sinon.spy();
+
+			stops.on("change", spy);
+
+			expect(spy).to.not.have.been.called;
+
+ 			stops.removeStop(1);
+
+			expect(spy).to.have.been.called;
+		});
+
+		it('should trigger removeStop event on Backbone event bus', function() {
+			var spy = sinon.spy();
+
+			Backbone.on("removeStop", spy);
+
+			expect(spy).to.not.have.been.called;
+
+ 			stops.removeStop(1);
+
+			expect(spy).to.have.been.calledWith(1);
+		});
+	});
+
+	describe('mergeMapData', function(){
+		var mockMappingResult = {
+			routes: [
+				{
+					legs: [
+						{
+							distance: {
+								text: "913 mi",
+								value: 1468986
+							},
+							duration: {
+								text: "12 hours 45 mins",
+								value: 45889
+							}
+						},
+						{
+							distance: {
+								text: "1,252 mi",
+								value: 2014912
+							},
+							duration: {
+								text: "18 hours 9 mins",
+								value: 65369
+							}
+						}
+					]
+				}
+			]
+		}
+
+		it('should set the distance for each stop model', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
+			expect(stop2.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
+			expect(stop3.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
+
+			stops.mergeMapData(mockMappingResult);
+
+			expect(stop1.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
+			expect(stop2.get("distance")).to.be.deep.equal({ text: "913 mi", value: 1468986});
+			expect(stop3.get("distance")).to.be.deep.equal({ text: "1,252 mi", value: 2014912});
+		});
+
+		it('should set the duration for each stop model', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("duration")).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("duration")).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("duration")).to.be.deep.equal({ text: "0", value: 0});
+
+			stops.mergeMapData(mockMappingResult);
+			
+			expect(stop1.get("duration")).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("duration")).to.be.deep.equal({ text: "12 hours 45 mins", value: 45889});
+			expect(stop3.get("duration")).to.be.deep.equal({ text: "18 hours 9 mins", value: 65369});
+		});
+
+		it('should set the total distance for each stop model', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
+			expect(stop2.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
+			expect(stop3.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
+
+			stops.mergeMapData(mockMappingResult);
+			
+			expect(stop1.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
+			expect(stop2.get("totals").distance).to.be.deep.equal({ text: "913 mi", value: 913});
+			expect(stop3.get("totals").distance).to.be.deep.equal({ text: "2165 mi", value: 2165});
+		});
+
+		it('should set the total duration for each stop model', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+
+			stops.mergeMapData(mockMappingResult);
+			
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "12 hours 44 mins", value: 45889});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "1 days 6 hours 54 mins", value: 111258});
 		});
 	});
 })

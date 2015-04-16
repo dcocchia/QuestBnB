@@ -37,6 +37,11 @@ gulp.task('test', ['less', 'jsx', 'browserify'], function () {
     .pipe(mocha());
 });
 
+gulp.task('test-alone', function () {
+  return gulp.src(['./tests/*.js'], {read: false})
+    .pipe(mocha());
+});
+
 gulp.task('develop', function() {
 	nodemon({ 
 		script: 'index.js', 

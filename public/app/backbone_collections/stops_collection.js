@@ -1,3 +1,5 @@
+var moment = require("moment");
+require("moment-duration-format");
 var stop_model = require("../backbone_models/stop_model");
 
 var stops_colletion = Backbone.Collection.extend({
@@ -30,7 +32,7 @@ var stops_colletion = Backbone.Collection.extend({
 	},
 
 	setStopsActive: function() {
-		var returnedStop, thisStop, thisStopModel;
+		var returnedStop, thisStop;
 
 		_.each(this.models, function(stop, index) {
 			thisStop = stop.attributes;
@@ -38,14 +40,14 @@ var stops_colletion = Backbone.Collection.extend({
 			if (thisStop.isNew === true) {
 				thisStop.isNew = false;
 				returnedStop = stop;
-				thisStopModel = stop;
 			}
 			
 		});
 
-		if (thisStopModel) { thisStopModel.trigger("active"); }
-
-		if (returnedStop) { this.trigger("change", returnedStop); }
+		if (returnedStop) { 
+			returnedStop.trigger("active");
+			this.trigger("change", returnedStop); 
+		}
 	},
 
 	removeStop: function(stopId, opts) {
