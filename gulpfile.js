@@ -44,7 +44,7 @@ gulp.task('test', function (cb) {
     .pipe(istanbul.hookRequire())
     .on('finish', function () {
       gulp.src(['./tests/*.js'], {read: false})
-        .pipe(mocha())
+        .pipe(mocha({ globals: ["google"] }))
         .pipe(istanbul.writeReports())
         .on('end', cb);
     });
