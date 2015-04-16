@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for backbone_collections/stops_collection.js</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../prettify.css">
+    <link rel="stylesheet" href="../base.css">
+    <style type='text/css'>
+        div.coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class="header high">
+    <h1>Code coverage report for <span class="entity">backbone_collections/stops_collection.js</span></h1>
+    <h2>
+        Statements: <span class="metric">100% <small>(49 / 49)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Branches: <span class="metric">71.43% <small>(10 / 14)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Functions: <span class="metric">100% <small>(10 / 10)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Lines: <span class="metric">100% <small>(49 / 49)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
+    </h2>
+    <div class="path"><a href="../index.html">All files</a> &#187; <a href="index.html">backbone_collections/</a> &#187; stops_collection.js</div>
+</div>
+<div class="body">
+<pre><table class="coverage">
+<tr><td class="line-count">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135</td><td class="line-coverage"><span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">15</span>
+<span class="cline-any cline-yes">47</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-yes">3</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-yes">12</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1</span></td><td class="text"><pre class="prettyprint lang-js">var moment = require("moment");
+require("moment-duration-format");
+var stop_model = require("../backbone_models/stop_model");
+&nbsp;
+var stops_colletion = Backbone.Collection.extend({
+	model: stop_model,
+&nbsp;
+	_numberStops: function() {
+		_.each(this.models, function(stop, index) {
+			stop.set("stopNum", {index: index + 1}, {silent: true});
+		});
+	},
+&nbsp;
+	initialize: function(opts) {
+		this.on("removeStop", _.bind(function(stopId) {
+			this.removeStop(stopId);
+		}, this));
+	},
+&nbsp;
+	addStop: function(index, opts) {
+		var newStopModel = new stop_model(opts);
+		
+		this.add(newStopModel, {
+			at: index
+		});
+&nbsp;
+		this._numberStops();
+&nbsp;
+		//lets trip_view's trip_model know to update list of stops
+		this.trigger("change", newStopModel);
+		_.delay(_.bind(this.setStopsActive, this), 450);
+	},
+&nbsp;
+	setStopsActive: function() {
+		var returnedStop, thisStop;
+&nbsp;
+		_.each(this.models, function(stop, index) {
+			thisStop = stop.attributes;
+&nbsp;
+			if (thisStop.isNew === true) {
+				thisStop.isNew = false;
+				returnedStop = stop;
+			}
+			
+		});
+&nbsp;
+		<span class="missing-if-branch" title="else path not taken" >E</span>if (returnedStop) { 
+			returnedStop.trigger("active");
+			this.trigger("change", returnedStop); 
+		}
+	},
+&nbsp;
+	removeStop: function(stopId, opts) {
+		this.remove( this.where({_id: stopId}) );
+		this._numberStops();
+		this.trigger("change");
+&nbsp;
+		//listeners will destroy related view
+		Backbone.trigger("removeStop", stopId);
+	},
+&nbsp;
+	mergeMapData: function(result) {
+		var METERCONVERT = 1609.344;
+		var thisStop;
+		var lastStop;
+		var totalDistance;
+		var totalDuration;
+		var legs;
+		var thisLeg;
+&nbsp;
+		var lastStopDefaults = {
+			distance: {
+				text: "0",
+				value: 0
+			},
+			duration: {
+				text: "0",
+				value: 0
+			},
+			totals: {
+				distance: {
+					text: "0",
+					value: 0
+				},
+				duration: {
+					text: "0",
+					value: 0
+				}
+			}
+		}
+&nbsp;
+		result || (<span class="branch-1 cbranch-no" title="branch not covered" >result = {})</span>;
+		result.routes || (<span class="branch-1 cbranch-no" title="branch not covered" >result.routes = [{legs:[]}])</span>;
+		legs = result.routes[0].legs;
+&nbsp;
+		if (legs.length === this.models.length - 1) {
+&nbsp;
+			_.each(this.models, _.bind(function(stop, index) {
+				if (index &gt; 0) {
+					lastStop = (this.models[index - 1] ? this.models[index - 1].attributes : <span class="branch-1 cbranch-no" title="branch not covered" >lastStopDefaults)</span>;
+					thisStop = stop.attributes;
+					thisLeg = legs[index - 1];
+&nbsp;
+					totalDistance = Math.round(lastStop.totals.distance.value + (thisLeg.distance.value / METERCONVERT));
+					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
+&nbsp;
+					stop.set("distance", { 
+						text: thisLeg.distance.text,
+						value: thisLeg.distance.value
+					}, {silent: true});
+&nbsp;
+					stop.set("duration", {
+						text: thisLeg.duration.text,
+						value: thisLeg.duration.value
+					}, {silent: true});
+&nbsp;
+					//NOTE: backbone does not do deep/nested models
+					//Since I'm setting the models above silently, I'm ok with directly affecting attributes here
+					stop.attributes.totals = {
+						distance: { 
+							value: totalDistance,
+							text: totalDistance.toString() + " mi"
+						},
+						duration: {
+							value: totalDuration,
+							text: moment.duration(totalDuration, "seconds").format("y [years] d [days] h [hours] m [mins]")
+						}
+					};
+				}
+			}, this));
+		}
+	}
+});
+&nbsp;
+module.exports = stops_colletion;</pre></td></tr>
+</table></pre>
+
+</div>
+<div class="footer">
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Apr 15 2015 22:28:07 GMT-0500 (CDT)</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

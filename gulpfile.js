@@ -9,6 +9,7 @@ var handlebars = require('gulp-handlebars');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var mocha = require('gulp-mocha');
+var istanbul = require('gulp-istanbul');
 
 gulp.task('less', function () {
   return gulp.src('./public/app/less/**/*.less')
@@ -32,14 +33,21 @@ gulp.task('browserify', ['jsx'], function() {
     .pipe(gulp.dest('./public/'));
 });
 
-gulp.task('test', ['less', 'jsx', 'browserify'], function () {
+gulp.task('test-alone', function () {
   return gulp.src(['./tests/*.js'], {read: false})
     .pipe(mocha());
 });
 
-gulp.task('test-alone', function () {
-  return gulp.src(['./tests/*.js'], {read: false})
-    .pipe(mocha());
+gulp.task('test', function (cb) {
+  gulp.src(['./public/app/**/*.js'])
+    .pipe(istanbul())
+    .pipe(istanbul.hookRequire())
+    .on('finish', function () {
+      gulp.src(['./tests/*.js'], {read: false})
+        .pipe(mocha())
+        .pipe(istanbul.writeReports())
+        .on('end', cb);
+    });
 });
 
 gulp.task('develop', function() {
