@@ -6,8 +6,6 @@ var traveller_model = Backbone.Model.extend({
 		}
 	},
 
-	initialize: function() {},
-
 	removeTraveller: function() {
 		this.trigger("remove_traveller", this.get("_id"));
 	}
