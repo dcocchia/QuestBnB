@@ -61,6 +61,7 @@ var stops_colletion = Backbone.Collection.extend({
 
 	mergeMapData: function(result) {
 		var METERCONVERT = 1609.344;
+		var DURATIONFORMAT = "y [years] d [days] h [hours] m [mins]";
 		var thisStop;
 		var lastStop;
 		var totalDistance;
@@ -101,7 +102,11 @@ var stops_colletion = Backbone.Collection.extend({
 					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
-					totalDistance = Math.round(lastStop.totals.distance.value + (thisLeg.distance.value / METERCONVERT));
+					totalDistance = Math.round(
+						lastStop.totals.distance.value + 
+						(thisLeg.distance.value / METERCONVERT)
+					);
+
 					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
 
 					stop.set("distance", { 
@@ -123,7 +128,8 @@ var stops_colletion = Backbone.Collection.extend({
 						},
 						duration: {
 							value: totalDuration,
-							text: moment.duration(totalDuration, "seconds").format("y [years] d [days] h [hours] m [mins]")
+							text: moment.duration(totalDuration, "seconds")
+									.format(DURATIONFORMAT)
 						}
 					};
 				}
