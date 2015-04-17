@@ -39,7 +39,7 @@ gulp.task('test-alone', function () {
 });
 
 gulp.task('test', function (cb) {
-  gulp.src(['./public/app/**/*.js'])
+  gulp.src(['./public/app/backbone_collections/*.js', './public/app/backbone_models/*.js'])
     .pipe(istanbul())
     .pipe(istanbul.hookRequire())
     .on('finish', function () {
