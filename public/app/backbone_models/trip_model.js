@@ -46,6 +46,7 @@ var trip_model = Backbone.Model.extend({
 				if (newTrip.id === trip.id) {
 					tripList.splice(index, 1);
 					prevTrip = trip;
+					return true;
 				}
 			});
 			//if this trip was already in local storage, just update it
