@@ -12,13 +12,13 @@
     </style>
 </head>
 <body>
-<div class="header low">
+<div class="header high">
     <h1>Code coverage report for <span class="entity">backbone_models/search_model.js</span></h1>
     <h2>
-        Statements: <span class="metric">21.43% <small>(3 / 14)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Branches: <span class="metric">0% <small>(0 / 3)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Functions: <span class="metric">25% <small>(1 / 4)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
-        Lines: <span class="metric">21.43% <small>(3 / 14)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Statements: <span class="metric">100% <small>(13 / 13)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Branches: <span class="metric">100% <small>(3 / 3)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Functions: <span class="metric">100% <small>(4 / 4)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
+        Lines: <span class="metric">100% <small>(13 / 13)</small></span> &nbsp;&nbsp;&nbsp;&nbsp;
         Ignored: <span class="metric"><span class="ignore-none">none</span></span> &nbsp;&nbsp;&nbsp;&nbsp;
     </h2>
     <div class="path"><a href="../index.html">All files</a> &#187; <a href="index.html">backbone_models/</a> &#187; search_model.js</div>
@@ -75,39 +75,39 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
+<span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -121,36 +121,36 @@
 		this.map_api = opts.map_api;
 	},
 &nbsp;
-	getQueryPredictions: <span class="fstat-no" title="function not covered" >function(options) {</span>
-<span class="cstat-no" title="statement not covered" >		var setModelQuery = <span class="fstat-no" title="function not covered" >function(predictions, status) {</span></span>
-<span class="cstat-no" title="statement not covered" >			switch(status) {</span>
-				case google.maps.places.PlacesServiceStatus.OK:
-<span class="cstat-no" title="statement not covered" >					this.set({</span>
-						"queryPredictions": predictions,
-						"queryStatus": "OK"
-					});
-<span class="cstat-no" title="statement not covered" >					break;</span>
-				case google.maps.places.PlacesServiceStatus.ZERO_RESULTS:
-<span class="cstat-no" title="statement not covered" >					this.set({</span>
-						"queryPredictions": [],
-						"queryStatus": "noResults"
-					});
-<span class="cstat-no" title="statement not covered" >					break;</span>
-				default:
-<span class="cstat-no" title="statement not covered" >					this.set({</span>
-						"queryPredictions": [],
-						"queryStatus": "error"
-					});
-<span class="cstat-no" title="statement not covered" >					console.warning("Google Query Failure: ", status);</span>
-<span class="cstat-no" title="statement not covered" >					break;</span>
-			}
-		}
-&nbsp;
-<span class="cstat-no" title="statement not covered" >		this.map_api.getQueryPredictions(options, _.bind( setModelQuery, this));</span>
+	getQueryPredictions: function(options) {
+		this.map_api.getQueryPredictions(options, _.bind( this.setModelQuery, this));
 	},
 &nbsp;
-	clear: <span class="fstat-no" title="function not covered" >function() {</span>
-<span class="cstat-no" title="statement not covered" >		this.set(this.defaults);</span>
+	setModelQuery: function(predictions, status) {
+		switch(status) {
+			case google.maps.places.PlacesServiceStatus.OK:
+				this.set({
+					"queryPredictions": predictions,
+					"queryStatus": "OK"
+				});
+				break;
+			case google.maps.places.PlacesServiceStatus.ZERO_RESULTS:
+				this.set({
+					"queryPredictions": [],
+					"queryStatus": "noResults"
+				});
+				break;
+			default:
+				this.set({
+					"queryPredictions": [],
+					"queryStatus": "error"
+				});
+				console.warning("Google Query Failure: ", status);
+				break;
+		}
+	},
+&nbsp;
+	clear: function() {
+		this.set(this.defaults);
 	}
 });
 &nbsp;
@@ -159,7 +159,7 @@ module.exports = SearchModel;</pre></td></tr>
 
 </div>
 <div class="footer">
-    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Wed Apr 15 2015 23:21:24 GMT-0500 (CDT)</div>
+    <div class="meta">Generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 16 2015 23:58:44 GMT-0500 (CDT)</div>
 </div>
 <script src="../prettify.js"></script>
 <script>

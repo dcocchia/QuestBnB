@@ -12,13 +12,20 @@ var trip_model = Backbone.Model.extend({
 		stops: []
 	},
 
+	defaultUrl: "/trips",
+
 	url: "/trips",
 
 	initialize: function(opts) {
+		this.resetUrl();
 	},
 
 	setUrl: function(TripId) {
-		this.url = this.url + "/" + TripId;
+		this.url = this.defaultUrl + "/" + TripId;
+	},
+
+	resetUrl: function() {
+		this.url = this.defaultUrl;
 	},
 
 	saveLocalStorageReference: function() {
@@ -31,14 +38,14 @@ var trip_model = Backbone.Model.extend({
 		}
 		var prevTrip;
 
-		if (!tripList) { 
+		if (!tripList) {
 			tripList = [newTrip];
 		} else {
 			tripList = JSON.parse(tripList);
-			prevTrip = _.find(tripList, function(trip, index) {
+			_.find(tripList, function(trip, index) {
 				if (newTrip.id === trip.id) {
 					tripList.splice(index, 1);
-					return true;
+					prevTrip = trip;
 				}
 			});
 			//if this trip was already in local storage, just update it
