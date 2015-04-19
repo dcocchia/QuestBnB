@@ -2,6 +2,7 @@ var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
 	this.map = map;
+	this.markers = [];
 
 	this.autocompleteService = new google.maps.places.AutocompleteService({
 		componentRestrictions: { 
@@ -33,7 +34,7 @@ Map.prototype = {
 		google.maps.event.trigger(this.map, 'resize');
 	},
 
-	makeMarker: function( position, icon, title) {
+	makeMarker: function(position, icon, title) {
 		var marker = new google.maps.Marker({
 			position: position,
 			map: this.map,
@@ -41,10 +42,22 @@ Map.prototype = {
 			title: title
 		});
 
-		google.maps.event.addListener(marker, 'click', _.bind(function() {
-			this.infowindow.setContent(title);
-			this.infowindow.open(this.map, marker);
-		}, this));
+		if (title) {
+			google.maps.event.addListener(marker, 'click', _.bind(function() {
+				this.infowindow.setContent(title);
+				this.infowindow.open(this.map, marker);
+			}, this));
+		}
+
+		this.markers.push(marker);
+	},
+
+	clearMarkers: function() {
+		_.each(this.markers, function(marker) {
+			marker.setMap(null);
+		});
+
+		this.markers = [];
 	},
 
 	generateMarkerIcon: function(opts) {
@@ -82,6 +95,7 @@ Map.prototype = {
 	},
 
 	placeDirectionMarkers: function(legs) {
+		this.clearMarkers();
 		_.each(legs, _.bind(function(leg, index, legs) {
 			this.makeMarker(leg.start_location, this.generateMarkerIcon({text: index + 1}), leg.start_address);
 			if (index + 1 === legs.length) {

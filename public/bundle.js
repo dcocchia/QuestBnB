@@ -27781,7 +27781,6 @@ module.exports = LandingView;
 
 },{"../../../renderer/client_renderer":173,"../../views/LandingView":169,"../../views/LocationsMenu":170,"./page_view":162}],161:[function(require,module,exports){
 var map_view = Backbone.View.extend({
-	mapMarkers: [],
 	events: {},
 	initialize: function(opts) {
 		this.createMap();
@@ -27804,23 +27803,6 @@ var map_view = Backbone.View.extend({
 
 	setZoom: function(zoomLevel) {
 		this.map.setZoom(zoomLevel);
-	},
-
-	setMarker: function(opts) {
-		var marker = new google.maps.Marker({
-			map: this.map,
-			position: opts.location
-		});
-
-		this.mapMarkers.push(marker);
-	},
-
-	clearMarkers: function() {
-		_.each(this.mapMarkers, function(marker) {
-			marker.setMap(null);
-		});
-
-		this.mapMarkers = [];
 	},
 
 	setMode: function(modeClass) {
@@ -28162,7 +28144,7 @@ var TripView = PageView.extend({
 		this.stop_views = [];
 		this.travellers_views = [];
 
-		this.map_view.clearMarkers();
+		this.map_api.clearMarkers();
 
 		this.model.once("ready", _.bind(function(data){
 			//stops collection and related
@@ -28448,6 +28430,7 @@ var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
 	this.map = map;
+	this.markers = [];
 
 	this.autocompleteService = new google.maps.places.AutocompleteService({
 		componentRestrictions: { 
@@ -28479,7 +28462,7 @@ Map.prototype = {
 		google.maps.event.trigger(this.map, 'resize');
 	},
 
-	makeMarker: function( position, icon, title) {
+	makeMarker: function(position, icon, title) {
 		var marker = new google.maps.Marker({
 			position: position,
 			map: this.map,
@@ -28487,10 +28470,22 @@ Map.prototype = {
 			title: title
 		});
 
-		google.maps.event.addListener(marker, 'click', _.bind(function() {
-			this.infowindow.setContent(title);
-			this.infowindow.open(this.map, marker);
-		}, this));
+		if (title) {
+			google.maps.event.addListener(marker, 'click', _.bind(function() {
+				this.infowindow.setContent(title);
+				this.infowindow.open(this.map, marker);
+			}, this));
+		}
+
+		this.markers.push(marker);
+	},
+
+	clearMarkers: function() {
+		_.each(this.markers, function(marker) {
+			marker.setMap(null);
+		});
+
+		this.markers = [];
 	},
 
 	generateMarkerIcon: function(opts) {
@@ -28528,6 +28523,7 @@ Map.prototype = {
 	},
 
 	placeDirectionMarkers: function(legs) {
+		this.clearMarkers();
 		_.each(legs, _.bind(function(leg, index, legs) {
 			this.makeMarker(leg.start_location, this.generateMarkerIcon({text: index + 1}), leg.start_address);
 			if (index + 1 === legs.length) {
@@ -28605,8 +28601,8 @@ var ViewOrchestrator = Backbone.View.extend({
 		var mapView = this.views["map_view"];
 
 		Backbone.on("map:setCenter", _.bind(mapView.setCenter, mapView));
-		Backbone.on("map:setMarker", _.bind(mapView.setMarker, mapView));
-		Backbone.on("map:clearMarkers", _.bind(mapView.clearMarkers, mapView));
+		Backbone.on("map:setMarker", _.bind(this.map_api.makeMarker, mapView));
+		Backbone.on("map:clearMarkers", _.bind(this.map_api.clearMarkers, mapView));
 		Backbone.on("map:setZoom", _.bind(mapView.setZoom, mapView));
 	},
 

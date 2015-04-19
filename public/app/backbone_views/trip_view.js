@@ -27,7 +27,7 @@ var TripView = PageView.extend({
 		this.stop_views = [];
 		this.travellers_views = [];
 
-		this.map_view.clearMarkers();
+		this.map_api.clearMarkers();
 
 		this.model.once("ready", _.bind(function(data){
 			//stops collection and related

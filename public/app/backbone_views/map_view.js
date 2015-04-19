@@ -1,5 +1,4 @@
 var map_view = Backbone.View.extend({
-	mapMarkers: [],
 	events: {},
 	initialize: function(opts) {
 		this.createMap();
@@ -22,23 +21,6 @@ var map_view = Backbone.View.extend({
 
 	setZoom: function(zoomLevel) {
 		this.map.setZoom(zoomLevel);
-	},
-
-	setMarker: function(opts) {
-		var marker = new google.maps.Marker({
-			map: this.map,
-			position: opts.location
-		});
-
-		this.mapMarkers.push(marker);
-	},
-
-	clearMarkers: function() {
-		_.each(this.mapMarkers, function(marker) {
-			marker.setMap(null);
-		});
-
-		this.mapMarkers = [];
 	},
 
 	setMode: function(modeClass) {

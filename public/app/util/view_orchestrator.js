@@ -15,8 +15,8 @@ var ViewOrchestrator = Backbone.View.extend({
 		var mapView = this.views["map_view"];
 
 		Backbone.on("map:setCenter", _.bind(mapView.setCenter, mapView));
-		Backbone.on("map:setMarker", _.bind(mapView.setMarker, mapView));
-		Backbone.on("map:clearMarkers", _.bind(mapView.clearMarkers, mapView));
+		Backbone.on("map:setMarker", _.bind(this.map_api.makeMarker, mapView));
+		Backbone.on("map:clearMarkers", _.bind(this.map_api.clearMarkers, mapView));
 		Backbone.on("map:setZoom", _.bind(mapView.setZoom, mapView));
 	},
 
