@@ -5,7 +5,8 @@ var StopView = Backbone.View.extend({
 		"keydown .stop-location-title"	: "onEditKeyDown",
 		"click .location-item"			: "onLocationItemClick",
 		"click .clear"					: "onClearClick",
-		"click .remove"					: "onRemoveClick"
+		"click .remove"					: "onRemoveClick",
+		"click .lodging-booking-status" : "onLodgingStatusClick"
 	},
 
 	initialize: function(opts) {
@@ -186,6 +187,11 @@ var StopView = Backbone.View.extend({
 		_.delay(_.bind(function() {
 			this.model.remove(stopId);	
 		}, this), 500);
+		
+	},
+
+	onLodgingStatusClick: function(e) {
+		e.preventDefault();
 		
 	},
 
