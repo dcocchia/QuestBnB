@@ -10,9 +10,10 @@ function Map(map) {
 	});
 
 	this.placeService = new google.maps.places.PlacesService(map);
-	this.directionsDisplay = new google.maps.DirectionsRenderer();
+	this.directionsDisplay = new google.maps.DirectionsRenderer({suppressMarkers: true});
 	this.directionsService = new google.maps.DirectionsService();
 	this.geocoder = new google.maps.Geocoder();
+	this.infowindow = new google.maps.InfoWindow({});
 }
 
 Map.prototype = {
@@ -32,6 +33,63 @@ Map.prototype = {
 		google.maps.event.trigger(this.map, 'resize');
 	},
 
+	makeMarker: function( position, icon, title) {
+		var marker = new google.maps.Marker({
+			position: position,
+			map: this.map,
+			icon: icon,
+			title: title
+		});
+
+		google.maps.event.addListener(marker, 'click', _.bind(function() {
+			this.infowindow.setContent(title);
+			this.infowindow.open(this.map, marker);
+		}, this));
+	},
+
+	generateMarkerIcon: function(opts) {
+		var iconUrl = "";
+		var baseUrl = "http://mt.google.com/vt/icon";
+		var defaults = {
+			fontSize: 16,
+			font: "arialuni_t.ttf",
+			textColor: "ffffffff",
+			backgroundColor: "red",
+			xPos: 41,
+			yPos: 48,
+			text: "%E2%80%A2"
+		}
+		var options;
+		
+		opts || (opts = {});
+
+		options = _.defaults(opts, defaults);
+
+		iconUrl += baseUrl;
+		iconUrl += "?psize=" + options.fontSize;
+		iconUrl += "&font=fonts/" + options.font;
+		iconUrl += "&color=" + options.textColor;
+		iconUrl += "&name=" + (
+			options.backgroundColor === "red" 
+			? "icons/spotlight/spotlight-waypoint-b.png" 
+			: "icons/spotlight/spotlight-waypoint-a.png"
+		);
+		iconUrl += "&ax=" + options.xPos;
+		iconUrl += "&ay=" + options.yPos;
+		iconUrl += "&text=" + options.text;
+
+		return iconUrl
+	},
+
+	placeDirectionMarkers: function(legs) {
+		_.each(legs, _.bind(function(leg, index, legs) {
+			this.makeMarker(leg.start_location, this.generateMarkerIcon({text: index + 1}), leg.start_address);
+			if (index + 1 === legs.length) {
+				this.makeMarker(leg.end_location, this.generateMarkerIcon({text: index + 2}), leg.end_address);
+			}
+		}, this));
+	},
+
 	renderDirections: function(opts, promise) {
 		var renderPromise = new Promise(_.bind(function(resolve, reject) {
 
@@ -39,6 +97,7 @@ Map.prototype = {
 			this.directionsService.route(opts, _.bind(function(result, status) {
 				if (status == google.maps.DirectionsStatus.OK) {
 					this.directionsDisplay.setDirections(result);
+					this.placeDirectionMarkers(result.routes[0].legs);
 					resolve(result);
 				} else {
 					reject(status);

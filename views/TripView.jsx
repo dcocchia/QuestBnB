@@ -10,18 +10,16 @@ var Stop = React.createClass({
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
-		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
+		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
 		var totals = ( data.totals || {} );
 		var canAddStop = this.props.canAddStop;
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
 				<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
-				<div className="stop-bar left-full-height">
-					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
-				</div>
 				<div className="stop-num-wrapper left-full-height">
 					<div className="stop-num center">{data.stopNum}</div>
+					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
 				</div>
 				<div className="stop-info left-full-height">
 					<div className="stop-place-info left-full-height">
@@ -33,8 +31,7 @@ var Stop = React.createClass({
 							</div>
 						</div>
 						<p>Day {data.dayNum}</p>
-						<p>From last {data.distance.text}</p>
-						<p>Total distance {(totals.distance && totals.distance.text) ? totals.distance.text : "0 mi"}</p>
+						<p>{data.distance.text}</p>
 					</div>
 				</div>
 				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id}/>

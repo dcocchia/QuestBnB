@@ -10,18 +10,16 @@ var Stop = React.createClass({displayName: "Stop",
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
-		var distance = (data.distance && data.distance.text || (data.distance = { text: "0" }));
+		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
 		var totals = ( data.totals || {} );
 		var canAddStop = this.props.canAddStop;
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
 				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 
-				React.createElement("div", {className: "stop-bar left-full-height"}, 
-					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
-				), 
 				React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
-					React.createElement("div", {className: "stop-num center"}, data.stopNum)
+					React.createElement("div", {className: "stop-num center"}, data.stopNum), 
+					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
 				), 
 				React.createElement("div", {className: "stop-info left-full-height"}, 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
@@ -33,8 +31,7 @@ var Stop = React.createClass({displayName: "Stop",
 							)
 						), 
 						React.createElement("p", null, "Day ", data.dayNum), 
-						React.createElement("p", null, "From last ", data.distance.text), 
-						React.createElement("p", null, "Total distance ", (totals.distance && totals.distance.text) ? totals.distance.text : "0 mi")
+						React.createElement("p", null, data.distance.text)
 					)
 				), 
 				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id})
