@@ -21,7 +21,7 @@ var Stop = React.createClass({
 					<div className="stop-num center">{data.stopNum}</div>
 					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
 				</div>
-				<div className="stop-info left-full-height">
+				<div className="stop-info left-full-height col-lg-6 col-md-6 col-sm-5">
 					<div className="stop-place-info left-full-height">
 						<div className="stop-location-title-wrapper">
 							<h3 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h3>
@@ -181,7 +181,7 @@ var Lodging = React.createClass({
 		}
 
 		return (
-			<div className="stop-lodging left-full-height">
+			<div className="stop-lodging left-full-height col-lg-5 col-md-5 col-sm-4">
 				{lodgingElm}
 			</div>
 		)

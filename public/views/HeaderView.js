@@ -6,7 +6,7 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 			React.createElement("nav", {className: (this.props.open) ? "header-nav open" : "header-nav"}, 
 				React.createElement("button", {className: "burger-menu-btn"}), 
 				React.createElement("ul", {className: "nav-menu panel"}, 
-					React.createElement("li", {className: "nav-menu-item"}, 
+					React.createElement("li", {className: "nav-menu-item new-trip"}, 
 						React.createElement("a", {href: "/", title: "New trip"}, "New trip")
 					), 
 					React.createElement("li", {className: "nav-menu-item your-trips"}, 

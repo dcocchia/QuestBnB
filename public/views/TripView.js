@@ -21,7 +21,7 @@ var Stop = React.createClass({displayName: "Stop",
 					React.createElement("div", {className: "stop-num center"}, data.stopNum), 
 					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
 				), 
-				React.createElement("div", {className: "stop-info left-full-height"}, 
+				React.createElement("div", {className: "stop-info left-full-height col-lg-6 col-md-6 col-sm-5"}, 
 					React.createElement("div", {className: "stop-place-info left-full-height"}, 
 						React.createElement("div", {className: "stop-location-title-wrapper"}, 
 							React.createElement("h3", {className: "stop-location-title text-ellip", contentEditable: "true"}, data.location), 
@@ -181,7 +181,7 @@ var Lodging = React.createClass({displayName: "Lodging",
 		}
 
 		return (
-			React.createElement("div", {className: "stop-lodging left-full-height"}, 
+			React.createElement("div", {className: "stop-lodging left-full-height col-lg-5 col-md-5 col-sm-4"}, 
 				lodgingElm
 			)
 		)
