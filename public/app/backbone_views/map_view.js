@@ -24,7 +24,7 @@ var map_view = Backbone.View.extend({
 	},
 
 	setMode: function(modeClass) {
-		this.$el.removeClass("trip-view stop-view stops-view overview-view").addClass(modeClass);
+		this.$el.removeClass("trip-view stop-view").addClass(modeClass);
 	}
 });
 

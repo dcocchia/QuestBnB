@@ -17,6 +17,12 @@ var stops_colletion = Backbone.Collection.extend({
 		}, this));
 	},
 
+	getStop: function(stopId) {
+		return _.find(this.models, function(stopModel) {
+			 return (stopModel.get("_id") === stopId);
+		});
+	},
+
 	addStop: function(index, opts) {
 		var newStopModel = new stop_model(opts);
 		
@@ -99,7 +105,6 @@ var stops_colletion = Backbone.Collection.extend({
 			_.each(this.models, _.bind(function(stop, index) {
 				if (index > 0) {
 					lastStop = (this.models[index - 1] ? this.models[index - 1].attributes : lastStopDefaults);
-					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
 					totalDistance = Math.round(
@@ -108,6 +113,11 @@ var stops_colletion = Backbone.Collection.extend({
 					);
 
 					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
+					
+					stop.set("geo", {
+						lat: thisLeg.end_location.lat(),
+						lng: thisLeg.end_location.lng()
+					}, {silent: true});
 
 					stop.set("distance", { 
 						text: thisLeg.distance.text,
@@ -132,6 +142,12 @@ var stops_colletion = Backbone.Collection.extend({
 									.format(DURATIONFORMAT)
 						}
 					};
+				} else {
+					thisLeg = legs[0];
+					_.first(this.models).set("geo", {
+						lat: thisLeg.start_location.lat(),
+						lng: thisLeg.start_location.lng()
+					}, {silent: true});
 				}
 			}, this));
 		}

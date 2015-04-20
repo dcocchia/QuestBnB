@@ -20,10 +20,12 @@
 	var header_view = require("./backbone_views/header_view");
 	var landing_view = require("./backbone_views/landing_view");
 	var trip_view = require("./backbone_views/trip_view");
+	var stop_page_view = require("./backbone_views/stop_page_view");
 
 	//backbone collections
 	var stops_collection = require("./backbone_collections/stops_collection");
 	var travellers_collection = require("./backbone_collections/travellers_collection");
+	var lodgings_collection = require("./backbone_collections/lodgings_collection");
 
 	//backbone models
 	var header_model = require("./backbone_models/header_model");
@@ -36,20 +38,17 @@
 			"": "landing",
 			"trips/:id": "trip",
 			"trips/:id/": "trip",
-			"trips/:id/stops": "stops",
-			"trips/:id/stops/": "stops",
 			"trips/:id/stops/:stopId": "stop",
-			"trips/:id/stops/:stopId/": "stop",
-			"trips/:id/overview": "overview",
-			"trips/:id/overview/": "overview"
+			"trips/:id/stops/:stopId/": "stop"
 		}
 	});
 
 	var App = view_orchestrator.extend({
 		initialize: function(opts) {
 			this.router = opts.router;
-			this.views = {};
 			this.models = {};
+			this.views = {};
+			this.collections = {};
 			this.loadView(header_view, "header_view", {
 				$parentEl: $(".header-nav-wrapper"),
 				el: $(".header-nav"), 
@@ -65,11 +64,13 @@
 				},
 				Views: {
 					landing_view: landing_view,
-					trip_view: trip_view
+					trip_view: trip_view,
+					stop_page_view: stop_page_view
 				},
 				Collections: {
 					stops_collection: stops_collection,
-					travellers_collection: travellers_collection
+					travellers_collection: travellers_collection,
+					lodgings_collection: lodgings_collection
 				}
 			});
 			Backbone.history.start({pushState: true});
@@ -110,29 +111,29 @@
 
 			}, this));
 
-			this.router.on("route:stops", function() { console.log("stops view!") });
 			this.router.on("route:stop", function() { console.log("stop view!") });
-			this.router.on("route:overview", function() { console.log("overview view!") });
 		},
 
 		loadView: function(view, viewName, options) {
-			if (this.views[viewName]) {
-				this.views[viewName].initialize(options);
-			} else {
-				this.views[viewName] = new view(options);
-			}
-
-			return this.views[viewName];
+			return this._load(view, "views", viewName, options);
 		},
 
 		loadModel: function(model, modelName, options) {
-			if (this.models[modelName]) {
-				this.models[modelName].initialize(options);
+			return this._load(model, "models", modelName, options);
+		},
+
+		loadCollection: function(collection, collectionName, options) {
+			return this._load(collection, "collections", collectionName, options);
+		},
+
+		_load: function(obj, type, name, options) {
+			if (this[type][name]) {
+				this[type][name].initialize(options);
 			} else {
-				this.models[modelName] = new model(options);
+				this[type][name] = new obj(options);
 			}
 
-			return this.models[modelName];
+			return this[type][name];
 		}
 	});
 
@@ -143,7 +144,7 @@
 		});
 	});
 })(window);
-},{"./backbone_collections/stops_collection":152,"./backbone_collections/travellers_collection":153,"./backbone_models/header_model":154,"./backbone_models/search_model":155,"./backbone_models/trip_model":158,"./backbone_views/header_view":159,"./backbone_views/landing_view":160,"./backbone_views/map_view":161,"./backbone_views/trip_view":165,"./util/map_api":166,"./util/view_orchestrator":167,"bluebird":2,"moment":5,"moment-duration-format":4,"react":151}],2:[function(require,module,exports){
+},{"./backbone_collections/lodgings_collection":152,"./backbone_collections/stops_collection":153,"./backbone_collections/travellers_collection":154,"./backbone_models/header_model":155,"./backbone_models/search_model":158,"./backbone_models/trip_model":161,"./backbone_views/header_view":162,"./backbone_views/landing_view":163,"./backbone_views/map_view":167,"./backbone_views/stop_page_view":169,"./backbone_views/trip_view":172,"./util/map_api":173,"./util/view_orchestrator":174,"bluebird":2,"moment":5,"moment-duration-format":4,"react":151}],2:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -27061,6 +27062,24 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":33}],152:[function(require,module,exports){
+var lodging_model = require("../backbone_models/lodging_model");
+
+var lodgings_collection = Backbone.Collection.extend({
+	model: lodging_model,
+
+	initialize: function(opts) {
+
+	},
+	
+	fetchDebounced: _.debounce(function(data) { 
+		this.fetch({
+			data: data
+		});
+	}, 500)
+});
+
+module.exports = lodgings_collection;
+},{"../backbone_models/lodging_model":156}],153:[function(require,module,exports){
 var moment = require("moment");
 require("moment-duration-format");
 var stop_model = require("../backbone_models/stop_model");
@@ -27078,6 +27097,12 @@ var stops_colletion = Backbone.Collection.extend({
 		this.on("removeStop", _.bind(function(stopId) {
 			this.removeStop(stopId);
 		}, this));
+	},
+
+	getStop: function(stopId) {
+		return _.find(this.models, function(stopModel) {
+			 return (stopModel.get("_id") === stopId);
+		});
 	},
 
 	addStop: function(index, opts) {
@@ -27162,7 +27187,6 @@ var stops_colletion = Backbone.Collection.extend({
 			_.each(this.models, _.bind(function(stop, index) {
 				if (index > 0) {
 					lastStop = (this.models[index - 1] ? this.models[index - 1].attributes : lastStopDefaults);
-					thisStop = stop.attributes;
 					thisLeg = legs[index - 1];
 
 					totalDistance = Math.round(
@@ -27171,6 +27195,11 @@ var stops_colletion = Backbone.Collection.extend({
 					);
 
 					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
+					
+					stop.set("geo", {
+						lat: thisLeg.end_location.lat(),
+						lng: thisLeg.end_location.lng()
+					}, {silent: true});
 
 					stop.set("distance", { 
 						text: thisLeg.distance.text,
@@ -27195,6 +27224,12 @@ var stops_colletion = Backbone.Collection.extend({
 									.format(DURATIONFORMAT)
 						}
 					};
+				} else {
+					thisLeg = legs[0];
+					_.first(this.models).set("geo", {
+						lat: thisLeg.start_location.lat(),
+						lng: thisLeg.start_location.lng()
+					}, {silent: true});
 				}
 			}, this));
 		}
@@ -27202,7 +27237,7 @@ var stops_colletion = Backbone.Collection.extend({
 });
 
 module.exports = stops_colletion;
-},{"../backbone_models/stop_model":156,"moment":5,"moment-duration-format":4}],153:[function(require,module,exports){
+},{"../backbone_models/stop_model":159,"moment":5,"moment-duration-format":4}],154:[function(require,module,exports){
 var traveller_model = require("../backbone_models/traveller_model");
 
 var travellers_collection = Backbone.Collection.extend({
@@ -27220,7 +27255,7 @@ var travellers_collection = Backbone.Collection.extend({
 });
 
 module.exports = travellers_collection;
-},{"../backbone_models/traveller_model":157}],154:[function(require,module,exports){
+},{"../backbone_models/traveller_model":160}],155:[function(require,module,exports){
 var header_model = Backbone.Model.extend({
 	defaults: {
 		"open": false
@@ -27229,7 +27264,39 @@ var header_model = Backbone.Model.extend({
 });
 
 module.exports = header_model;
-},{}],155:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
+var lodging_model = Backbone.Model.extend({
+	defaults: {
+		
+	}
+
+});
+
+module.exports = lodging_model;
+},{}],157:[function(require,module,exports){
+var lodgings_search_query_model = Backbone.Model.extend({
+	defaults: {
+		start: "",
+		end: "",
+		location: "No location chosen",
+		guests: 1,
+		pricemin: 0,
+		pricemax: 1000,
+		page: 1,
+		geo: {
+			lat: 0,
+			lng: 0
+		}
+	},
+
+	initialize: function() {
+		console.log(this);
+	}
+
+});
+
+module.exports = lodgings_search_query_model;
+},{}],158:[function(require,module,exports){
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
@@ -27274,7 +27341,7 @@ var SearchModel = Backbone.Model.extend({
 });
 
 module.exports = SearchModel;
-},{}],156:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 var stop_model = Backbone.Model.extend({
 	defaults: {
 		"location": "",
@@ -27310,7 +27377,7 @@ var stop_model = Backbone.Model.extend({
 });
 
 module.exports = stop_model;
-},{}],157:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 var traveller_model = Backbone.Model.extend({
 	defaults: {
 		name: "",
@@ -27325,7 +27392,7 @@ var traveller_model = Backbone.Model.extend({
 });
 
 module.exports = traveller_model;
-},{}],158:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: "",
@@ -27392,7 +27459,7 @@ var trip_model = Backbone.Model.extend({
 });
 
 module.exports = trip_model;
-},{}],159:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 var headerViewTemplate = require("../../views/HeaderView");
 var navModalsTemplate = require("../../views/ModalsView");
 var renderer = require("../../../renderer/client_renderer");
@@ -27477,7 +27544,7 @@ var HeaderView = Backbone.View.extend({
 });
 
 module.exports = HeaderView;
-},{"../../../renderer/client_renderer":173,"../../views/HeaderView":168,"../../views/ModalsView":171}],160:[function(require,module,exports){
+},{"../../../renderer/client_renderer":183,"../../views/HeaderView":175,"../../views/ModalsView":180}],163:[function(require,module,exports){
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
@@ -27779,7 +27846,92 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":173,"../../views/LandingView":169,"../../views/LocationsMenu":170,"./page_view":162}],161:[function(require,module,exports){
+},{"../../../renderer/client_renderer":183,"../../views/LandingView":176,"../../views/LocationsMenu":177,"./page_view":168}],164:[function(require,module,exports){
+var lodging_result_view = Backbone.View.extend({
+
+	initialize: function(opts) {
+		opts || (opts = {});
+	}
+});
+
+module.exports = lodging_result_view;
+},{}],165:[function(require,module,exports){
+var renderer = require("../../../renderer/client_renderer");
+
+var lodgings_search_query_view = Backbone.View.extend({
+
+	initialize: function(opts) {
+		opts || (opts = {});
+		this.template = opts.template;
+		this.lodgings_collection = opts.lodgings_collection;
+
+		this.model.on("change", _.bind(function(model) {
+			this.render();
+			this.lodgings_collection.fetchDebounced(model.attributes);
+		}, this));
+	},
+
+	render: function(data) {
+		var modelData = (this.model) ? this.model.attributes : {};
+
+		data || (data = {});
+
+		_.extend(data, modelData);
+
+		renderer.render(this.template, data, this.$el[0]);
+
+		this.setElement(this.$el.selector);
+	}
+});
+
+module.exports = lodgings_search_query_view;
+},{"../../../renderer/client_renderer":183}],166:[function(require,module,exports){
+var lodging_view = require("../backbone_views/lodging_result_view");
+var lodging_model = require("../backbone_models/lodging_model");
+
+var lodgings_search_results_view = Backbone.View.extend({
+
+	initialize: function(opts) {
+		opts || (opts = {});
+		this.template = opts.template;
+		this.lodgings_collection = opts.lodgings_collection;
+		this.lodgingViews = [];
+
+		this.lodgings_collection.on("sync", _.bind(function() {
+			this.render();
+			this.createResultsViews();
+		}, this));
+	},
+
+	createResultsViews: function() {
+		//TODO: lodging views need unique ids for el
+		//TODO: lodging models need their own result data
+		_.each(this.lodgings_collection.models, _.bind(function(model, index) {
+			this.lodgingViews.push(
+				new lodging_view({
+					model: new lodging_model({
+
+					})
+				})
+			);
+		}, this));
+	},
+
+	render: function(data) {
+		var collectionData = this.toJSON();
+
+		data || (data = {});
+
+		_.extend(data, collectionData);
+
+		renderer.render(this.template, data, this.$el[0]);
+
+		this.setElement(this.$el.selector);
+	}
+});
+
+module.exports = lodgings_search_results_view;
+},{"../backbone_models/lodging_model":156,"../backbone_views/lodging_result_view":164}],167:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	events: {},
 	initialize: function(opts) {
@@ -27806,12 +27958,12 @@ var map_view = Backbone.View.extend({
 	},
 
 	setMode: function(modeClass) {
-		this.$el.removeClass("trip-view stop-view stops-view overview-view").addClass(modeClass);
+		this.$el.removeClass("trip-view stop-view").addClass(modeClass);
 	}
 });
 
 module.exports = map_view;
-},{}],162:[function(require,module,exports){
+},{}],168:[function(require,module,exports){
 var renderer = require("../../../renderer/client_renderer");
 var PageView = Backbone.View.extend({
 
@@ -27831,7 +27983,73 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":173}],163:[function(require,module,exports){
+},{"../../../renderer/client_renderer":183}],169:[function(require,module,exports){
+//backbone views
+var PageView = require("./page_view");
+var SearchQueryView = require("./lodgings_search_query_view");
+var SearchResultsView = require("./lodgings_search_results_view");
+
+//backbone models
+var searchQueryModel = require("../backbone_models/lodgings_search_query_model");
+
+//jsx templates
+var stop_template = require("../../views/StopView");
+var query_template = require("../../views/LodgingsSearchQueryView");
+var results_template = require("../../views/LodgingsSearchResultsView");
+
+var stop_page_view = PageView.extend({
+
+	_findElms: function($parentEl) {
+		this.elms.$parentEl = $parentEl;
+		this.elms.$queryEl = this.$(".search-query-wrapper");
+		this.elms.$searchResults = this.$(".search-results-wrapper");
+	},
+
+	elms: {},
+
+	initialize: function(opts) {
+		opts || (opts = {});
+		this.map_api = opts.map_api;
+		this.map_view = opts.map_view;
+		this.trip_model = opts.trip_model;
+		this.lodgings_collection = opts.lodgings_collection;
+		this.createSubViews();
+
+		Backbone.on("stop_view:render", _.bind(function() {
+			this.render(stop_template);
+			this.map_view.setMode("stop-view");
+		}, this));
+
+		this._findElms(opts.$parentEl);
+	},
+
+	createSubViews: function() {
+		if (!this.searchQueryView) { 
+			this.searchQueryView = new SearchQueryView({
+				el: this.elms.$queryEl,
+				model: new searchQueryModel({
+					start: this.trip_model.get("start"),
+					end: this.trip_model.get("end"),
+					location: this.model.get("location"),
+					geo: this.model.get("geo")
+				}),
+				template: query_template,
+				lodgings_collection: this.lodgings_collection
+			}); 
+		}
+
+		if (!this.searchResultsView) { 
+			this.searchResultsView = new SearchResultsView({
+				el: this.elms.$searchResults,
+				template: results_template,
+				lodgings_collection: this.lodgings_collection
+			}); 
+		}
+	}
+});
+
+module.exports = stop_page_view;
+},{"../../views/LodgingsSearchQueryView":178,"../../views/LodgingsSearchResultsView":179,"../../views/StopView":181,"../backbone_models/lodgings_search_query_model":157,"./lodgings_search_query_view":165,"./lodgings_search_results_view":166,"./page_view":168}],170:[function(require,module,exports){
 var search_model = require("../backbone_models/search_model");
 
 var StopView = Backbone.View.extend({
@@ -28026,7 +28244,7 @@ var StopView = Backbone.View.extend({
 
 	onLodgingStatusClick: function(e) {
 		e.preventDefault();
-		
+		Backbone.trigger("TripView:go_to_stop", this.stopId);
 	},
 
 	destroy: function() {
@@ -28040,7 +28258,7 @@ var StopView = Backbone.View.extend({
 });
 
 module.exports = StopView;
-},{"../backbone_models/search_model":155}],164:[function(require,module,exports){
+},{"../backbone_models/search_model":158}],171:[function(require,module,exports){
 var TravellerView = Backbone.View.extend({
 	events: {
 		"click"						: "toggleEditCard",
@@ -28120,7 +28338,7 @@ var TravellerView = Backbone.View.extend({
 });
 
 module.exports = TravellerView;
-},{}],165:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 var PageView = require("./page_view");
 var StopView = require("./stop_view");
 var TravellerView = require("./traveller_view");
@@ -28431,7 +28649,7 @@ var TripView = PageView.extend({
 });
 
 module.exports = TripView;
-},{"../../views/TripView":172,"./page_view":162,"./stop_view":163,"./traveller_view":164}],166:[function(require,module,exports){
+},{"../../views/TripView":182,"./page_view":168,"./stop_view":170,"./traveller_view":171}],173:[function(require,module,exports){
 var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
@@ -28589,7 +28807,7 @@ Map.prototype = {
 }
 
 module.exports = Map;
-},{"bluebird":2}],167:[function(require,module,exports){
+},{"bluebird":2}],174:[function(require,module,exports){
 var Promise = require("bluebird");
 
 var ViewOrchestrator = Backbone.View.extend({
@@ -28614,96 +28832,127 @@ var ViewOrchestrator = Backbone.View.extend({
 
 	setViewListeners: function() {
 		Backbone.on("landing_view:submit", _.bind(function(data) {
-			var timeOutPromise = new Promise(_.bind(function(resolve, reject) {
-				setTimeout(_.bind(function() {
-					this.map_api.triggerMapResize();
-					resolve();
-				}, this), 1000);
-			}, this));
-
-			var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {
-				var homeStop = function() {
-					if (data.home) {
-						return {
-							location: data.home.formatted_address,
-							stopNum: 1,
-							dayNum: 1,
-							lodging: {
-								id: "quest_home"
-							}
-						}
-					} else {
-						return false;
-					}
-				}();
-
-				var stops = [];
-				if (homeStop) { stops.push(homeStop); }
-				stops.push({
-					location: data.location,
-					stopNum: stops.length + 1,
-					dayNum: 1
-				});
-
-				this.loadModel(this.Models.trip_model, "trip_model", {
-					title: "Your Next Adventure",
-					start: data.start,
-					end: data.end,
-					numStops: 2,
-					travellers: [
-						{
-							name: "You",
-							img: {
-								src: "/app/img/default-icon.png"
-							}
-						}
-					],
-					stops: stops
-				});
-
-				this.loadModel(this.Models.search_model, "search_model", {
-					map_api: this.map_api
-				});
-
-				this.loadView(this.Views.trip_view, "trip_view", {
-					$parentEl: this.$el, 
-					el: $(".trip-page"), 
-					map_api: this.map_api,
-					map_view: this.views["map_view"],
-					model: this.models["trip_model"],
-					search_model: this.models["search_model"],
-					stops_collection: this.Collections.stops_collection,
-					travellers_collection: this.Collections.travellers_collection
-				});
-
-				//TODO: validation in the model
-				this.models["trip_model"].save(null, {
-					success: function(data) {
-						resolve(data);
-					},
-					error: function() {
-						reject();
-					}
-				});
-			}, this));
-
-			//1 second for animation, and unknown time for db query result
-			Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
-				var trip_model = this.models["trip_model"];
-				var tripId = this.models["trip_model"].get("_id");
-				trip_model.setUrl(tripId);
-				trip_model.trigger("ready");
-				this.router.navigate("/trips/" + tripId);
-				trip_model.saveLocalStorageReference();
-				Backbone.trigger("trip_view:render", true);
-			}, this));
-			
+			this.goToTripView(data);
 		}, this));
+
+		Backbone.on("TripView:go_to_stop", _.bind(function(stopId) {
+			this.goToStopView(stopId);
+		}, this));
+	},
+
+	goToTripView: function(data) {
+		var timeOutPromise = new Promise(_.bind(function(resolve, reject) {
+			setTimeout(_.bind(function() {
+				this.map_api.triggerMapResize();
+				resolve();
+			}, this), 1000);
+		}, this));
+
+		var dbQueryPromise = new Promise(_.bind(function(resolve, reject) {
+			var homeStop = function() {
+				if (data.home) {
+					return {
+						location: data.home.formatted_address,
+						stopNum: 1,
+						dayNum: 1,
+						lodging: {
+							id: "quest_home"
+						}
+					}
+				} else {
+					return false;
+				}
+			}();
+
+			var stops = [];
+			if (homeStop) { stops.push(homeStop); }
+			stops.push({
+				location: data.location,
+				stopNum: stops.length + 1,
+				dayNum: 1
+			});
+
+			this.loadModel(this.Models.trip_model, "trip_model", {
+				title: "Your Next Adventure",
+				start: data.start,
+				end: data.end,
+				numStops: 2,
+				travellers: [
+					{
+						name: "You",
+						img: {
+							src: "/app/img/default-icon.png"
+						}
+					}
+				],
+				stops: stops
+			});
+
+			this.loadModel(this.Models.search_model, "search_model", {
+				map_api: this.map_api
+			});
+
+			this.loadView(this.Views.trip_view, "trip_view", {
+				$parentEl: this.$el, 
+				el: $(".trip-page"), 
+				map_api: this.map_api,
+				map_view: this.views["map_view"],
+				model: this.models["trip_model"],
+				search_model: this.models["search_model"],
+				stops_collection: this.Collections.stops_collection,
+				travellers_collection: this.Collections.travellers_collection
+			});
+
+			//TODO: validation in the model
+			this.models["trip_model"].save(null, {
+				success: function(data) {
+					resolve(data);
+				},
+				error: function() {
+					reject();
+				}
+			});
+		}, this));
+
+		//1 second for animation, and unknown time for db query result
+		Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
+			var trip_model = this.models["trip_model"];
+			var tripId = this.models["trip_model"].get("_id");
+			trip_model.setUrl(tripId);
+			trip_model.trigger("ready");
+			this.router.navigate("/trips/" + tripId);
+			trip_model.saveLocalStorageReference();
+			Backbone.trigger("trip_view:render", true);
+		}, this));
+	},
+
+	goToStopView: function(stopId) {
+		var tripModel = this.models["trip_model"];
+		var tripId = tripModel.get("_id");
+		var stopModel = this.views["trip_view"].stops_collection.getStop(stopId);
+
+		this.loadCollection(this.Collections.lodgings_collection, "lodgings_collection");
+
+		this.loadView(this.Views.stop_page_view, "stop_page_view", {
+			$parentEl: this.$el,
+			el: $(".stop-page"),
+			map_api: this.map_api,
+			map_view: this.views["map_view"],
+			model: stopModel,
+			trip_model: tripModel,
+			lodgings_collection: this.collections["lodgings_collection"]
+		});
+
+		this.views["stop_page_view"].trigger("ready");
+
+		this.router.navigate("/trips/" + tripId + "/stops/" + stopId);
+		Backbone.trigger("stop_view:render");
 	}
+
 });
 
 module.exports = ViewOrchestrator;
-},{"bluebird":2}],168:[function(require,module,exports){
+},{"bluebird":2}],175:[function(require,module,exports){
 var React = require('react');
 
 var HeaderView = React.createClass({displayName: "HeaderView",
@@ -28728,7 +28977,7 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 });
 
 module.exports = HeaderView;
-},{"react":151}],169:[function(require,module,exports){
+},{"react":151}],176:[function(require,module,exports){
 var React = require('react');
 
 var LandingView = React.createClass({displayName: "LandingView",
@@ -28767,7 +29016,7 @@ var LandingView = React.createClass({displayName: "LandingView",
 });
 
 module.exports = LandingView;
-},{"react":151}],170:[function(require,module,exports){
+},{"react":151}],177:[function(require,module,exports){
 var React = require("react");
 
 var LocationItem = React.createClass({displayName: "LocationItem",
@@ -28796,7 +29045,31 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 });
 
 module.exports = LocationsMenu;
-},{"react":151}],171:[function(require,module,exports){
+},{"react":151}],178:[function(require,module,exports){
+var React = require('react');
+
+var LodgingsSearchQueryView = React.createClass({displayName: "LodgingsSearchQueryView",
+	render: function() {
+		return (
+			React.createElement("div", null)
+		)
+	}
+});
+
+module.exports = LodgingsSearchQueryView;
+},{"react":151}],179:[function(require,module,exports){
+var React = require('react');
+
+var LodgingsSearchResultsView = React.createClass({displayName: "LodgingsSearchResultsView",
+	render: function() {
+		return (
+			React.createElement("div", null)
+		)
+	}
+});
+
+module.exports = LodgingsSearchResultsView;
+},{"react":151}],180:[function(require,module,exports){
 var React = require('react');
 
 var ModalsView = React.createClass({displayName: "ModalsView",
@@ -28861,7 +29134,21 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 });
 
 module.exports = ModalsView;
-},{"react":151}],172:[function(require,module,exports){
+},{"react":151}],181:[function(require,module,exports){
+var React = require('react');
+
+var StopView = React.createClass({displayName: "StopView",
+	render: function() {
+		return (
+			React.createElement("div", {className: "container"}, 
+				React.createElement("h1", null, this.props.title)
+			)
+		)
+	}
+});
+
+module.exports = StopView;
+},{"react":151}],182:[function(require,module,exports){
 var React = require('react');
 var LocationsMenu = require('./LocationsMenu');
 
@@ -29104,7 +29391,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":170,"react":151}],173:[function(require,module,exports){
+},{"./LocationsMenu":177,"react":151}],183:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

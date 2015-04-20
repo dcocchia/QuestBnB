@@ -98,6 +98,40 @@ describe('stops_collection', function(){
 		});
 	});
 
+	describe('getStop', function(){
+		var stops = new stops_collection();
+
+		it('should return stop model by passed in Id', function(){
+			var id = _.uniqueId();
+			stops.add([
+				{
+					isNew: true, 
+					stopNum: 1, 
+					_id: 1234
+				},
+				{
+					isNew: false, 
+					stopNum: 2, 
+					_id: id
+				},
+				{
+					isNew: false, 
+					stopNum: 3, 
+					_id: "ABCD1234"
+				}
+			]);
+
+			expect(stops.getStop(1234).get("_id")).to.be.equal(1234);
+			expect(stops.getStop(1234)).to.be.deep.equal(stops.models[0]);
+
+			expect(stops.getStop(id).get("_id")).to.be.equal(id);
+			expect(stops.getStop(id)).to.be.deep.equal(stops.models[1]);
+
+			expect(stops.getStop("ABCD1234").get("_id")).to.be.equal("ABCD1234");
+			expect(stops.getStop("ABCD1234")).to.be.deep.equal(stops.models[2]);
+		});
+	});
+
 	describe('addStop', function(){
 		var stops = new stops_collection();
 
@@ -347,6 +381,22 @@ describe('stops_collection', function(){
 							duration: {
 								text: "12 hours 45 mins",
 								value: 45889
+							},
+							start_location: {
+								lat: function() {
+									return 44.11;
+								},
+								lng: function() {
+									return -118.13;
+								}
+							},
+							end_location: {
+								lat: function() {
+									return 44.11;
+								},
+								lng: function() {
+									return -118.13;
+								}
 							}
 						},
 						{
@@ -357,6 +407,22 @@ describe('stops_collection', function(){
 							duration: {
 								text: "18 hours 9 mins",
 								value: 65369
+							},
+							start_location: {
+								lat: function() {
+									return 44.11;
+								},
+								lng: function() {
+									return -118.13;
+								}
+							},
+							end_location: {
+								lat: function() {
+									return 44.11;
+								},
+								lng: function() {
+									return -118.13;
+								}
 							}
 						}
 					]

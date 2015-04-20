@@ -19,10 +19,12 @@
 	var header_view = require("./backbone_views/header_view");
 	var landing_view = require("./backbone_views/landing_view");
 	var trip_view = require("./backbone_views/trip_view");
+	var stop_page_view = require("./backbone_views/stop_page_view");
 
 	//backbone collections
 	var stops_collection = require("./backbone_collections/stops_collection");
 	var travellers_collection = require("./backbone_collections/travellers_collection");
+	var lodgings_collection = require("./backbone_collections/lodgings_collection");
 
 	//backbone models
 	var header_model = require("./backbone_models/header_model");
@@ -35,20 +37,17 @@
 			"": "landing",
 			"trips/:id": "trip",
 			"trips/:id/": "trip",
-			"trips/:id/stops": "stops",
-			"trips/:id/stops/": "stops",
 			"trips/:id/stops/:stopId": "stop",
-			"trips/:id/stops/:stopId/": "stop",
-			"trips/:id/overview": "overview",
-			"trips/:id/overview/": "overview"
+			"trips/:id/stops/:stopId/": "stop"
 		}
 	});
 
 	var App = view_orchestrator.extend({
 		initialize: function(opts) {
 			this.router = opts.router;
-			this.views = {};
 			this.models = {};
+			this.views = {};
+			this.collections = {};
 			this.loadView(header_view, "header_view", {
 				$parentEl: $(".header-nav-wrapper"),
 				el: $(".header-nav"), 
@@ -64,11 +63,13 @@
 				},
 				Views: {
 					landing_view: landing_view,
-					trip_view: trip_view
+					trip_view: trip_view,
+					stop_page_view: stop_page_view
 				},
 				Collections: {
 					stops_collection: stops_collection,
-					travellers_collection: travellers_collection
+					travellers_collection: travellers_collection,
+					lodgings_collection: lodgings_collection
 				}
 			});
 			Backbone.history.start({pushState: true});
@@ -109,29 +110,29 @@
 
 			}, this));
 
-			this.router.on("route:stops", function() { console.log("stops view!") });
 			this.router.on("route:stop", function() { console.log("stop view!") });
-			this.router.on("route:overview", function() { console.log("overview view!") });
 		},
 
 		loadView: function(view, viewName, options) {
-			if (this.views[viewName]) {
-				this.views[viewName].initialize(options);
-			} else {
-				this.views[viewName] = new view(options);
-			}
-
-			return this.views[viewName];
+			return this._load(view, "views", viewName, options);
 		},
 
 		loadModel: function(model, modelName, options) {
-			if (this.models[modelName]) {
-				this.models[modelName].initialize(options);
+			return this._load(model, "models", modelName, options);
+		},
+
+		loadCollection: function(collection, collectionName, options) {
+			return this._load(collection, "collections", collectionName, options);
+		},
+
+		_load: function(obj, type, name, options) {
+			if (this[type][name]) {
+				this[type][name].initialize(options);
 			} else {
-				this.models[modelName] = new model(options);
+				this[type][name] = new obj(options);
 			}
 
-			return this.models[modelName];
+			return this[type][name];
 		}
 	});
 

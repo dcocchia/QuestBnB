@@ -192,7 +192,7 @@ var StopView = Backbone.View.extend({
 
 	onLodgingStatusClick: function(e) {
 		e.preventDefault();
-		
+		Backbone.trigger("TripView:go_to_stop", this.stopId);
 	},
 
 	destroy: function() {
