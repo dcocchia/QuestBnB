@@ -30,7 +30,7 @@ var stop_page_view = PageView.extend({
 		this.createSubViews();
 
 		Backbone.on("stop_view:render", _.bind(function() {
-			this.render(stop_template);
+			this.render(stop_template, {tripTitle: this.trip_model.get("title")});
 			this.map_view.setMode("stop-view");
 		}, this));
 
@@ -48,6 +48,7 @@ var stop_page_view = PageView.extend({
 					geo: this.model.get("geo")
 				}),
 				template: query_template,
+				map_api: this.map_api,
 				lodgings_collection: this.lodgings_collection
 			}); 
 		}

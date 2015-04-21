@@ -68,6 +68,17 @@ img {
 	padding: 20px;
 }
 
+.panel-body {
+	position: relative;
+	margin: 0;
+	padding: 20px;
+	border-top: 1px solid #dce0e0;
+}
+
+.panel-light {
+	background-color: #fff;
+}
+
 .side-bar {
 	height: 100%;
 	width: 60%;
@@ -75,6 +86,14 @@ img {
 	-webkit-overflow-scrolling: touch;
 	background-color: #f7f7f7;
 	position: relative;
+
+	h1 {
+		color: @light-red;
+		margin-top: 0;
+		margin-bottom: 0;
+		padding: 10px 20px;
+		border-bottom: 1px solid @panel-border-grey;
+	}
 }
 
 .bottom-bar {

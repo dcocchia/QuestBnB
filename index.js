@@ -143,6 +143,8 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 				return (stop._id === stopId);
 			});
 
+			stopDoc.tripTitle  = doc.title;
+
 			res.format({
 				json: function() {
 					res.send(stopDoc);
