@@ -182,3 +182,56 @@ img {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+.stop-location-title-wrapper {
+	position: relative;
+
+	.clear {
+		opacity: 0;
+		float: right;
+		font-size: 12px;
+		position: absolute;
+		top: 14px;
+		right: 12px;
+
+		&:after {
+			content: "X";
+		}
+	}
+}
+
+.stop-location-title {
+	max-width: 100%;
+	height: 44px;
+	font-size: 16px;
+	line-height: 28px;
+	padding: 6px 25px 6px 12px;
+	border: 1px solid #fff;
+	margin-bottom: 0px;
+
+	&:focus {
+		outline: none;
+	}
+
+}
+
+.stop-location-title-wrapper:hover .stop-location-title,
+.stop-location-title:hover,
+.stop-location-title:focus {
+	border: 1px solid #c4c4c4;
+	-webkit-transition: border-color .2s;
+	transition: border-color .2s;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	-webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+
+	& + .clear {
+		opacity: 1;
+
+		&:hover {
+			cursor: pointer;
+		}
+	}
+}

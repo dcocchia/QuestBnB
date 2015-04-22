@@ -136,22 +136,26 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 		if (docs && docs.length > 0) {
 			
 			doc = docs[0];
-			
-			_.extend(doc, { mapStyleClasses: "map stop-view" });
 
 			stopDoc = _.find(doc.stops, function(stop) {
 				return (stop._id === stopId);
 			});
 
-			stopDoc.tripTitle  = doc.title;
+			_.extend(stopDoc, {
+				tripTitle: doc.title,
+				mapStyleClasses: "map stop-view"
+			});
 
 			res.format({
 				json: function() {
 					res.send(stopDoc);
 				},
 				html: function() {
-					var html = self.renderer.render(stopView, stopDoc);
-					res.send(html);
+					getLodgings(stopDoc.geo, req.headers.host).then(_.bind(function(lodgingData) {
+						stopDoc.lodgingData = lodgingData;
+						var html = self.renderer.render(stopView, stopDoc);
+						res.send(html);
+					}, this));
 				}
 			});
 
@@ -193,6 +197,27 @@ var addObjIds = function(items) {
 			item._id = mongojs.ObjectId();
 		}
 	});
+}
+
+var getLodgings = function(geo, host) {
+	//TODO: this is messy. Should figure out clean way to call own route
+	var reqPromise = new Promise(_.bind(function(resolve, reject) {
+		request({
+			url: "http://" + host + "/lodgings",
+			qs: {
+				latitude: geo.lat,
+				longitude: geo.lng
+			}
+		}, function(error, response, body){
+			if (error) {
+				reject(error);
+			} else {
+				resolve(JSON.parse(body));
+			}
+		});
+	}, this));
+
+	return reqPromise;
 }
 
 var server = app.listen(port, function() {
