@@ -151,7 +151,7 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 					res.send(stopDoc);
 				},
 				html: function() {
-					getLodgings(stopDoc.geo, req.headers.host).then(_.bind(function(lodgingData) {
+					getLodgings(stopDoc.geo, req.headers.host, req.query).then(_.bind(function(lodgingData) {
 						stopDoc.lodgingData = lodgingData;
 						var html = self.renderer.render(stopView, stopDoc);
 						res.send(html);
@@ -199,15 +199,21 @@ var addObjIds = function(items) {
 	});
 }
 
-var getLodgings = function(geo, host) {
+var getLodgings = function(geo, host, queries) {
 	//TODO: this is messy. Should figure out clean way to call own route
+	var queryDefaults = {
+		provider: "airbnb",
+		resultsperpage: 20,
+		latitude: geo.lat,
+		longitude: geo.lng
+	};
+
+	var searchQueries = _.defaults(queries, queryDefaults);
+
 	var reqPromise = new Promise(_.bind(function(resolve, reject) {
 		request({
 			url: "http://" + host + "/lodgings",
-			qs: {
-				latitude: geo.lat,
-				longitude: geo.lng
-			}
+			qs: searchQueries
 		}, function(error, response, body){
 			if (error) {
 				reject(error);

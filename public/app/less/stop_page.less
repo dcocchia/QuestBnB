@@ -34,6 +34,10 @@
 		overflow-y: auto;
 	}
 
+	.search-results {
+		padding: 0;
+	}
+
 	.stop-location-title-wrapper-outter {
 		padding-left: 6.25px;
 		padding-right: 6.25px;
@@ -43,5 +47,73 @@
 		margin-top: 0;
 		height: 40px;
 		line-height: 22px;
+	}
+
+	.lodging-result {
+		&:hover {
+			.result-request-stay-btn {
+				display: block;
+			}
+		}
+
+		.result-img {
+			padding-bottom: 67%;
+
+			img {
+				width: 100%;
+			}
+		}
+
+		.result-body {
+			padding: 10px;
+
+			h3 {
+				margin: 6.25px 0 0;
+				font-weight: normal;
+				font-size: 16px;
+			}
+		}
+
+		.result-request-stay-btn {
+			display: none;
+			z-index: 99;
+			width: 50%;
+			height: 44px;
+			background-color: rgba(255, 90, 95, 0.8);
+  			border: 0;
+  			top: 10px;
+  			bottom: inherit;
+
+  			&:hover {
+  				  background-color: @light-red;
+  			}
+		}
+
+		.result-price {
+			bottom: 30px;
+			left: 0;
+			padding: 7px 10px;
+			background-color: #3c3f40;
+			background-color: rgba(60,63,64,0.9);
+			color: #fff;
+			position: absolute;
+			z-index: 5;
+
+			h6 {
+				font-weight: normal;
+				line-height: 1.1;
+				position: relative;
+				vertical-align: baseline;
+				margin: 0;
+				font-size: 24px;
+			}
+
+			.dollar {
+				position: relative;
+				font-size: 14px;
+				top: -0.5em;
+			}
+		}
+		 
 	}
 }

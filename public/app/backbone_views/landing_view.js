@@ -1,3 +1,4 @@
+var Promise = require("bluebird");
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");

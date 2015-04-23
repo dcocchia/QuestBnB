@@ -27544,7 +27544,8 @@ var HeaderView = Backbone.View.extend({
 });
 
 module.exports = HeaderView;
-},{"../../../renderer/client_renderer":183,"../../views/HeaderView":175,"../../views/ModalsView":180}],163:[function(require,module,exports){
+},{"../../../renderer/client_renderer":185,"../../views/HeaderView":175,"../../views/ModalsView":180}],163:[function(require,module,exports){
+var Promise = require("bluebird");
 var PageView = require("./page_view");
 var landing_template = require("../../views/LandingView");
 var locationsMenu = require("../../views/LocationsMenu");
@@ -27846,7 +27847,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":183,"../../views/LandingView":176,"../../views/LocationsMenu":177,"./page_view":168}],164:[function(require,module,exports){
+},{"../../../renderer/client_renderer":185,"../../views/LandingView":176,"../../views/LocationsMenu":177,"./page_view":168,"bluebird":2}],164:[function(require,module,exports){
 var lodging_result_view = Backbone.View.extend({
 
 	initialize: function(opts) {
@@ -27896,7 +27897,7 @@ var lodgings_search_query_view = Backbone.View.extend({
 });
 
 module.exports = lodgings_search_query_view;
-},{"../../../renderer/client_renderer":183,"../backbone_models/search_model":158}],166:[function(require,module,exports){
+},{"../../../renderer/client_renderer":185,"../backbone_models/search_model":158}],166:[function(require,module,exports){
 var lodging_view = require("../backbone_views/lodging_result_view");
 var lodging_model = require("../backbone_models/lodging_model");
 
@@ -27994,7 +27995,7 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":183}],169:[function(require,module,exports){
+},{"../../../renderer/client_renderer":185}],169:[function(require,module,exports){
 //backbone views
 var PageView = require("./page_view");
 var SearchQueryView = require("./lodgings_search_query_view");
@@ -28061,7 +28062,7 @@ var stop_page_view = PageView.extend({
 });
 
 module.exports = stop_page_view;
-},{"../../views/LodgingsSearchQueryView":178,"../../views/LodgingsSearchResultsView":179,"../../views/StopView":181,"../backbone_models/lodgings_search_query_model":157,"./lodgings_search_query_view":165,"./lodgings_search_results_view":166,"./page_view":168}],170:[function(require,module,exports){
+},{"../../views/LodgingsSearchQueryView":178,"../../views/LodgingsSearchResultsView":179,"../../views/StopView":183,"../backbone_models/lodgings_search_query_model":157,"./lodgings_search_query_view":165,"./lodgings_search_results_view":166,"./page_view":168}],170:[function(require,module,exports){
 var search_model = require("../backbone_models/search_model");
 
 var StopView = Backbone.View.extend({
@@ -28661,7 +28662,7 @@ var TripView = PageView.extend({
 });
 
 module.exports = TripView;
-},{"../../views/TripView":182,"./page_view":168,"./stop_view":170,"./traveller_view":171}],173:[function(require,module,exports){
+},{"../../views/TripView":184,"./page_view":168,"./stop_view":170,"./traveller_view":171}],173:[function(require,module,exports){
 var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
@@ -29148,17 +29149,50 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 module.exports = ModalsView;
 },{"react":151}],181:[function(require,module,exports){
 var React = require('react');
-var LocationsMenu = require('./LocationsMenu');
 
 var Result = React.createClass({displayName: "Result",
 	render: function() {
+		var result = this.props.result || {};
 		return (
-			React.createElement("li", {className: "lodging-result col-sm-12 col-md-6"}, 
-				React.createElement("p", null, this.props.result.id)
+			React.createElement("li", {className: "lodging-result col-sm-12 col-md-6", "data-id": result.id}, 
+				React.createElement("div", {className: "result-img img-wrapper"}, 
+					React.createElement("button", {className: "result-request-stay-btn btn btn-primary center"}, "Request to Book"), 
+					React.createElement("div", {className: "result-price"}, 
+						React.createElement("h6", null, React.createElement("span", {className: "dollar"}, "$"), result.price.nightly)
+					), 
+					React.createElement("img", {className: "center", src: (result.photos && result.photos[0]) ? result.photos[0].medium : ""})
+				), 
+				React.createElement("div", {className: "result-body"}, 
+					React.createElement("h3", {className: "text-ellip"}, result.attr.heading), 
+					React.createElement("div", {className: "result-info text-muted text-ellip"}, 
+						React.createElement("span", null, result.attr.roomType.text, " · "), 
+						React.createElement("div", {className: "star-rating"}, 
+							"· ", React.createElement("span", null, result.reviews.count, " reviews")
+						)
+					)
+				)
 			)
 		);
 	}
 });
+
+var SeachResults = React.createClass({displayName: "SeachResults",
+	render: function() {
+		var results = this.props.results || [];
+		return (
+			React.createElement("ol", {className: "search-results left-full-width"}, 
+				results.map(function(result, index) {
+					return React.createElement(Result, {result: result, key: index})
+				})
+			)
+		);
+	}
+});
+
+module.exports = SeachResults;
+},{"react":151}],182:[function(require,module,exports){
+var React = require('react');
+var LocationsMenu = require('./LocationsMenu');
 
 var SearchQuery = React.createClass({displayName: "SearchQuery",
 	render: function() {
@@ -29212,18 +29246,11 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 	}
 });
 
-var SeachResults = React.createClass({displayName: "SeachResults",
-	render: function() {
-		var results = this.props.results || [];
-		return (
-			React.createElement("ol", {className: "search-results left-full-width"}, 
-				results.map(function(result, index) {
-					return React.createElement(Result, {result: result, key: index})
-				})
-			)
-		);
-	}
-});
+module.exports = SearchQuery;
+},{"./LocationsMenu":177,"react":151}],183:[function(require,module,exports){
+var React = require('react');
+var SearchQuery = require('./SearchQuery');
+var SeachResults = require('./SeachResults');
 
 var StopView = React.createClass({displayName: "StopView",
 	render: function() {
@@ -29240,7 +29267,8 @@ var StopView = React.createClass({displayName: "StopView",
 							React.createElement(SearchQuery, {locationProps: this.props.locationProps, location: this.props.location})
 						), 
 						React.createElement("div", {className: "search-results-wrapper left-full-width"}, 
-							React.createElement(SeachResults, {results: results})
+							React.createElement(SeachResults, {results: results}), 
+							React.createElement("div", {className: "results-data"}, React.createElement("span", {"data-result-data": JSON.stringify(results)}))
 						)
 					)
 				)
@@ -29250,7 +29278,7 @@ var StopView = React.createClass({displayName: "StopView",
 });
 
 module.exports = StopView;
-},{"./LocationsMenu":177,"react":151}],182:[function(require,module,exports){
+},{"./SeachResults":181,"./SearchQuery":182,"react":151}],184:[function(require,module,exports){
 var React = require('react');
 var LocationsMenu = require('./LocationsMenu');
 
@@ -29493,7 +29521,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":177,"react":151}],183:[function(require,module,exports){
+},{"./LocationsMenu":177,"react":151}],185:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}
