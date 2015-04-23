@@ -143,7 +143,8 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 
 			_.extend(stopDoc, {
 				tripTitle: doc.title,
-				mapStyleClasses: "map stop-view"
+				mapStyleClasses: "map stop-view",
+				isServer: true
 			});
 
 			res.format({
@@ -188,7 +189,35 @@ app.get('/lodgings', function(req, res) {
 		qs: queries
 	};
 
-	req.pipe(request(options)).pipe(res);
+	var countOptions = _.defaults({
+		url: "https://zilyo.p.mashape.com/count"
+	}, options);
+
+	var reqPromise = new Promise(_.bind(function(resolve, reject) {
+		request(options, function(error, response, body) {
+			if (!error){ 
+				resolve(JSON.parse(body)); 
+			} else {
+				reject(error);
+			}
+		});
+	}, this));
+
+	var countPromise = new Promise(_.bind(function(resolve, reject) {
+		request(countOptions, function(error, response, body) {
+			if (!error){ 
+				resolve(JSON.parse(body)); 
+			} else {
+				reject(error);
+			}
+		});
+	}, this));
+
+	Promise.all([reqPromise, countPromise]).then( _.bind(function(resps){
+		resps[0].count = resps[1].result;
+		res.send(resps[0]);
+	}, this));
+	
 });
 
 var addObjIds = function(items) {

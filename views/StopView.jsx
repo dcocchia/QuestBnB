@@ -4,9 +4,15 @@ var SeachResults = require('./SeachResults');
 
 var StopView = React.createClass({
 	render: function() {
+		var isServer = this.props.isServer || false;
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
+		var bootStrapDataElm;
+
+		if (isServer) {
+			bootStrapDataElm = <div className="results-data"><span data-result-data={JSON.stringify(results)}></span></div>;
+		}
 
 		return (
 			<div className="stop-page">
@@ -18,7 +24,10 @@ var StopView = React.createClass({
 						</div>
 						<div className="search-results-wrapper left-full-width">
 							<SeachResults results={results} />
-							<div className="results-data"><span data-result-data={JSON.stringify(results)}></span></div>
+							<div className="search-results-footer">
+								<button className="btn btn-primary">Next</button>
+							</div>
+							{bootStrapDataElm}
 						</div>
 					</div>
 				</div>
