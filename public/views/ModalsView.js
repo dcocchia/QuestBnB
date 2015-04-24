@@ -20,6 +20,8 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 							React.createElement("ul", null, 
 								React.createElement("li", null, "While I hope you enjoy the site it is not meant to be used publicly. Because of this, there is no way to actually book AirBnB rooms through the site."), 
 								React.createElement("li", null, "Listings for AirBnB lodgings are supplied by ", React.createElement("a", {href: "https://www.mashape.com/zilyo/zilyo", target: "_blank"}, "Zilyo’s open API")), 
+								React.createElement("li", null, "Zilyo has ", React.createElement("a", {href: "https://www.mashape.com/zilyo/zilyo/support/8#", target: "_blank"}, "announced they are shutting down"), ", so their API could dissapear at any time. :("), 
+								React.createElement("li", null, "The Zilyo API no longer supports price range parameters, so the lodgings search pages price range settings are mostly for show."), 
 								React.createElement("li", null, "And lastly, this site and its creator are not affiliated, associated, authorized, endorsed by, or in any way officially connected with AirBnB or any of its subsidiaries or its affiliates. The official AirBnB web site is available at ", React.createElement("a", {href: "https://www.airbnb.com", target: "_blank"}, "www.airbnb.com"), ".")
 							)
 						)

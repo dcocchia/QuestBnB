@@ -23,10 +23,7 @@ var StopView = React.createClass({
 							<SearchQuery locationProps={this.props.locationProps} location={this.props.location}/>
 						</div>
 						<div className="search-results-wrapper left-full-width">
-							<SeachResults results={results} />
-							<div className="search-results-footer">
-								<button className="btn btn-primary">Next</button>
-							</div>
+							<SeachResults page={lodgingData.page} count={lodgingData.count} results={results} resultsPerPage={lodgingData.resultsPerPage} location={this.props.location}/>
 							{bootStrapDataElm}
 						</div>
 					</div>

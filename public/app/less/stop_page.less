@@ -1,3 +1,5 @@
+@import (reference) "common";
+
 .stop-page {
 	.search-query-wrapper {
 		float: left;
@@ -36,6 +38,76 @@
 
 	.search-results {
 		padding: 0;
+		margin: 0;
+	}
+
+	.search-results-header {
+		h2 {
+			color: #82888a;
+			font-size: 14px;
+			text-align: right;
+			padding: 0 15px;
+			margin: 10px 0;
+		}
+	}
+
+	.search-results-footer {
+		overflow: hidden;
+		padding: 20px;
+
+		p {
+			margin-top: 0;
+		}
+
+		ul {
+			overflow: hidden;
+			padding: 0;
+			margin: 0;
+			display: inline;
+			list-style: none;
+		}
+
+		li {
+			list-style: none;
+			display: inline;
+
+			&:first-child a{
+				margin-left: 0;
+			}
+
+			span.ellip {
+				padding: 0 5px;
+				border: 0;
+				background: 0 0;
+				box-shadow: 0 0 0 #000;
+				float: left;
+				margin-left: 10px;
+				text-decoration: none;
+			}
+
+			a {
+				float: left;
+				padding: 5px 10px;
+				margin-left: 10px;
+				text-decoration: none;
+				border: 1px solid #c4c4c4;
+				border-radius: 2px;
+				background-color: #fff;
+				color: @light-red;
+				text-decoration: none;
+
+				&.arrow {
+					padding: 5px 10px 8px 10px;
+					line-height: 17px;
+				}
+			}
+		}
+
+		a.active {
+			color: @dark-grey;
+			background-color: #edefed;
+			cursor: default;
+		}
 	}
 
 	.stop-location-title-wrapper-outter {
@@ -85,7 +157,7 @@
   			bottom: inherit;
 
   			&:hover {
-  				  background-color: @light-red;
+				background-color: @light-red;
   			}
 		}
 

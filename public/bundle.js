@@ -29105,6 +29105,8 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 							React.createElement("ul", null, 
 								React.createElement("li", null, "While I hope you enjoy the site it is not meant to be used publicly. Because of this, there is no way to actually book AirBnB rooms through the site."), 
 								React.createElement("li", null, "Listings for AirBnB lodgings are supplied by ", React.createElement("a", {href: "https://www.mashape.com/zilyo/zilyo", target: "_blank"}, "Zilyo’s open API")), 
+								React.createElement("li", null, "Zilyo has ", React.createElement("a", {href: "https://www.mashape.com/zilyo/zilyo/support/8#", target: "_blank"}, "announced they are shutting down"), ", so their API could dissapear at any time. :("), 
+								React.createElement("li", null, "The Zilyo API no longer supports price range parameters, so the lodgings search pages price range settings are mostly for show."), 
 								React.createElement("li", null, "And lastly, this site and its creator are not affiliated, associated, authorized, endorsed by, or in any way officially connected with AirBnB or any of its subsidiaries or its affiliates. The official AirBnB web site is available at ", React.createElement("a", {href: "https://www.airbnb.com", target: "_blank"}, "www.airbnb.com"), ".")
 							)
 						)
@@ -29150,6 +29152,36 @@ module.exports = ModalsView;
 },{"react":151}],181:[function(require,module,exports){
 var React = require('react');
 
+var buildPageBtns = function(page, count, resultsPerPage) {
+	var numPages = Math.ceil(count.totalResults / resultsPerPage);
+	var pageBtns = [];
+	var i = (page > 1) ? -1 : 0;
+	var pageBtnMax = (i === 0) ? 3 : 2;
+
+	if (page > 1) { pageBtns.push(React.createElement("li", null, React.createElement("a", {href: "?page=" + (page - 1), className: "arrow"}, "<"))); }
+
+	if (page > 3) { pageBtns.push(React.createElement("li", null, React.createElement("a", {href: "?page=1"}, "1"))); }
+
+	if (page >= 3) { pageBtns.push(React.createElement("li", null, React.createElement("span", {className: "ellip"}, "..."))); }
+
+	for (; i < pageBtnMax && (page + i) <= numPages; i++) {
+		pageBtns.push(
+			React.createElement("li", null, 
+				React.createElement("a", {href: "?page=" + (page + i), className: (page + i === page) ? "active" : ""}, page + i)
+			)
+		);	
+	}
+
+	if ((numPages - page) >= 3) {
+		pageBtns.push(React.createElement("li", null, React.createElement("span", {className: "ellip"}, "...")));
+		pageBtns.push(React.createElement("li", null, React.createElement("a", {href: "?page=" + page}, numPages)));	
+	}
+
+	if (page < numPages) { pageBtns.push(React.createElement("li", null, React.createElement("a", {href: "?page=" + (page + 1), className: "arrow"}, ">"))); }
+
+	return pageBtns;
+}
+
 var Result = React.createClass({displayName: "Result",
 	render: function() {
 		var result = this.props.result || {};
@@ -29179,11 +29211,31 @@ var Result = React.createClass({displayName: "Result",
 var SeachResults = React.createClass({displayName: "SeachResults",
 	render: function() {
 		var results = this.props.results || [];
+		var count = this.props.count || {};
+		var countTop = (this.props.resultsPerPage * this.props.page);
+		var countBottom = (countTop + 1) - this.props.resultsPerPage;
+		
+		if (countTop > count.totalResults) {
+			countTop = count.totalResults;
+			countBottom = (countTop + 1) - this.props.resultsPerPage;
+		}
+
 		return (
-			React.createElement("ol", {className: "search-results left-full-width"}, 
-				results.map(function(result, index) {
-					return React.createElement(Result, {result: result, key: index})
-				})
+			React.createElement("div", {className: "search-results-wrapper-inner"}, 
+				React.createElement("div", {className: "search-results-header"}, 
+					React.createElement("h2", {className: "text-ellip"}, count.totalResults, " Rentals – ", this.props.location)
+				), 
+				React.createElement("ol", {className: "search-results left-full-width"}, 
+					results.map(function(result, index) {
+						return React.createElement(Result, {result: result, key: index})
+					})
+				), 
+				React.createElement("div", {className: "search-results-footer"}, 
+					React.createElement("p", null, " ", countBottom, " – ", countTop, " of ", count.totalResults, " Rentals "), 
+					React.createElement("ul", null, 
+						buildPageBtns(this.props.page, count, this.props.resultsPerPage)
+					)
+				)
 			)
 		);
 	}
@@ -29273,10 +29325,7 @@ var StopView = React.createClass({displayName: "StopView",
 							React.createElement(SearchQuery, {locationProps: this.props.locationProps, location: this.props.location})
 						), 
 						React.createElement("div", {className: "search-results-wrapper left-full-width"}, 
-							React.createElement(SeachResults, {results: results}), 
-							React.createElement("div", {className: "search-results-footer"}, 
-								React.createElement("button", {className: "btn btn-primary"}, "Next")
-							), 
+							React.createElement(SeachResults, {page: lodgingData.page, count: lodgingData.count, results: results, resultsPerPage: lodgingData.resultsPerPage, location: this.props.location}), 
 							bootStrapDataElm
 						)
 					)

@@ -23,10 +23,7 @@ var StopView = React.createClass({displayName: "StopView",
 							React.createElement(SearchQuery, {locationProps: this.props.locationProps, location: this.props.location})
 						), 
 						React.createElement("div", {className: "search-results-wrapper left-full-width"}, 
-							React.createElement(SeachResults, {results: results}), 
-							React.createElement("div", {className: "search-results-footer"}, 
-								React.createElement("button", {className: "btn btn-primary"}, "Next")
-							), 
+							React.createElement(SeachResults, {page: lodgingData.page, count: lodgingData.count, results: results, resultsPerPage: lodgingData.resultsPerPage, location: this.props.location}), 
 							bootStrapDataElm
 						)
 					)
