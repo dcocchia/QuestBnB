@@ -7,35 +7,61 @@ var buildPageBtns = function(page, count, resultsPerPage) {
 	var pageBtnMax = (i === 0) ? 3 : 2;
 	var keyIndex = 0;
 
-	if (page > 1) { pageBtns.push(<li key={keyIndex}><a href={"?page=" + (page - 1)} className="arrow">&lt;</a></li>); }
-	keyIndex++;
+	//back arrow
+	if (page > 1) { pageBtns.push(<PageButton isArrow={true} txt="&lt;" page={page-1} />); }
 
-	if (page > 3) { pageBtns.push(<li key={keyIndex}><a href="?page=1">1</a></li>); }
-	keyIndex++;
+	//page 1 btn, go back to start
+	if (page > 3) { pageBtns.push(<PageButton txt="1" page={1} />); }
 
-	if (page >= 3) { pageBtns.push(<li key={keyIndex}><span className="ellip">...</span></li>); }
-	keyIndex++;
+	//spacer
+	if (page >= 3) { pageBtns.push(<PageButton isEllip={true} />); }
 
+	//1 page before, current page, and one page after
 	for (; i < pageBtnMax && (page + i) <= numPages; i++) {
 		pageBtns.push(
-			<li>
-				<a href={"?page=" + (page + i)} className={(page + i === page) ? "active" : ""} key={i}>{page + i}</a>
-			</li>
+			<PageButton isActive={!!(page + i === page)} page={page + i} txt={page + i}/>
 		);	
 	}
 
 	if ((numPages - page) >= 3) {
-		keyIndex++;
-		pageBtns.push(<li key={keyIndex}><span className="ellip">...</span></li>);
-		keyIndex++;
-		pageBtns.push(<li key={keyIndex}><a href={"?page=" + numPages}>{numPages}</a></li>);	
+		//spacer
+		pageBtns.push(<PageButton isEllip={true} />);
+		//last page btn, go to end
+		pageBtns.push(<PageButton txt={numPages} page={numPages} />);	
 	}
 
-	keyIndex++;
-	if (page < numPages) { pageBtns.push(<li key={keyIndex}><a href={"?page=" + (page + 1)} className="arrow">&gt;</a></li>); }
+	//next arrow
+	if (page < numPages) { pageBtns.push(<PageButton isArrow={true} txt="&gt;" page={page+1} />); }
 
 	return pageBtns;
 }
+
+var PageButton = React.createClass({
+	render: function() {
+		var page = this.props.page;
+		var txt = this.props.txt;
+		var isActive = this.props.isActive || false;
+		var isEllip = this.props.isEllip || false;
+		var isArrow = this.props.isArrow || false;
+		var linkClasses = 
+			(isArrow) 
+				? "pagination-btn arrow" 
+				:(isActive) 
+					? "pagination-btn active" 
+					: "pagination-btn";
+		var ariaLabel = "go to page " + page;
+
+		var ellipSpan = (isEllip) ? <span className="ellip">...</span> : "";
+		var link = (!isEllip) ? <a href={"?page=" + page} className={linkClasses} aria-label={ariaLabel}>{txt}</a> : "";
+		
+		return (
+			<li>
+				{link}
+				{ellipSpan}
+			</li>
+		)
+	}
+});
 
 var Result = React.createClass({
 	render: function() {
@@ -47,7 +73,7 @@ var Result = React.createClass({
 					<div className="result-price">
 						<h6><span className="dollar">$</span>{result.price.nightly}</h6>
 					</div>
-					<img className="center" src={(result.photos && result.photos[0]) ? result.photos[0].medium : ""} />
+					<img className="center" src={(result.photos && result.photos[0]) ? result.photos[0].medium : ""}  alt={result.photos[0].caption}/>
 				</div>
 				<div className="result-body">
 					<h3 className="text-ellip">{result.attr.heading}</h3>

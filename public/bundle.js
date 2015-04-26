@@ -42760,35 +42760,61 @@ var buildPageBtns = function(page, count, resultsPerPage) {
 	var pageBtnMax = (i === 0) ? 3 : 2;
 	var keyIndex = 0;
 
-	if (page > 1) { pageBtns.push(React.createElement("li", {key: keyIndex}, React.createElement("a", {href: "?page=" + (page - 1), className: "arrow"}, "<"))); }
-	keyIndex++;
+	//back arrow
+	if (page > 1) { pageBtns.push(React.createElement(PageButton, {isArrow: true, txt: "<", page: page-1})); }
 
-	if (page > 3) { pageBtns.push(React.createElement("li", {key: keyIndex}, React.createElement("a", {href: "?page=1"}, "1"))); }
-	keyIndex++;
+	//page 1 btn, go back to start
+	if (page > 3) { pageBtns.push(React.createElement(PageButton, {txt: "1", page: 1})); }
 
-	if (page >= 3) { pageBtns.push(React.createElement("li", {key: keyIndex}, React.createElement("span", {className: "ellip"}, "..."))); }
-	keyIndex++;
+	//spacer
+	if (page >= 3) { pageBtns.push(React.createElement(PageButton, {isEllip: true})); }
 
+	//1 page before, current page, and one page after
 	for (; i < pageBtnMax && (page + i) <= numPages; i++) {
 		pageBtns.push(
-			React.createElement("li", null, 
-				React.createElement("a", {href: "?page=" + (page + i), className: (page + i === page) ? "active" : "", key: i}, page + i)
-			)
+			React.createElement(PageButton, {isActive: !!(page + i === page), page: page + i, txt: page + i})
 		);	
 	}
 
 	if ((numPages - page) >= 3) {
-		keyIndex++;
-		pageBtns.push(React.createElement("li", {key: keyIndex}, React.createElement("span", {className: "ellip"}, "...")));
-		keyIndex++;
-		pageBtns.push(React.createElement("li", {key: keyIndex}, React.createElement("a", {href: "?page=" + numPages}, numPages)));	
+		//spacer
+		pageBtns.push(React.createElement(PageButton, {isEllip: true}));
+		//last page btn, go to end
+		pageBtns.push(React.createElement(PageButton, {txt: numPages, page: numPages}));	
 	}
 
-	keyIndex++;
-	if (page < numPages) { pageBtns.push(React.createElement("li", {key: keyIndex}, React.createElement("a", {href: "?page=" + (page + 1), className: "arrow"}, ">"))); }
+	//next arrow
+	if (page < numPages) { pageBtns.push(React.createElement(PageButton, {isArrow: true, txt: ">", page: page+1})); }
 
 	return pageBtns;
 }
+
+var PageButton = React.createClass({displayName: "PageButton",
+	render: function() {
+		var page = this.props.page;
+		var txt = this.props.txt;
+		var isActive = this.props.isActive || false;
+		var isEllip = this.props.isEllip || false;
+		var isArrow = this.props.isArrow || false;
+		var linkClasses = 
+			(isArrow) 
+				? "pagination-btn arrow" 
+				:(isActive) 
+					? "pagination-btn active" 
+					: "pagination-btn";
+		var ariaLabel = "go to page " + page;
+
+		var ellipSpan = (isEllip) ? React.createElement("span", {className: "ellip"}, "...") : "";
+		var link = (!isEllip) ? React.createElement("a", {href: "?page=" + page, className: linkClasses, "aria-label": ariaLabel}, txt) : "";
+		
+		return (
+			React.createElement("li", null, 
+				link, 
+				ellipSpan
+			)
+		)
+	}
+});
 
 var Result = React.createClass({displayName: "Result",
 	render: function() {
@@ -42800,7 +42826,7 @@ var Result = React.createClass({displayName: "Result",
 					React.createElement("div", {className: "result-price"}, 
 						React.createElement("h6", null, React.createElement("span", {className: "dollar"}, "$"), result.price.nightly)
 					), 
-					React.createElement("img", {className: "center", src: (result.photos && result.photos[0]) ? result.photos[0].medium : ""})
+					React.createElement("img", {className: "center", src: (result.photos && result.photos[0]) ? result.photos[0].medium : "", alt: result.photos[0].caption})
 				), 
 				React.createElement("div", {className: "result-body"}, 
 					React.createElement("h3", {className: "text-ellip"}, result.attr.heading), 
