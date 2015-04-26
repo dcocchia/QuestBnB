@@ -5,12 +5,14 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		"click": "onClickElm"
+		"click .result-request-stay-btn": "onRequestToBook"
 	},
 
 	initialize: function(opts) {
 		opts || (opts = {});
-		this.parentView	= opts.parentView;
+		this.parentView				= opts.parentView;
+		this.stop_model				= opts.stop_model;
+		this.lodgings_collection	= opts.lodgings_collection;
 
 		this._setEL();
 
@@ -19,8 +21,9 @@ var lodging_result_view = Backbone.View.extend({
 		},this));
 	},
 
-	onClickElm: function(e) {
-		console.log(this.model.get("id"));
+	onRequestToBook: function(e) {		
+		e.preventDefault();
+		this.stop_model.set("lodging", this.model.toJSON());
 	},
 
 	destory: function() {

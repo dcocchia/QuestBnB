@@ -37,11 +37,11 @@ var lodgings_search_results_view = Backbone.View.extend({
 	},
 
 	createResultView: function(model) {
-		//TODO: lodging views need unique ids for el
-		//TODO: lodging models need their own result data
 		this.lodgingViews.push(
 			new lodging_view({
 				model: model,
+				stop_model: this.stop_model,
+				lodgings_collection: this.lodgings_collection,
 				parentView: this,
 				el: this.$("[data-id='" + model.get("id") + "']")
 			})
@@ -56,7 +56,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgingViews.length = 0;
 	},
 
-	render: function(data) {
+	render: function() {
 		var collectionData = this.lodgings_collection.toJSON();
 		var lodgingsMetaData = this.lodgings_meta_model.toJSON();
 

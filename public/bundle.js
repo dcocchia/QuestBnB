@@ -31,6 +31,7 @@
 	var search_model 			= require("./backbone_models/search_model");
 	var trip_model 				= require("./backbone_models/trip_model");
 	var stop_model 				= require("./backbone_models/stop_model");
+	var lodgings_meta_model		= require("./backbone_models/lodgings_meta_model");
 
 
 	var Router = Backbone.Router.extend({ 
@@ -111,9 +112,20 @@
 
 			}, this));
 
-			this.router.on("route:stop", _.bind(function() {
+			this.router.on("route:stop", _.bind(function(tripId, stopId) {
 				this.loadModel(trip_model, "trip_model");
-				this.loadCollection(lodgings_collection, "lodgings_collection");
+				this.loadModel(lodgings_meta_model, "lodgings_meta_model");
+				this.loadCollection(
+					lodgings_collection, 
+					"lodgings_collection",
+					[
+						[],
+						{
+							url: "/trips/" + tripId + "/stops/" + stopId,
+							lodgings_meta_model: this.models["lodgings_meta_model"]
+						}
+					]
+				);
 
 				this.loadView(stop_page_view, "stop_page_view", {
 					$parentEl: this.$el,
@@ -147,13 +159,24 @@
 		},
 
 		_load: function(obj, type, name, options) {
-			if (this[type][name]) {
-				this[type][name].initialize(options);
-			} else {
-				this[type][name] = new obj(options);
-			}
+			if (type === "collections") {
+				if (this[type][name]) {
+					this[type][name].initialize.apply(this[type][name], options);
+				} else {
+					this[type][name] = new obj(options[0], options[1]);
+				}
 
-			return this[type][name];
+				return this[type][name];
+			} else {
+			
+				if (this[type][name]) {
+					this[type][name].initialize(options);
+				} else {
+					this[type][name] = new obj(options);
+				}
+
+				return this[type][name];
+			}
 		}
 	});
 
@@ -164,7 +187,7 @@
 		});
 	});
 })(window);
-},{"./backbone_collections/lodgings_collection":162,"./backbone_collections/stops_collection":163,"./backbone_collections/travellers_collection":164,"./backbone_models/header_model":165,"./backbone_models/search_model":169,"./backbone_models/stop_model":170,"./backbone_models/trip_model":172,"./backbone_views/header_view":173,"./backbone_views/landing_view":174,"./backbone_views/map_view":178,"./backbone_views/stop_page_view":180,"./backbone_views/trip_view":183,"./util/map_api":184,"./util/view_orchestrator":185,"bluebird":2,"moment":6,"moment-duration-format":5,"react":161}],2:[function(require,module,exports){
+},{"./backbone_collections/lodgings_collection":162,"./backbone_collections/stops_collection":163,"./backbone_collections/travellers_collection":164,"./backbone_models/header_model":165,"./backbone_models/lodgings_meta_model":167,"./backbone_models/search_model":169,"./backbone_models/stop_model":170,"./backbone_models/trip_model":172,"./backbone_views/header_view":173,"./backbone_views/landing_view":174,"./backbone_views/map_view":178,"./backbone_views/stop_page_view":180,"./backbone_views/trip_view":183,"./util/map_api":184,"./util/view_orchestrator":185,"bluebird":2,"moment":6,"moment-duration-format":5,"react":161}],2:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -40344,15 +40367,33 @@ var lodging_model = require("../backbone_models/lodging_model");
 var lodgings_collection = Backbone.Collection.extend({
 	model: lodging_model,
 
-	initialize: function(opts) {
+	initialize: function(models, opts) {
+		opts || (opts = {});
+		this.url 					= opts.url;
+		this.lodgings_meta_model 	= opts.lodgings_meta_model;
+	},
 
+	parse: function(response) {
+		this.lodgings_meta_model.set({
+			count: response.count,
+			resultsPerPage: response.resultsPerPage,
+			page: response.page
+		});
+		
+		return response.result;
 	},
 	
 	fetchDebounced: _.debounce(function(data) { 
 		this.fetch({
 			data: data
 		});
-	}, 500)
+	}, 500),
+
+	getLodging: function(resultId) {
+		return _.find(this.models, _.bind(function(model, index) {
+			return ( model.get("id") === resultId );
+		}, this));
+	}
 });
 
 module.exports = lodgings_collection;
@@ -40654,7 +40695,80 @@ var stop_model = Backbone.Model.extend({
 			}
 		},
 		"lodging": {
-			
+		    "id": "abc123",
+		    "latLng": [
+				0,
+		        0
+		    ],
+		    "itemStatus": "published",
+		    "attr": {
+		        "roomType": {
+		            "text": "Entire home/apt",
+		            "id": 0
+		        },
+		        "bathrooms": 1,
+		        "description": "",
+		        "instantBookable": false,
+		        "extraGuests": {
+		            "fee": 0,
+		            "after": 0
+		        },
+		        "bedrooms": 1,
+		        "occupancy": 2,
+		        "cancellation": {
+		            "text": "Moderate",
+		            "link": "https://www.airbnb.com/home/cancellation_policies#moderate"
+		        },
+		        "beds": 1,
+		        "isCalAvailable": true,
+		        "responseTime": "",
+		        "fees": [],
+		        "lastUpdatedAt": 0,
+		        "heading": "",
+		        "securityDeposit": 0,
+		        "checkOut": "12:00am",
+		        "checkIn": "12:00pm",
+		        "size": -1
+		    },
+		    "price": {
+		        "monthly": 0,
+		        "nightly": 0,
+		        "maxNight": 0,
+		        "weekend": 0,
+		        "minNight": 0,
+		        "weekly": 0
+		    },
+		    "photos": [],
+		    "location": {},
+		    "provider": {
+		        "domain": "airbnb.com",
+		        "full": "Airbnb",
+		        "cid": "airbnb"
+		    },
+		    "amenities": [],
+		    "reviews": {
+		        "count": 0,
+		        "rating": 0,
+		        "entries": []
+		    },
+		    "priceRange": [
+		        {
+		            "nightly": 0,
+		            "start": 0,
+		            "end": 0,
+		            "maxNight": 0,
+		            "weekend": 0,
+		            "monthly": 0,
+		            "minNight": 0,
+		            "weekly": 0
+		        }
+		    ],
+		    "availability": [
+		        {
+		            "start": 0,
+		            "end": 0
+		        }
+		    ]
 		}
 	},
 
@@ -41143,12 +41257,14 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		"click": "onClickElm"
+		"click .result-request-stay-btn": "onRequestToBook"
 	},
 
 	initialize: function(opts) {
 		opts || (opts = {});
-		this.parentView	= opts.parentView;
+		this.parentView				= opts.parentView;
+		this.stop_model				= opts.stop_model;
+		this.lodgings_collection	= opts.lodgings_collection;
 
 		this._setEL();
 
@@ -41157,8 +41273,9 @@ var lodging_result_view = Backbone.View.extend({
 		},this));
 	},
 
-	onClickElm: function(e) {
-		console.log(this.model.get("id"));
+	onRequestToBook: function(e) {		
+		e.preventDefault();
+		this.stop_model.set("lodging", this.model.toJSON());
 	},
 
 	destory: function() {
@@ -41176,9 +41293,11 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 	initialize: function(opts) {
 		opts || (opts = {});
-		this.template = opts.template;
-		this.map_api = opts.map_api;
-		this.lodgings_collection = opts.lodgings_collection;
+		this.template 				= opts.template;
+		this.map_api 				= opts.map_api;
+		this.lodgings_collection 	= opts.lodgings_collection;
+		this.parentView				= opts.parentView;
+		
 		this.search_model = new search_model({
 			map_api: this.map_api
 		});
@@ -41189,22 +41308,22 @@ var lodgings_search_query_view = Backbone.View.extend({
 		}, this));
 
 		this.search_model.on("change", _.bind(function() {
-			this.render({
-				location_props: this.search_model.toJSON()
-			});
+			this.render();
+		}, this));
+
+		Backbone.on("StopView:render", _.bind(function() {
+			this.setElement(this.parentView.$el.find(this.$el.selector));
 		}, this));
 	},
 
 	render: function(data) {
-		var modelData = (this.model) ? this.model.attributes : {};
+		var query_model = this.model.toJSON();
+		var search_model = this.search_model.toJSON();
+		var dataModel = {
+			location_props: search_model 
+		};
 
-		data || (data = {});
-
-		_.extend(data, modelData);
-
-		renderer.render(this.template, data, this.$el[0]);
-
-		this.setElement(this.$el.selector);
+		Backbone.trigger("stop_view:query_view:render", dataModel)	
 	}
 });
 
@@ -41249,11 +41368,11 @@ var lodgings_search_results_view = Backbone.View.extend({
 	},
 
 	createResultView: function(model) {
-		//TODO: lodging views need unique ids for el
-		//TODO: lodging models need their own result data
 		this.lodgingViews.push(
 			new lodging_view({
 				model: model,
+				stop_model: this.stop_model,
+				lodgings_collection: this.lodgings_collection,
 				parentView: this,
 				el: this.$("[data-id='" + model.get("id") + "']")
 			})
@@ -41268,7 +41387,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgingViews.length = 0;
 	},
 
-	render: function(data) {
+	render: function() {
 		var collectionData = this.lodgings_collection.toJSON();
 		var lodgingsMetaData = this.lodgings_meta_model.toJSON();
 
@@ -41396,7 +41515,7 @@ var stop_page_view = PageView.extend({
 		this.map_view = opts.map_view;
 		this.trip_model = opts.trip_model;
 		this.lodgings_collection = opts.lodgings_collection;
-		this.lodgings_meta_model = new lodgingsMetaModel();
+		this.lodgings_meta_model = opts.lodgings_collection.lodgings_meta_model;
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
 
@@ -41409,6 +41528,18 @@ var stop_page_view = PageView.extend({
 
 		Backbone.on("stop_view:search:render", _.bind(function(lodgingData) {
 			this.render(stop_template, lodgingData);
+		}, this));
+
+		this.model.on("change", _.bind(function() {
+			this.render(stop_template, {
+				isServer: false,
+				lodgingData: {
+					result: this.lodgings_collection.toJSON(),
+					count: this.lodgings_meta_model.get("count"),
+					resultsPerPage: this.lodgings_meta_model.get("resultsPerPage"),
+					page: this.lodgings_meta_model.get("page")
+				}
+			});
 		}, this));
 		
 	},

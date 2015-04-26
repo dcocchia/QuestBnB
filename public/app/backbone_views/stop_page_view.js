@@ -54,7 +54,7 @@ var stop_page_view = PageView.extend({
 		this.map_view = opts.map_view;
 		this.trip_model = opts.trip_model;
 		this.lodgings_collection = opts.lodgings_collection;
-		this.lodgings_meta_model = new lodgingsMetaModel();
+		this.lodgings_meta_model = opts.lodgings_collection.lodgings_meta_model;
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
 
@@ -67,6 +67,18 @@ var stop_page_view = PageView.extend({
 
 		Backbone.on("stop_view:search:render", _.bind(function(lodgingData) {
 			this.render(stop_template, lodgingData);
+		}, this));
+
+		this.model.on("change", _.bind(function() {
+			this.render(stop_template, {
+				isServer: false,
+				lodgingData: {
+					result: this.lodgings_collection.toJSON(),
+					count: this.lodgings_meta_model.get("count"),
+					resultsPerPage: this.lodgings_meta_model.get("resultsPerPage"),
+					page: this.lodgings_meta_model.get("page")
+				}
+			});
 		}, this));
 		
 	},

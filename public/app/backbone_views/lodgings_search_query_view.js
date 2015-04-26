@@ -5,9 +5,11 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 	initialize: function(opts) {
 		opts || (opts = {});
-		this.template = opts.template;
-		this.map_api = opts.map_api;
-		this.lodgings_collection = opts.lodgings_collection;
+		this.template 				= opts.template;
+		this.map_api 				= opts.map_api;
+		this.lodgings_collection 	= opts.lodgings_collection;
+		this.parentView				= opts.parentView;
+		
 		this.search_model = new search_model({
 			map_api: this.map_api
 		});
@@ -18,22 +20,22 @@ var lodgings_search_query_view = Backbone.View.extend({
 		}, this));
 
 		this.search_model.on("change", _.bind(function() {
-			this.render({
-				location_props: this.search_model.toJSON()
-			});
+			this.render();
+		}, this));
+
+		Backbone.on("StopView:render", _.bind(function() {
+			this.setElement(this.parentView.$el.find(this.$el.selector));
 		}, this));
 	},
 
 	render: function(data) {
-		var modelData = (this.model) ? this.model.attributes : {};
+		var query_model = this.model.toJSON();
+		var search_model = this.search_model.toJSON();
+		var dataModel = {
+			location_props: search_model 
+		};
 
-		data || (data = {});
-
-		_.extend(data, modelData);
-
-		renderer.render(this.template, data, this.$el[0]);
-
-		this.setElement(this.$el.selector);
+		Backbone.trigger("stop_view:query_view:render", dataModel)	
 	}
 });
 

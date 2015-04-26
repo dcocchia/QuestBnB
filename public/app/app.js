@@ -30,6 +30,7 @@
 	var search_model 			= require("./backbone_models/search_model");
 	var trip_model 				= require("./backbone_models/trip_model");
 	var stop_model 				= require("./backbone_models/stop_model");
+	var lodgings_meta_model		= require("./backbone_models/lodgings_meta_model");
 
 
 	var Router = Backbone.Router.extend({ 
@@ -110,9 +111,20 @@
 
 			}, this));
 
-			this.router.on("route:stop", _.bind(function() {
+			this.router.on("route:stop", _.bind(function(tripId, stopId) {
 				this.loadModel(trip_model, "trip_model");
-				this.loadCollection(lodgings_collection, "lodgings_collection");
+				this.loadModel(lodgings_meta_model, "lodgings_meta_model");
+				this.loadCollection(
+					lodgings_collection, 
+					"lodgings_collection",
+					[
+						[],
+						{
+							url: "/trips/" + tripId + "/stops/" + stopId,
+							lodgings_meta_model: this.models["lodgings_meta_model"]
+						}
+					]
+				);
 
 				this.loadView(stop_page_view, "stop_page_view", {
 					$parentEl: this.$el,
@@ -146,13 +158,24 @@
 		},
 
 		_load: function(obj, type, name, options) {
-			if (this[type][name]) {
-				this[type][name].initialize(options);
-			} else {
-				this[type][name] = new obj(options);
-			}
+			if (type === "collections") {
+				if (this[type][name]) {
+					this[type][name].initialize.apply(this[type][name], options);
+				} else {
+					this[type][name] = new obj(options[0], options[1]);
+				}
 
-			return this[type][name];
+				return this[type][name];
+			} else {
+			
+				if (this[type][name]) {
+					this[type][name].initialize(options);
+				} else {
+					this[type][name] = new obj(options);
+				}
+
+				return this[type][name];
+			}
 		}
 	});
 
