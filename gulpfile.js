@@ -33,11 +33,6 @@ gulp.task('browserify', ['jsx'], function() {
     .pipe(gulp.dest('./public/'));
 });
 
-gulp.task('test-alone', function () {
-  return gulp.src(['./tests/*.js'], {read: false})
-    .pipe(mocha());
-});
-
 gulp.task('test', function (cb) {
   gulp.src(['./public/app/backbone_collections/*.js', './public/app/backbone_models/*.js'])
     .pipe(istanbul())
@@ -62,7 +57,7 @@ gulp.task('develop', function() {
       "./public/bundle.js"
 		]
 	})
-    .on('change', ['less', 'jsx', 'browserify', 'test'])
+    .on('change', ['less', 'jsx', 'browserify'])
 });
 
-gulp.task('default', ['less', 'jsx', 'browserify', 'test']);
+gulp.task('default', ['less', 'jsx', 'browserify']);

@@ -45,7 +45,7 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 									), 
 									this.props.tripList.map(function(trip, index) {
 										return (
-											React.createElement("tr", null, 
+											React.createElement("tr", {key: index}, 
 												React.createElement("td", null, 
 													React.createElement("a", {href: "/trips/" + trip.id, target: "_blank"}, trip.title)
 												), 

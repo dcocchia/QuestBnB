@@ -45,7 +45,7 @@ var ModalsView = React.createClass({
 									</tr>
 									{this.props.tripList.map(function(trip, index) {
 										return (
-											<tr>
+											<tr key={index}>
 												<td>
 													<a href={"/trips/" + trip.id} target="_blank">{trip.title}</a>
 												</td>

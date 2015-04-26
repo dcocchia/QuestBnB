@@ -5,27 +5,34 @@ var buildPageBtns = function(page, count, resultsPerPage) {
 	var pageBtns = [];
 	var i = (page > 1) ? -1 : 0;
 	var pageBtnMax = (i === 0) ? 3 : 2;
+	var keyIndex = 0;
 
-	if (page > 1) { pageBtns.push(<li><a href={"?page=" + (page - 1)} className="arrow">&lt;</a></li>); }
+	if (page > 1) { pageBtns.push(<li key={keyIndex}><a href={"?page=" + (page - 1)} className="arrow">&lt;</a></li>); }
+	keyIndex++;
 
-	if (page > 3) { pageBtns.push(<li><a href="?page=1">1</a></li>); }
+	if (page > 3) { pageBtns.push(<li key={keyIndex}><a href="?page=1">1</a></li>); }
+	keyIndex++;
 
-	if (page >= 3) { pageBtns.push(<li><span className="ellip">...</span></li>); }
+	if (page >= 3) { pageBtns.push(<li key={keyIndex}><span className="ellip">...</span></li>); }
+	keyIndex++;
 
 	for (; i < pageBtnMax && (page + i) <= numPages; i++) {
 		pageBtns.push(
 			<li>
-				<a href={"?page=" + (page + i)} className={(page + i === page) ? "active" : ""}>{page + i}</a>
+				<a href={"?page=" + (page + i)} className={(page + i === page) ? "active" : ""} key={i}>{page + i}</a>
 			</li>
 		);	
 	}
 
 	if ((numPages - page) >= 3) {
-		pageBtns.push(<li><span className="ellip">...</span></li>);
-		pageBtns.push(<li><a href={"?page=" + page}>{numPages}</a></li>);	
+		keyIndex++;
+		pageBtns.push(<li key={keyIndex}><span className="ellip">...</span></li>);
+		keyIndex++;
+		pageBtns.push(<li key={keyIndex}><a href={"?page=" + numPages}>{numPages}</a></li>);	
 	}
 
-	if (page < numPages) { pageBtns.push(<li><a href={"?page=" + (page + 1)} className="arrow">&gt;</a></li>); }
+	keyIndex++;
+	if (page < numPages) { pageBtns.push(<li key={keyIndex}><a href={"?page=" + (page + 1)} className="arrow">&gt;</a></li>); }
 
 	return pageBtns;
 }
@@ -56,7 +63,7 @@ var Result = React.createClass({
 	}
 });
 
-var SeachResults = React.createClass({
+var SearchResults = React.createClass({
 	render: function() {
 		var results = this.props.results || [];
 		var count = this.props.count || {};
@@ -89,4 +96,4 @@ var SeachResults = React.createClass({
 	}
 });
 
-module.exports = SeachResults;
+module.exports = SearchResults;

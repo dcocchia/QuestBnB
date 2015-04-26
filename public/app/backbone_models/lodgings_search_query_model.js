@@ -14,7 +14,6 @@ var lodgings_search_query_model = Backbone.Model.extend({
 	},
 
 	initialize: function() {
-		console.log(this);
 	}
 
 });
