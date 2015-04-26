@@ -25,7 +25,11 @@ var StopView = Backbone.View.extend({
 		}, this));
 
 		this.search_model.on("change", _.bind(function() {
-			Backbone.trigger("trip_view:location_search", this.search_model, this.model);
+			Backbone.trigger(
+				"trip_view:location_search", 
+				this.search_model, 
+				this.model
+			);
 		}, this));
 
 		this.sendQuery = _.debounce( _.bind( function(options) {
@@ -117,7 +121,13 @@ var StopView = Backbone.View.extend({
 
 	locationSearch: function(e) {
 		var target = e.currentTarget,
-			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;		
+			text = (
+				target 
+				&& target.textContent 
+				&& typeof(target.textContent) != "undefined"
+			) 
+			? target.textContent 
+			: target.innerText;		
 
 		if (text) { this.sendQuery({input: text}); }
 	},
@@ -132,25 +142,30 @@ var StopView = Backbone.View.extend({
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
-		this.map_api.getPlaceDetails({placeId: placeId}, _.bind(function(place, status) {
-			if (status === google.maps.places.PlacesServiceStatus.OK ) {
-				$item.closest(".locations-menu").siblings(".stop-location-title").blur();
-				this.clearAllRanges();
+		this.map_api.getPlaceDetails(
+			{placeId: placeId}, 
+			_.bind(function(place, status) {
+				if (status === google.maps.places.PlacesServiceStatus.OK ) {
+					$item.closest(".locations-menu")
+						.siblings(".stop-location-title")
+						.blur();
+					this.clearAllRanges();
 
-				this.model.set({
-					location: placeDescription,
-					address: place.formatted_address,
-					place_id: place.place_id,
-					id: place.id,
-					geo: {
-						lat: place.geometry.location.lat(),
-						lng: place.geometry.location.lng()
-					}
-				});
-				
-				this.search_model.clear();
-			}
-		}, this));
+					this.model.set({
+						location: placeDescription,
+						address: place.formatted_address,
+						place_id: place.place_id,
+						id: place.id,
+						geo: {
+							lat: place.geometry.location.lat(),
+							lng: place.geometry.location.lng()
+						}
+					});
+					
+					this.search_model.clear();
+				}
+			}, this)
+		);
 
 	},
 

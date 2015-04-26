@@ -1,5 +1,5 @@
-var React = require('react');
-var LocationsMenu = require('./LocationsMenu');
+var React 			= require('react');
+var LocationsMenu 	= require('./LocationsMenu');
 
 var Stop = React.createClass({displayName: "Stop",
 	render: function() {

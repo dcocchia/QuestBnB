@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var React = require('react');
 var SearchQuery = require('./SearchQuery');
 var SeachResults = require('./SeachResults');
@@ -8,10 +9,18 @@ var StopView = React.createClass({
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
+		var modelData = _.cloneDeep(this.props);
 		var bootStrapDataElm;
 
 		if (isServer) {
-			bootStrapDataElm = <div className="results-data"><span data-result-data={JSON.stringify(results)}></span></div>;
+			modelData = _.cloneDeep(this.props);
+			delete modelData.lodgingData;
+			bootStrapDataElm = (
+				<div className="bootstrap-data">
+					<span className="bootstrap-data-results" data-result-data={JSON.stringify(results)}></span>
+					<span className="bootstrap-data-model" data-model-data={JSON.stringify(modelData)}></span>
+				</div>
+			);
 		}
 
 		return (

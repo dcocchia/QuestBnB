@@ -1,7 +1,7 @@
-var PageView = require("./page_view");
-var StopView = require("./stop_view");
-var TravellerView = require("./traveller_view");
-var trip_template = require("../../views/TripView");
+var PageView 		= require("./page_view");
+var StopView 		= require("./stop_view");
+var TravellerView 	= require("./traveller_view");
+var trip_template 	= require("../../views/TripView");
 
 var TripView = PageView.extend({
 
@@ -33,7 +33,6 @@ var TripView = PageView.extend({
 			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
 			this.stops_collection.add(this.model.get("stops"));
-			//this.map_api.renderDirectionsFromStopsCollection(this.stops_collection);
 			this.renderNewMapStop();
 			this.createStopViews();
 
@@ -41,7 +40,10 @@ var TripView = PageView.extend({
 				this.setStopsCollectionInModel();
 				this.render(trip_template);
 				
-				if (stopModel && stopModel.get && stopModel.get("isNew") === true) {
+				if (stopModel 
+					&& stopModel.get 
+					&& stopModel.get("isNew") === true) 
+				{
 					this.createNewStopView(stopModel);
 				} else if (!stopModel || stopModel.get("location") !== "") {
 					this.renderNewMapStop();
@@ -57,17 +59,22 @@ var TripView = PageView.extend({
 				this.setTravellersCollectionInModel({sync: true});
 			}, this));
 
-			this.travellers_collection.on("add", _.bind(function(travellerModel) {
-				//view will call sync on model once user types in traveller name
-				//so, passing false flag here
-				this.setTravellersCollectionInModel({sync: false});
-				this.createNewTravellerView(travellerModel, {isNew: true});
-			}, this));
+			this.travellers_collection.on("add", 
+				_.bind(function(travellerModel) {
+					//view will call sync on model 
+					//once user types in traveller name
+					//so, passing false flag here
+					this.setTravellersCollectionInModel({sync: false});
+					this.createNewTravellerView(travellerModel, {isNew: true});
+				}, this)
+			);
 
-			this.travellers_collection.on("remove", _.bind(function(travellerModel) {
-				this.setTravellersCollectionInModel({sync: true});
-				this.removeTravellerView(travellerModel);
-			}, this));
+			this.travellers_collection.on("remove", 
+				_.bind(function(travellerModel) {
+					this.setTravellersCollectionInModel({sync: true});
+					this.removeTravellerView(travellerModel);
+				}, this)
+			);
 			
 		}, this));
 
@@ -76,17 +83,19 @@ var TripView = PageView.extend({
 			this.map_view.setMode("trip-view");
 		}, this));
 
-		Backbone.on("trip_view:location_search", _.bind(function(location_model, stop_model) {
-			var data = {};
+		Backbone.on("trip_view:location_search", 
+			_.bind(function(location_model, stop_model) {
+				var data = {};
 
-			location_model || (location_model = {});
-			stop_model || (stop_model = {});
+				location_model || (location_model = {});
+				stop_model || (stop_model = {});
 
-			data.location_props = location_model.toJSON();
-			data.stop_props = stop_model.toJSON();
+				data.location_props = location_model.toJSON();
+				data.stop_props = stop_model.toJSON();
 
-			this.render(trip_template, data);
-		}, this));
+				this.render(trip_template, data);
+			}, this)
+		);
 
 		Backbone.on("TripView:render", _.bind(function() {
 			//rebind date pickers, but wait for renders to finish
@@ -160,9 +169,11 @@ var TripView = PageView.extend({
 	},
 
 	createTravellersViews: function() {
-		_.each(this.travellers_collection.models, _.bind(function(travellerModel) {
-			this.createNewTravellerView(travellerModel);
-		}, this));
+		_.each(this.travellers_collection.models, 
+			_.bind(function(travellerModel) {
+				this.createNewTravellerView(travellerModel);
+			}, this)
+		);
 	},
 
 	createNewTravellerView: function(travellerModel, opts) {
@@ -170,7 +181,9 @@ var TripView = PageView.extend({
 		this.travellers_views.push(
 			new TravellerView({
 				model: travellerModel,
-				el: ".traveller[data-traveller-id='" + travellerModel.get("_id") + "']",
+				el: ".traveller[data-traveller-id='" 
+					+ travellerModel.get("_id") 
+					+ "']",
 				travellerId: travellerModel.get("_id"),
 				isNew: opts.isNew || false
 			})
@@ -214,7 +227,13 @@ var TripView = PageView.extend({
 
 	onTitleBlur: function(e) {
 		var target = e.currentTarget,
-			text = (target && target.textContent && typeof(target.textContent) != "undefined") ? target.textContent : target.innerText;
+			text = (
+				target 
+				&& target.textContent 
+				&& typeof(target.textContent) != "undefined"
+			) 
+				? target.textContent 
+				: target.innerText;
 
 		if (this.model.get("title") !== text) {
 			this.model.set("title", text);
@@ -289,9 +308,12 @@ var TripView = PageView.extend({
 
 	setModel: function(opts, setOpts) {
 		var data;
-		var distance = this.stops_collection.last().get("totals").distance.value;
-		var duration = this.stops_collection.last().get("totals").duration.text;
-		var cost = ((distance / this.model.get("mpg")) * this.model.get("gasPrice")).toFixed(2);
+		var lastTotal = this.stops_collection.last().get("totals");
+		var distance = lastTotal.distance.value;
+		var duration = lastTotal.duration.text;
+		var mpg = this.model.get("mpg");
+		var gasPrice = this.model.get("gasPrice"); 
+		var cost = ((distance / mpg) * gasPrice).toFixed(2);
 
 		var defaults = {
 			tripDistance: distance,

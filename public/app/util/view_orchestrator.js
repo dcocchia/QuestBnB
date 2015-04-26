@@ -14,10 +14,25 @@ var ViewOrchestrator = Backbone.View.extend({
 	setMapListeners: function() {
 		var mapView = this.views["map_view"];
 
-		Backbone.on("map:setCenter", _.bind(mapView.setCenter, mapView));
-		Backbone.on("map:setMarker", _.bind(this.map_api.makeMarker, mapView));
-		Backbone.on("map:clearMarkers", _.bind(this.map_api.clearMarkers, mapView));
-		Backbone.on("map:setZoom", _.bind(mapView.setZoom, mapView));
+		Backbone.on(
+			"map:setCenter", 
+			_.bind(mapView.setCenter, mapView)
+		);
+
+		Backbone.on(
+			"map:setMarker", 
+			_.bind(this.map_api.makeMarker, mapView)
+		);
+
+		Backbone.on(
+			"map:clearMarkers", 
+			_.bind(this.map_api.clearMarkers, mapView)
+		);
+
+		Backbone.on(
+			"map:setZoom", 
+			_.bind(mapView.setZoom, mapView)
+		);
 	},
 
 	setViewListeners: function() {
@@ -105,23 +120,28 @@ var ViewOrchestrator = Backbone.View.extend({
 		}, this));
 
 		//1 second for animation, and unknown time for db query result
-		Promise.all([timeOutPromise, dbQueryPromise]).then( _.bind(function(a, b){
-			var trip_model = this.models["trip_model"];
-			var tripId = this.models["trip_model"].get("_id");
-			trip_model.setUrl(tripId);
-			trip_model.trigger("ready");
-			this.router.navigate("/trips/" + tripId);
-			trip_model.saveLocalStorageReference();
-			Backbone.trigger("trip_view:render", true);
-		}, this));
+		Promise.all([timeOutPromise, dbQueryPromise])
+			.then( _.bind(function(a, b){
+				var trip_model = this.models["trip_model"];
+				var tripId = this.models["trip_model"].get("_id");
+				trip_model.setUrl(tripId);
+				trip_model.trigger("ready");
+				this.router.navigate("/trips/" + tripId);
+				trip_model.saveLocalStorageReference();
+				Backbone.trigger("trip_view:render", true);
+			}, this));
 	},
 
 	goToStopView: function(stopId) {
 		var tripModel = this.models["trip_model"];
 		var tripId = tripModel.get("_id");
-		var stopModel = this.views["trip_view"].stops_collection.getStop(stopId);
+		var tripView = this.views["trip_view"];
+		var stopModel = tripView.stops_collection.getStop(stopId);
 
-		this.loadCollection(this.Collections.lodgings_collection, "lodgings_collection");
+		this.loadCollection(
+			this.Collections.lodgings_collection, 
+			"lodgings_collection"
+		);
 
 		this.loadView(this.Views.stop_page_view, "stop_page_view", {
 			$parentEl: this.$el,

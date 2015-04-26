@@ -1,44 +1,44 @@
 ;(function(window){
-	var React = require('react');
-	window.React = React;
-
-	var moment = require("moment");
-	require("moment-duration-format");
-	window.moment = moment;
-
-	var Promise = require("bluebird");
+	var Promise 				= require("bluebird");
+	var React 					= require('react');
+	var moment 					= require("moment");
 	
+	require("moment-duration-format");
+	window.moment 				= moment;
+	window.React 				= React;
+
 	//view/event orchestrator
-	var view_orchestrator = require("./util/view_orchestrator");
+	var view_orchestrator 		= require("./util/view_orchestrator");
 
 	//map
-	var map_api = require("./util/map_api");
-	var map_view = require("./backbone_views/map_view");
+	var map_api 				= require("./util/map_api");
+	var map_view 				= require("./backbone_views/map_view");
 
 	//backbone views
-	var header_view = require("./backbone_views/header_view");
-	var landing_view = require("./backbone_views/landing_view");
-	var trip_view = require("./backbone_views/trip_view");
-	var stop_page_view = require("./backbone_views/stop_page_view");
+	var header_view 			= require("./backbone_views/header_view");
+	var landing_view 			= require("./backbone_views/landing_view");
+	var trip_view 				= require("./backbone_views/trip_view");
+	var stop_page_view 			= require("./backbone_views/stop_page_view");
 
 	//backbone collections
-	var stops_collection = require("./backbone_collections/stops_collection");
-	var travellers_collection = require("./backbone_collections/travellers_collection");
-	var lodgings_collection = require("./backbone_collections/lodgings_collection");
+	var stops_collection 		= require("./backbone_collections/stops_collection");
+	var travellers_collection 	= require("./backbone_collections/travellers_collection");
+	var lodgings_collection 	= require("./backbone_collections/lodgings_collection");
 
 	//backbone models
-	var header_model = require("./backbone_models/header_model");
-	var search_model = require("./backbone_models/search_model");
-	var trip_model = require("./backbone_models/trip_model");
+	var header_model 			= require("./backbone_models/header_model");
+	var search_model 			= require("./backbone_models/search_model");
+	var trip_model 				= require("./backbone_models/trip_model");
+	var stop_model 				= require("./backbone_models/stop_model");
 
 
-	var Router = Backbone.Router.extend({
+	var Router = Backbone.Router.extend({ 
 		routes: {
-			"": "landing",
-			"trips/:id": "trip",
-			"trips/:id/": "trip",
-			"trips/:id/stops/:stopId": "stop",
-			"trips/:id/stops/:stopId/": "stop"
+			""							: "landing",
+			"trips/:id"					: "trip",
+			"trips/:id/"				: "trip",
+			"trips/:id/stops/:stopId"	: "stop",
+			"trips/:id/stops/:stopId/"	: "stop"
 		}
 	});
 
@@ -110,7 +110,22 @@
 
 			}, this));
 
-			this.router.on("route:stop", function() { console.log("stop view!") });
+			this.router.on("route:stop", _.bind(function() {
+				this.loadModel(trip_model, "trip_model");
+				this.loadCollection(lodgings_collection, "lodgings_collection");
+
+				this.loadView(stop_page_view, "stop_page_view", {
+					$parentEl: this.$el,
+					el: $(".stop-page"),
+					map_api: this.map_api,
+					map_view: this.views["map_view"],
+					model: new stop_model(),
+					trip_model: this.models["trip_model"],
+					lodgings_collection: this.collections["lodgings_collection"]
+				})._bootStrapView();
+
+				this.views["stop_page_view"].trigger("ready");
+			}, this));
 		},
 
 		loadView: function(view, viewName, options) {
@@ -122,7 +137,12 @@
 		},
 
 		loadCollection: function(collection, collectionName, options) {
-			return this._load(collection, "collections", collectionName, options);
+			return this._load(
+				collection, 
+				"collections", 
+				collectionName, 
+				options
+			);
 		},
 
 		_load: function(obj, type, name, options) {

@@ -1,17 +1,34 @@
 //backbone views
-var PageView = require("./page_view");
-var SearchQueryView = require("./lodgings_search_query_view");
-var SearchResultsView = require("./lodgings_search_results_view");
+var PageView 			= require("./page_view");
+var SearchQueryView 	= require("./lodgings_search_query_view");
+var SearchResultsView 	= require("./lodgings_search_results_view");
 
 //backbone models
-var searchQueryModel = require("../backbone_models/lodgings_search_query_model");
+var searchQueryModel 	= require("../backbone_models/lodgings_search_query_model");
 
 //jsx templates
-var stop_template = require("../../views/StopView");
-var query_template = require("../../views/LodgingsSearchQueryView");
-var results_template = require("../../views/LodgingsSearchResultsView");
+var stop_template 		= require("../../views/StopView");
+var query_template 		= require("../../views/LodgingsSearchQueryView");
+var results_template 	= require("../../views/LodgingsSearchResultsView");
 
 var stop_page_view = PageView.extend({
+	_bootStrapView: function() {
+		var $dataElm = this.$(".bootstrap-data");
+
+		var $modelDataElm = $dataElm.find(".bootstrap-data-model");
+		var modelData = 
+			($modelDataElm.length > 0) 
+			? $modelDataElm.data("modelData")
+			: {};
+
+		var $resultDataElm = $dataElm.find(".bootstrap-data-results");
+		var resultData = 
+			($resultDataElm.length > 0) 
+			? $resultDataElm.data("resultData")
+			: [];
+
+		this.model.set(modelData, {silent: true});
+	},
 
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
@@ -30,7 +47,9 @@ var stop_page_view = PageView.extend({
 		this.createSubViews();
 
 		Backbone.on("stop_view:render", _.bind(function() {
-			this.render(stop_template, {tripTitle: this.trip_model.get("title")});
+			this.render(stop_template, {
+				tripTitle: this.trip_model.get("title")
+			});
 			this.map_view.setMode("stop-view");
 		}, this));
 
