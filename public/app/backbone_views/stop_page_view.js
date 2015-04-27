@@ -55,6 +55,7 @@ var stop_page_view = PageView.extend({
 		this.trip_model = opts.trip_model;
 		this.lodgings_collection = opts.lodgings_collection;
 		this.lodgings_meta_model = opts.lodgings_collection.lodgings_meta_model;
+		this.lodgings_collection.stop_model = this.model;
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
 

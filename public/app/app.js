@@ -120,7 +120,7 @@
 					[
 						[],
 						{
-							url: "/trips/" + tripId + "/stops/" + stopId,
+							url: "/lodgings",
 							lodgings_meta_model: this.models["lodgings_meta_model"]
 						}
 					]

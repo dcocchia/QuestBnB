@@ -55,7 +55,7 @@ var PageButton = React.createClass({displayName: "PageButton",
 		var link = (!isEllip) ? React.createElement("a", {href: "?page=" + page, className: linkClasses, "aria-label": ariaLabel}, txt) : "";
 		
 		return (
-			React.createElement("li", null, 
+			React.createElement("li", {"data-page": page}, 
 				link, 
 				ellipSpan
 			)

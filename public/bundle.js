@@ -121,7 +121,7 @@
 					[
 						[],
 						{
-							url: "/trips/" + tripId + "/stops/" + stopId,
+							url: "/lodgings",
 							lodgings_meta_model: this.models["lodgings_meta_model"]
 						}
 					]
@@ -40366,6 +40366,7 @@ var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_collection = Backbone.Collection.extend({
 	model: lodging_model,
+	url: '/lodgings',
 
 	initialize: function(models, opts) {
 		if (!opts) { opts = {}; }
@@ -40383,9 +40384,13 @@ var lodgings_collection = Backbone.Collection.extend({
 		return response.result;
 	},
 	
-	fetchDebounced: _.debounce(function(data) { 
+	fetchDebounced: _.debounce(function() { 
 		this.fetch({
-			data: data
+			data: {
+				page: this.lodgings_meta_model.get("page"),
+				latitude: this.stop_model.get("geo").lat,
+				longitude: this.stop_model.get("geo").lng
+			}
 		});
 	}, 500),
 
@@ -41319,9 +41324,9 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 
-	destory: function() {
+	destroy: function() {
 		this.undelegateEvents();
-		this.$el.removeData().unBind();
+		this.$el.removeData().unbind();
 	}
 });
 
@@ -41375,6 +41380,10 @@ var lodging_view = require('../backbone_views/lodging_result_view');
 var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_search_results_view = Backbone.View.extend({
+
+	events: {
+		"click .pagination-btn" : "onPaginate"
+	},
 
 	initialize: function(opts) {
 		opts || (opts = {});
@@ -41447,6 +41456,17 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}
 
 		Backbone.trigger('stop_view:search:render', renderModel);
+	},
+
+	onPaginate: function(e) {
+		var $target = $(e.currentTarget);
+		var page = $target.parent().data("page");
+		
+		e.preventDefault();
+
+		this.lodgings_meta_model.set("page", page);
+		this.lodgings_collection.fetchDebounced();
+
 	}
 });
 
@@ -41561,6 +41581,7 @@ var stop_page_view = PageView.extend({
 		this.trip_model = opts.trip_model;
 		this.lodgings_collection = opts.lodgings_collection;
 		this.lodgings_meta_model = opts.lodgings_collection.lodgings_meta_model;
+		this.lodgings_collection.stop_model = this.model;
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
 
@@ -42853,7 +42874,7 @@ var PageButton = React.createClass({displayName: "PageButton",
 		var link = (!isEllip) ? React.createElement("a", {href: "?page=" + page, className: linkClasses, "aria-label": ariaLabel}, txt) : "";
 		
 		return (
-			React.createElement("li", null, 
+			React.createElement("li", {"data-page": page}, 
 				link, 
 				ellipSpan
 			)

@@ -45,9 +45,9 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 
-	destory: function() {
+	destroy: function() {
 		this.undelegateEvents();
-		this.$el.removeData().unBind();
+		this.$el.removeData().unbind();
 	}
 });
 

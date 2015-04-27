@@ -2,6 +2,7 @@ var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_collection = Backbone.Collection.extend({
 	model: lodging_model,
+	url: '/lodgings',
 
 	initialize: function(models, opts) {
 		if (!opts) { opts = {}; }
@@ -19,9 +20,13 @@ var lodgings_collection = Backbone.Collection.extend({
 		return response.result;
 	},
 	
-	fetchDebounced: _.debounce(function(data) { 
+	fetchDebounced: _.debounce(function() { 
 		this.fetch({
-			data: data
+			data: {
+				page: this.lodgings_meta_model.get("page"),
+				latitude: this.stop_model.get("geo").lat,
+				longitude: this.stop_model.get("geo").lng
+			}
 		});
 	}, 500),
 

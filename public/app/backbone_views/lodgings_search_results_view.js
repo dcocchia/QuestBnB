@@ -4,6 +4,10 @@ var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_search_results_view = Backbone.View.extend({
 
+	events: {
+		"click .pagination-btn" : "onPaginate"
+	},
+
 	initialize: function(opts) {
 		opts || (opts = {});
 		this.template 				= opts.template;
@@ -75,6 +79,17 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}
 
 		Backbone.trigger('stop_view:search:render', renderModel);
+	},
+
+	onPaginate: function(e) {
+		var $target = $(e.currentTarget);
+		var page = $target.parent().data("page");
+		
+		e.preventDefault();
+
+		this.lodgings_meta_model.set("page", page);
+		this.lodgings_collection.fetchDebounced();
+
 	}
 });
 
