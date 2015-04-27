@@ -11,7 +11,7 @@ var map_view = Backbone.View.extend({
 			disableDefaultUI: true
 		}
 
-		this.map = new google.maps.Map(this.$("#goog_map")[0], mapOptions);
+		this.map = new google.maps.Map(this.$('#goog_map')[0], mapOptions);
 	},
 
 	setCenter: function(opts) {
@@ -24,7 +24,7 @@ var map_view = Backbone.View.extend({
 	},
 
 	setMode: function(modeClass) {
-		this.$el.removeClass("trip-view stop-view").addClass(modeClass);
+		this.$el.removeClass('trip-view stop-view').addClass(modeClass);
 	}
 });
 

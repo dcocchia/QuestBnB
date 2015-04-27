@@ -1,19 +1,19 @@
-var headerViewTemplate = require("../../views/HeaderView");
-var navModalsTemplate = require("../../views/ModalsView");
-var renderer = require("../../../renderer/client_renderer");
+var headerViewTemplate = require('../../views/HeaderView');
+var navModalsTemplate = require('../../views/ModalsView');
+var renderer = require('../../../renderer/client_renderer');
 
 var HeaderView = Backbone.View.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
-		this.elms.$navModals = $(".nav-modals");
+		this.elms.$navModals = $('.nav-modals');
 	},
 
 	elms: {},
 
 	events: {
-		"click" 			: "toggleMenu",
-		"click .explain" 	: "onClickExplain",
-		"click .your-trips" : "onClickYourTrips"
+		'click' 			: 'toggleMenu',
+		'click .explain' 	: 'onClickExplain',
+		'click .your-trips' : 'onClickYourTrips'
 	},
 
 	initialize: function(opts) {
@@ -21,11 +21,11 @@ var HeaderView = Backbone.View.extend({
 
 		this._findElms(opts.$parentEl);
 
-		this.model.on("change", _.bind(function() {
+		this.model.on('change', _.bind(function() {
 			this.render();
 		}, this));
 
-		Backbone.on("triplist:update", _.bind(function(newTripList) {
+		Backbone.on('triplist:update', _.bind(function(newTripList) {
 			this.renderTripList(newTripList);
 		}, this));
 
@@ -44,7 +44,7 @@ var HeaderView = Backbone.View.extend({
 	},
 
 	toggleMenu: function() {
-		var opened = this.model.get("open") || false;
+		var opened = this.model.get('open') || false;
 
 		this.model.set({open: !opened})
 	},
@@ -53,22 +53,22 @@ var HeaderView = Backbone.View.extend({
 		e.preventDefault();
 		e.stopPropagation();
 
-		this.elms.$navModals.find(".nav-modal-explain").on("hide.bs.modal", _.bind(function(e) {
+		this.elms.$navModals.find('.nav-modal-explain').on('hide.bs.modal', _.bind(function(e) {
 			this.model.set({open: false});
-		}, this)).modal("show");
+		}, this)).modal('show');
 	},
 
 	onClickYourTrips: function(e) {
 		e.preventDefault();
 		e.stopPropagation();
 
-		this.elms.$navModals.find(".nav-modal-your-trips").on("hide.bs.modal", _.bind(function(e) {
+		this.elms.$navModals.find('.nav-modal-your-trips').on('hide.bs.modal', _.bind(function(e) {
 			this.model.set({open: false});
-		}, this)).modal("show");
+		}, this)).modal('show');
 	},
 
 	getTripList: function() {
-		var tripList = localStorage.getItem("tripList");
+		var tripList = localStorage.getItem('tripList');
 
 		if (tripList) {
 			try { return JSON.parse(tripList) }

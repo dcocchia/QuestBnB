@@ -40362,13 +40362,13 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":34}],162:[function(require,module,exports){
-var lodging_model = require("../backbone_models/lodging_model");
+var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_collection = Backbone.Collection.extend({
 	model: lodging_model,
 
 	initialize: function(models, opts) {
-		opts || (opts = {});
+		if (!opts) { opts = {}; }
 		this.url 					= opts.url;
 		this.lodgings_meta_model 	= opts.lodgings_meta_model;
 	},
@@ -40390,36 +40390,36 @@ var lodgings_collection = Backbone.Collection.extend({
 	}, 500),
 
 	getLodging: function(resultId) {
-		return _.find(this.models, _.bind(function(model, index) {
-			return ( model.get("id") === resultId );
+		return _.find(this.models, _.bind(function(model) {
+			return ( model.get('id') === resultId );
 		}, this));
 	}
 });
 
 module.exports = lodgings_collection;
 },{"../backbone_models/lodging_model":166}],163:[function(require,module,exports){
-var moment = require("moment");
-require("moment-duration-format");
-var stop_model = require("../backbone_models/stop_model");
+var moment = require('moment');
+require('moment-duration-format');
+var stop_model = require('../backbone_models/stop_model');
 
 var stops_colletion = Backbone.Collection.extend({
 	model: stop_model,
 
 	_numberStops: function() {
 		_.each(this.models, function(stop, index) {
-			stop.set("stopNum", {index: index + 1}, {silent: true});
+			stop.set('stopNum', {index: index + 1}, {silent: true});
 		});
 	},
 
-	initialize: function(opts) {
-		this.on("removeStop", _.bind(function(stopId) {
+	initialize: function() {
+		this.on('removeStop', _.bind(function(stopId) {
 			this.removeStop(stopId);
 		}, this));
 	},
 
 	getStop: function(stopId) {
 		return _.find(this.models, function(stopModel) {
-			 return (stopModel.get("_id") === stopId);
+			 return (stopModel.get('_id') === stopId);
 		});
 	},
 
@@ -40433,14 +40433,14 @@ var stops_colletion = Backbone.Collection.extend({
 		this._numberStops();
 
 		//lets trip_view's trip_model know to update list of stops
-		this.trigger("change", newStopModel);
+		this.trigger('change', newStopModel);
 		_.delay(_.bind(this.setStopsActive, this), 450);
 	},
 
 	setStopsActive: function() {
 		var returnedStop, thisStop;
 
-		_.each(this.models, function(stop, index) {
+		_.each(this.models, function(stop) {
 			thisStop = stop.attributes;
 
 			if (thisStop.isNew === true) {
@@ -40451,118 +40451,141 @@ var stops_colletion = Backbone.Collection.extend({
 		});
 
 		if (returnedStop) { 
-			returnedStop.trigger("active");
-			this.trigger("change", returnedStop); 
+			returnedStop.trigger('active');
+			this.trigger('change', returnedStop); 
 		}
 	},
 
-	removeStop: function(stopId, opts) {
+	removeStop: function(stopId) {
 		this.remove( this.where({_id: stopId}) );
 		this._numberStops();
-		this.trigger("change");
+		this.trigger('change');
 
 		//listeners will destroy related view
-		Backbone.trigger("removeStop", stopId);
+		Backbone.trigger('removeStop', stopId);
 	},
 
 	mergeMapData: function(result) {
 		var METERCONVERT = 1609.344;
-		var DURATIONFORMAT = "y [years] d [days] h [hours] m [mins]";
-		var thisStop;
-		var lastStop;
-		var totalDistance;
-		var totalDuration;
-		var legs;
-		var thisLeg;
+		var DURATIONFORMAT = 'y [years] d [days] h [hours] m [mins]';
+		var lastStop, totalDistance, totalDuration, legs, thisLeg;
+		var legDistance, lastStopDistance;
+		var legDuration, lastStopDuration;
 
-		var lastStopDefaults = {
+		var stopDefaults = {
 			distance: {
-				text: "0",
+				text: '0',
 				value: 0
 			},
 			duration: {
-				text: "0",
+				text: '0',
 				value: 0
 			},
 			totals: {
 				distance: {
-					text: "0",
+					text: '0',
 					value: 0
 				},
 				duration: {
-					text: "0",
+					text: '0',
 					value: 0
 				}
+			},
+			end_location: {
+				lat: function() { return 0; },
+				lng: function() { return 0; }
+			},
+			start_location: {
+				lat: function() { return 0; },
+				lng: function() { return 0; }
 			}
-		}
+		};
 
-		result || (result = {});
-		result.routes || (result.routes = [{legs:[]}]);
+		if (!result) { result = {}; }
+		if (!result.routes) { result.routes = [{legs:[]}]; }
 		legs = result.routes[0].legs;
 
-		if (legs.length === this.models.length - 1) {
+		if (legs.length !== this.models.length - 1) { return; }
 
-			_.each(this.models, _.bind(function(stop, index) {
-				if (index > 0) {
-					lastStop = (this.models[index - 1] ? this.models[index - 1].attributes : lastStopDefaults);
-					thisLeg = legs[index - 1];
+		_.each(this.models, _.bind(function(stop, index) {
+			if (index > 0) {
+				//bad model
+				if (!stop || !stop.set || !stop.attributes) { return; }
+				
+				lastStop = this.models[index - 1].attributes;
+				thisLeg = legs[index - 1];
+				thisLeg = function() {
+					if (!thisLeg || _.isEmpty(thisLeg) ) {
+						return stopDefaults;
+					} else {
+						return thisLeg;
+					}
+				}();
 
-					totalDistance = Math.round(
-						lastStop.totals.distance.value + 
-						(thisLeg.distance.value / METERCONVERT)
-					);
+				legDistance = thisLeg.distance.value / METERCONVERT;
+				lastStopDistance = lastStop.totals.distance.value;
+				totalDistance = Math.round(lastStopDistance + legDistance);
 
-					totalDuration = lastStop.totals.duration.value + thisLeg.duration.value;
-					
-					stop.set("geo", {
-						lat: thisLeg.end_location.lat(),
-						lng: thisLeg.end_location.lng()
-					}, {silent: true});
+				legDuration = thisLeg.duration.value;
+				lastStopDuration = lastStop.totals.duration.value;
+				totalDuration =  lastStopDuration + legDuration;
+				
+				stop.set('geo', {
+					lat: thisLeg.end_location.lat(),
+					lng: thisLeg.end_location.lng()
+				}, {silent: true});
 
-					stop.set("distance", { 
-						text: thisLeg.distance.text,
-						value: thisLeg.distance.value
-					}, {silent: true});
+				stop.set('distance', { 
+					text: thisLeg.distance.text,
+					value: thisLeg.distance.value
+				}, {silent: true});
 
-					stop.set("duration", {
-						text: thisLeg.duration.text,
-						value: thisLeg.duration.value
-					}, {silent: true});
+				stop.set('duration', {
+					text: thisLeg.duration.text,
+					value: thisLeg.duration.value
+				}, {silent: true});
 
-					//NOTE: backbone does not do deep/nested models
-					//Since I'm setting the models above silently, I'm ok with directly affecting attributes here
-					stop.attributes.totals = {
-						distance: { 
-							value: totalDistance,
-							text: totalDistance.toString() + " mi"
-						},
-						duration: {
-							value: totalDuration,
-							text: moment.duration(totalDuration, "seconds")
-									.format(DURATIONFORMAT)
-						}
-					};
-				} else {
-					thisLeg = legs[0];
-					_.first(this.models).set("geo", {
-						lat: thisLeg.start_location.lat(),
-						lng: thisLeg.start_location.lng()
-					}, {silent: true});
-				}
-			}, this));
-		}
+				//NOTE: backbone does not do deep/nested models
+				//Since I'm setting the models above silently, 
+				//I'm ok with directly affecting attributes here
+				stop.attributes.totals = {
+					distance: { 
+						value: totalDistance,
+						text: totalDistance.toString() + ' mi'
+					},
+					duration: {
+						value: totalDuration,
+						text: moment.duration(totalDuration, 'seconds')
+								.format(DURATIONFORMAT)
+					}
+				};
+			} else {
+				thisLeg = legs[0];
+				thisLeg = function() {
+					if (!thisLeg || _.isEmpty(thisLeg) ) {
+						return stopDefaults;
+					} else {
+						return thisLeg;
+					}
+				}();
+				_.first(this.models).set('geo', {
+					lat: thisLeg.start_location.lat(),
+					lng: thisLeg.start_location.lng()
+				}, {silent: true});
+			}
+		}, this));
 	}
 });
 
 module.exports = stops_colletion;
 },{"../backbone_models/stop_model":170,"moment":6,"moment-duration-format":5}],164:[function(require,module,exports){
-var traveller_model = require("../backbone_models/traveller_model");
+var traveller_model = require('../backbone_models/traveller_model');
 
 var travellers_collection = Backbone.Collection.extend({
 	model: traveller_model,
 
 	initialize: function() {
-		this.on("remove_traveller", _.bind(function(id) {
+		this.on('remove_traveller', _.bind(function(id) {
 			this.removeTraveller(id);
 		}, this));
 	},
@@ -40576,7 +40599,7 @@ module.exports = travellers_collection;
 },{"../backbone_models/traveller_model":171}],165:[function(require,module,exports){
 var header_model = Backbone.Model.extend({
 	defaults: {
-		"open": false
+		'open': false
 	}
 
 });
@@ -40594,11 +40617,11 @@ module.exports = lodging_model;
 },{}],167:[function(require,module,exports){
 var lodgings_meta_model = Backbone.Model.extend({
 	defaults: {
-		"count": {
-			"totalResults": 20,
-			"totalPages": 1
+		'count': {
+			'totalResults': 20,
+			'totalPages': 1
 		},
-		"resultsPerPage": 20
+		'resultsPerPage': 20
 	}
 });
 
@@ -40606,9 +40629,9 @@ module.exports = lodgings_meta_model;
 },{}],168:[function(require,module,exports){
 var lodgings_search_query_model = Backbone.Model.extend({
 	defaults: {
-		start: "",
-		end: "",
-		location: "No location chosen",
+		start: '',
+		end: '',
+		location: 'No location chosen',
 		guests: 1,
 		pricemin: 0,
 		pricemax: 1000,
@@ -40629,7 +40652,7 @@ module.exports = lodgings_search_query_model;
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
-		queryStatus: "noResults"
+		queryStatus: 'noResults'
 	},
 
 	initialize: function(opts) {
@@ -40637,29 +40660,32 @@ var SearchModel = Backbone.Model.extend({
 	},
 
 	getQueryPredictions: function(options) {
-		this.map_api.getQueryPredictions(options, _.bind( this.setModelQuery, this));
+		this.map_api.getQueryPredictions(
+			options, 
+			_.bind( this.setModelQuery, this)
+		);
 	},
 
 	setModelQuery: function(predictions, status) {
 		switch(status) {
 			case google.maps.places.PlacesServiceStatus.OK:
 				this.set({
-					"queryPredictions": predictions,
-					"queryStatus": "OK"
+					'queryPredictions': predictions,
+					'queryStatus': 'OK'
 				});
 				break;
 			case google.maps.places.PlacesServiceStatus.ZERO_RESULTS:
 				this.set({
-					"queryPredictions": [],
-					"queryStatus": "noResults"
+					'queryPredictions': [],
+					'queryStatus': 'noResults'
 				});
 				break;
 			default:
 				this.set({
-					"queryPredictions": [],
-					"queryStatus": "error"
+					'queryPredictions': [],
+					'queryStatus': 'error'
 				});
-				console.warning("Google Query Failure: ", status);
+				console.warning('Google Query Failure: ', status);
 				break;
 		}
 	},
@@ -40673,100 +40699,96 @@ module.exports = SearchModel;
 },{}],170:[function(require,module,exports){
 var stop_model = Backbone.Model.extend({
 	defaults: {
-		"location": "",
-		"stopNum": 1,
-		"dayNum": 1,
-		"distance": {
-			"text": "0 mi",
-			"value": 0
+		'location': '',
+		'stopNum': 1,
+		'dayNum': 1,
+		'distance': {
+			'text': '0 mi',
+			'value': 0
 		},
-		"duration": {
-			"text": "0",
-			"value": 0
+		'duration': {
+			'text': '0',
+			'value': 0
 		},
-		"totals": {
-			"distance": {
-				"text": "0 mi",
-				"value": 0
+		'totals': {
+			'distance': {
+				'text': '0 mi',
+				'value': 0
 			},
-			"duration": {
-				"text": "0",
-				"value": 0
+			'duration': {
+				'text': '0',
+				'value': 0
 			}
 		},
-		"lodging": {
-		    "id": "abc123",
-		    "latLng": [
+		'lodging': {
+		    'id': 'abc123',
+		    'latLng': [
 				0,
 		        0
 		    ],
-		    "itemStatus": "published",
-		    "attr": {
-		        "roomType": {
-		            "text": "Entire home/apt",
-		            "id": 0
+		    'itemStatus': 'published',
+		    'attr': {
+		        'roomType': {
+		            'text': 'Entire home/apt',
+		            'id': 0
 		        },
-		        "bathrooms": 1,
-		        "description": "",
-		        "instantBookable": false,
-		        "extraGuests": {
-		            "fee": 0,
-		            "after": 0
+		        'bathrooms': 1,
+		        'description': '',
+		        'instantBookable': false,
+		        'extraGuests': {
+		            'fee': 0,
+		            'after': 0
 		        },
-		        "bedrooms": 1,
-		        "occupancy": 2,
-		        "cancellation": {
-		            "text": "Moderate",
-		            "link": "https://www.airbnb.com/home/cancellation_policies#moderate"
-		        },
-		        "beds": 1,
-		        "isCalAvailable": true,
-		        "responseTime": "",
-		        "fees": [],
-		        "lastUpdatedAt": 0,
-		        "heading": "",
-		        "securityDeposit": 0,
-		        "checkOut": "12:00am",
-		        "checkIn": "12:00pm",
-		        "size": -1
+		        'bedrooms': 1,
+		        'occupancy': 2,
+		        'beds': 1,
+		        'isCalAvailable': true,
+		        'responseTime': '',
+		        'fees': [],
+		        'lastUpdatedAt': 0,
+		        'heading': '',
+		        'securityDeposit': 0,
+		        'checkOut': '12:00am',
+		        'checkIn': '12:00pm',
+		        'size': -1
 		    },
-		    "price": {
-		        "monthly": 0,
-		        "nightly": 0,
-		        "maxNight": 0,
-		        "weekend": 0,
-		        "minNight": 0,
-		        "weekly": 0
+		    'price': {
+		        'monthly': 0,
+		        'nightly': 0,
+		        'maxNight': 0,
+		        'weekend': 0,
+		        'minNight': 0,
+		        'weekly': 0
 		    },
-		    "photos": [],
-		    "location": {},
-		    "provider": {
-		        "domain": "airbnb.com",
-		        "full": "Airbnb",
-		        "cid": "airbnb"
+		    'photos': [],
+		    'location': {},
+		    'provider': {
+		        'domain': 'airbnb.com',
+		        'full': 'Airbnb',
+		        'cid': 'airbnb'
 		    },
-		    "amenities": [],
-		    "reviews": {
-		        "count": 0,
-		        "rating": 0,
-		        "entries": []
+		    'amenities': [],
+		    'reviews': {
+		        'count': 0,
+		        'rating': 0,
+		        'entries': []
 		    },
-		    "priceRange": [
+		    'priceRange': [
 		        {
-		            "nightly": 0,
-		            "start": 0,
-		            "end": 0,
-		            "maxNight": 0,
-		            "weekend": 0,
-		            "monthly": 0,
-		            "minNight": 0,
-		            "weekly": 0
+		            'nightly': 0,
+		            'start': 0,
+		            'end': 0,
+		            'maxNight': 0,
+		            'weekend': 0,
+		            'monthly': 0,
+		            'minNight': 0,
+		            'weekly': 0
 		        }
 		    ],
-		    "availability": [
+		    'availability': [
 		        {
-		            "start": 0,
-		            "end": 0
+		            'start': 0,
+		            'end': 0
 		        }
 		    ]
 		}
@@ -40774,7 +40796,7 @@ var stop_model = Backbone.Model.extend({
 
 	remove: function(stopId) {
 		//collection deals with overhead
-		this.trigger("removeStop", stopId);
+		this.trigger('removeStop', stopId);
 	}
 });
 
@@ -40782,14 +40804,14 @@ module.exports = stop_model;
 },{}],171:[function(require,module,exports){
 var traveller_model = Backbone.Model.extend({
 	defaults: {
-		name: "",
+		name: '',
 		img: {
-			src: "/app/img/default-icon.png"
+			src: '/app/img/default-icon.png'
 		}
 	},
 
 	removeTraveller: function() {
-		this.trigger("remove_traveller", this.get("_id"));
+		this.trigger('remove_traveller', this.get('_id'));
 	}
 });
 
@@ -40797,8 +40819,8 @@ module.exports = traveller_model;
 },{}],172:[function(require,module,exports){
 var trip_model = Backbone.Model.extend({
 	defaults: {
-		start: "",
-		end: "",
+		start: '',
+		end: '',
 		tripDistance: 0,
 		tripDuration: 0,
 		numStops: 0,
@@ -40809,16 +40831,16 @@ var trip_model = Backbone.Model.extend({
 		stops: []
 	},
 
-	defaultUrl: "/trips",
+	defaultUrl: '/trips',
 
-	url: "/trips",
+	url: '/trips',
 
-	initialize: function(opts) {
+	initialize: function() {
 		this.resetUrl();
 	},
 
 	setUrl: function(TripId) {
-		this.url = this.defaultUrl + "/" + TripId;
+		this.url = this.defaultUrl + '/' + TripId;
 	},
 
 	resetUrl: function() {
@@ -40826,13 +40848,13 @@ var trip_model = Backbone.Model.extend({
 	},
 
 	saveLocalStorageReference: function() {
-		var tripList = localStorage.getItem("tripList");
+		var tripList = localStorage.getItem('tripList');
 		var newTrip = {
-			title: this.get("title"),
-			id: this.get("_id"),
-			startDate: this.get("start"),
-			endDate: this.get("end")
-		}
+			title: this.get('title'),
+			id: this.get('_id'),
+			startDate: this.get('start'),
+			endDate: this.get('end')
+		};
 		var prevTrip;
 
 		if (!tripList) {
@@ -40851,33 +40873,33 @@ var trip_model = Backbone.Model.extend({
 			tripList.push(newTrip);
 		}
 
-		localStorage.setItem("tripList", JSON.stringify(tripList));
+		localStorage.setItem('tripList', JSON.stringify(tripList));
 		this.updateTripReferences(tripList);
 	},
 
 	updateTripReferences: function(newTripList) {
-		Backbone.trigger("triplist:update", newTripList);
+		Backbone.trigger('triplist:update', newTripList);
 	} 
 });
 
 module.exports = trip_model;
 },{}],173:[function(require,module,exports){
-var headerViewTemplate = require("../../views/HeaderView");
-var navModalsTemplate = require("../../views/ModalsView");
-var renderer = require("../../../renderer/client_renderer");
+var headerViewTemplate = require('../../views/HeaderView');
+var navModalsTemplate = require('../../views/ModalsView');
+var renderer = require('../../../renderer/client_renderer');
 
 var HeaderView = Backbone.View.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
-		this.elms.$navModals = $(".nav-modals");
+		this.elms.$navModals = $('.nav-modals');
 	},
 
 	elms: {},
 
 	events: {
-		"click" 			: "toggleMenu",
-		"click .explain" 	: "onClickExplain",
-		"click .your-trips" : "onClickYourTrips"
+		'click' 			: 'toggleMenu',
+		'click .explain' 	: 'onClickExplain',
+		'click .your-trips' : 'onClickYourTrips'
 	},
 
 	initialize: function(opts) {
@@ -40885,11 +40907,11 @@ var HeaderView = Backbone.View.extend({
 
 		this._findElms(opts.$parentEl);
 
-		this.model.on("change", _.bind(function() {
+		this.model.on('change', _.bind(function() {
 			this.render();
 		}, this));
 
-		Backbone.on("triplist:update", _.bind(function(newTripList) {
+		Backbone.on('triplist:update', _.bind(function(newTripList) {
 			this.renderTripList(newTripList);
 		}, this));
 
@@ -40908,7 +40930,7 @@ var HeaderView = Backbone.View.extend({
 	},
 
 	toggleMenu: function() {
-		var opened = this.model.get("open") || false;
+		var opened = this.model.get('open') || false;
 
 		this.model.set({open: !opened})
 	},
@@ -40917,22 +40939,22 @@ var HeaderView = Backbone.View.extend({
 		e.preventDefault();
 		e.stopPropagation();
 
-		this.elms.$navModals.find(".nav-modal-explain").on("hide.bs.modal", _.bind(function(e) {
+		this.elms.$navModals.find('.nav-modal-explain').on('hide.bs.modal', _.bind(function(e) {
 			this.model.set({open: false});
-		}, this)).modal("show");
+		}, this)).modal('show');
 	},
 
 	onClickYourTrips: function(e) {
 		e.preventDefault();
 		e.stopPropagation();
 
-		this.elms.$navModals.find(".nav-modal-your-trips").on("hide.bs.modal", _.bind(function(e) {
+		this.elms.$navModals.find('.nav-modal-your-trips').on('hide.bs.modal', _.bind(function(e) {
 			this.model.set({open: false});
-		}, this)).modal("show");
+		}, this)).modal('show');
 	},
 
 	getTripList: function() {
-		var tripList = localStorage.getItem("tripList");
+		var tripList = localStorage.getItem('tripList');
 
 		if (tripList) {
 			try { return JSON.parse(tripList) }
@@ -40947,36 +40969,36 @@ var HeaderView = Backbone.View.extend({
 
 module.exports = HeaderView;
 },{"../../../renderer/client_renderer":194,"../../views/HeaderView":186,"../../views/ModalsView":189}],174:[function(require,module,exports){
-var Promise = require("bluebird");
-var PageView = require("./page_view");
-var landing_template = require("../../views/LandingView");
-var locationsMenu = require("../../views/LocationsMenu");
-var renderer = require("../../../renderer/client_renderer");
+var Promise = require('bluebird');
+var PageView = require('./page_view');
+var landing_template = require('../../views/LandingView');
+var locationsMenu = require('../../views/LocationsMenu');
+var renderer = require('../../../renderer/client_renderer');
 
 var LandingView = PageView.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
-		this.elms.$searchArea = this.$(".search-area");
-		this.elms.$searchBox = this.elms.$searchArea.find(".search-box");
-		this.elms.$searchForm = this.elms.$searchBox.find(".search-form");
-		this.elms.$locationsMenu = this.elms.$searchBox.find(".locations-menu");
-		this.elms.$locationInput = this.elms.$searchBox.find(".form-control.location");
-		this.elms.$startCalendar = this.elms.$searchBox.find(".form-control.date.start");
-		this.elms.$endCalendar = this.elms.$searchBox.find(".form-control.date.end");
-		this.elms.$travellers = this.elms.$searchBox.find(".form-control.travellers");
-		this.elms.$searchBtn = this.elms.$searchBox.find(".search-btn");
+		this.elms.$searchArea = this.$('.search-area');
+		this.elms.$searchBox = this.elms.$searchArea.find('.search-box');
+		this.elms.$searchForm = this.elms.$searchBox.find('.search-form');
+		this.elms.$locationsMenu = this.elms.$searchBox.find('.locations-menu');
+		this.elms.$locationInput = this.elms.$searchBox.find('.form-control.location');
+		this.elms.$startCalendar = this.elms.$searchBox.find('.form-control.date.start');
+		this.elms.$endCalendar = this.elms.$searchBox.find('.form-control.date.end');
+		this.elms.$travellers = this.elms.$searchBox.find('.form-control.travellers');
+		this.elms.$searchBtn = this.elms.$searchBox.find('.search-btn');
 	},
 
 	elms: {},
 
 	events: {
-		"keyup .form-control.location"		: "onLocationKeyup",
-		"keydown .form-control.location"	: "onLocationKeydown",
-		"click .location-item"				: "onLocationItemClick",
-		"focusin .form-control.location"	: "renderSearchResults",
-		"focusin .form-control.date"		: "onCalendarInputFocus",
-		"change .form-control.travellers"	: "onTravellerChange",
-		"submit .search-form"				: "onSubmit"
+		'keyup .form-control.location'		: 'onLocationKeyup',
+		'keydown .form-control.location'	: 'onLocationKeydown',
+		'click .location-item'				: 'onLocationItemClick',
+		'focusin .form-control.location'	: 'renderSearchResults',
+		'focusin .form-control.date'		: 'onCalendarInputFocus',
+		'change .form-control.travellers'	: 'onTravellerChange',
+		'submit .search-form'				: 'onSubmit'
 	},
 
 	initialize: function(opts) {
@@ -40991,9 +41013,9 @@ var LandingView = PageView.extend({
 
 		this.map_api = opts.map_api;
 
-		this.model.on("change", _.bind(this.renderSearchResults, this));
+		this.model.on('change', _.bind(this.renderSearchResults, this));
 
-		Backbone.on("landing_view:render", _.bind(function() {
+		Backbone.on('landing_view:render', _.bind(function() {
 			this.render(landing_template);
 		}, this));
 
@@ -41005,26 +41027,26 @@ var LandingView = PageView.extend({
 	},
 
 	storeClientGeo: function() {
-		var localGeo = localStorage.getItem("geo");
+		var localGeo = localStorage.getItem('geo');
 
 		if (!localGeo && navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(function(position) {
 				try{
-					localStorage.setItem("geo", JSON.stringify(position));
+					localStorage.setItem('geo', JSON.stringify(position));
 				} catch(e) {/* safari private mode fails localStorage set calls */}
 			})
 		}
 	},
 
 	getClientGeo: function() {
-		var localGeo = localStorage.getItem("geo");
+		var localGeo = localStorage.getItem('geo');
 		try{
 			return JSON.parse(localGeo);
 		} catch(e) {/* json parse fail. Just move on. */}
 	},
 
 	reverseGeocodeClientGeo: function(clientGeo) {
-		var clientGeo = localStorage.getItem("geoPlaceData");
+		var clientGeo = localStorage.getItem('geoPlaceData');
 		var latLng, localGeo, result;
 		
 		var geoPromise = new Promise(_.bind(function(resolve, reject) {
@@ -41040,7 +41062,7 @@ var LandingView = PageView.extend({
 					this.map_api.reverseGeoCode( { 'location': latLng}, function(results, status) {
 						if (status == google.maps.GeocoderStatus.OK) {
 							result = results[0];
-							localStorage.setItem("geoPlaceData", JSON.stringify(result));
+							localStorage.setItem('geoPlaceData', JSON.stringify(result));
 							resolve(result);
 						} else {
 							reject(status);
@@ -41077,12 +41099,12 @@ var LandingView = PageView.extend({
 		if (e.keyCode === 13) {
 			if (e && e.preventDefault) { e.preventDefault(); }
 
-			$active = this.elms.$locationsMenu.find(".location-item.active");
+			$active = this.elms.$locationsMenu.find('.location-item.active');
 
 			if ($active.length > 0) {
 				$active.click();
 			} else {
-				$active = this.elms.$locationsMenu.find(".location-item").first();
+				$active = this.elms.$locationsMenu.find('.location-item').first();
 				$active.click();
 			}
 		}
@@ -41118,29 +41140,29 @@ var LandingView = PageView.extend({
 	},
 
 	showLocationMenu: function() {
-		this.elms.$locationsMenu.removeClass("hide");
-		this.elms.$locationsMenu.attr("aria-expanded", "true");
+		this.elms.$locationsMenu.removeClass('hide');
+		this.elms.$locationsMenu.attr('aria-expanded', 'true');
 	},
 
 	hideLocationMenu: function() {
-		this.elms.$locationsMenu.addClass("hide");
-		this.elms.$locationsMenu.attr("aria-expanded", "false");
+		this.elms.$locationsMenu.addClass('hide');
+		this.elms.$locationsMenu.attr('aria-expanded', 'false');
 	},
 
 	focusNextLocationItem: function() {
-		var $locationItems = this.elms.$locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationItems = this.elms.$locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$next;
 
 		if ($activeItem.length <= 0) {
-			$locationItems.first().addClass("active");
+			$locationItems.first().addClass('active');
 		} else {
-			$next = $activeItem.removeClass("active").next();
+			$next = $activeItem.removeClass('active').next();
 
 			if ($next.length <= 0) {
-				$locationItems.first().addClass("active");
+				$locationItems.first().addClass('active');
 			} else {	
-				$next.addClass("active");
+				$next.addClass('active');
 			}
 			
 		}
@@ -41148,40 +41170,40 @@ var LandingView = PageView.extend({
 	},
 
 	focusPrevLocationItem: function() {
-		var $locationItems = this.elms.$locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationItems = this.elms.$locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$prev;
 
 		if ($activeItem.length <= 0) {
-			$locationItems.last().addClass("active");
+			$locationItems.last().addClass('active');
 		} else {
-			$prev = $activeItem.removeClass("active").prev();
+			$prev = $activeItem.removeClass('active').prev();
 
 			if ($prev.length <= 0) {
-				$locationItems.last().addClass("active");
+				$locationItems.last().addClass('active');
 			} else {	
-				$prev.addClass("active");
+				$prev.addClass('active');
 			}
 			
 		}
 	},
 
 	renderSearchResults: function() {
-		var status = this.model.get("queryStatus");
+		var status = this.model.get('queryStatus');
 		switch(status) {
-			case "OK":
+			case 'OK':
 				renderer.render(
 					locationsMenu, 
-					{predictions: this.model.get("queryPredictions")}, this.elms.$locationsMenu[0]
+					{predictions: this.model.get('queryPredictions')}, this.elms.$locationsMenu[0]
 				);
 				this.showLocationMenu();
 				break;
-			case "noResults":
+			case 'noResults':
 				this.hideLocationMenu();
 				break;
 			default:
 				this.hideLocationMenu();
-				console.warn("Google Query Failure: ", status);
+				console.warn('Google Query Failure: ', status);
 				break;
 		}
 	},
@@ -41189,8 +41211,8 @@ var LandingView = PageView.extend({
 	onLocationItemClick: function(e) {
 		var item = e.currentTarget,
 			$item = this.$(item),
-			placeDescription = $item.attr("data-place-description"),
-			placeId = $item.attr("data-place-id"),
+			placeDescription = $item.attr('data-place-description'),
+			placeId = $item.attr('data-place-id'),
 			offset_y = -0.7,
 			offset_x = 0;
 
@@ -41198,14 +41220,14 @@ var LandingView = PageView.extend({
 
 		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
-				Backbone.trigger("map:clearMarkers");
-				Backbone.trigger("map:setCenter", {
+				Backbone.trigger('map:clearMarkers');
+				Backbone.trigger('map:setCenter', {
 					lat: place.geometry.location.k + offset_y, long: place.geometry.location.D + offset_x
 				});
-				Backbone.trigger("map:setMarker", {
+				Backbone.trigger('map:setMarker', {
 					location: place.geometry.location
 				});
-				Backbone.trigger("map:setZoom", 8);
+				Backbone.trigger('map:setZoom', 8);
 			}
 		});
 
@@ -41222,11 +41244,11 @@ var LandingView = PageView.extend({
 	},
 
 	slideOutSearchArea: function() {
-		this.elms.$searchArea.addClass("out");
+		this.elms.$searchArea.addClass('out');
 	},
 
 	slideInSearchArea: function() {
-		this.elms.$searchArea.removeClass("out");
+		this.elms.$searchArea.removeClass('out');
 	},
 
 	onSubmit: function(e) {
@@ -41241,7 +41263,7 @@ var LandingView = PageView.extend({
 
 				this.slideOutSearchArea();
 
-				Backbone.trigger("landing_view:submit", data);
+				Backbone.trigger('landing_view:submit', data);
 			}, this));
 	}
 
@@ -41257,9 +41279,9 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		"click .result-request-stay-btn"	: "onRequestToBook",
-		"click .next-photo"					: "onNextPhoto",
-		"click .prev-photo"					: "onPrevPhoto"
+		'click .result-request-stay-btn'	: 'onRequestToBook',
+		'click .next-photo'					: 'onNextPhoto',
+		'click .prev-photo'					: 'onPrevPhoto'
 	},
 
 	initialize: function(opts) {
@@ -41270,30 +41292,30 @@ var lodging_result_view = Backbone.View.extend({
 
 		this._setEL();
 
-		Backbone.on("lodgings_search_results_view:render", _.bind(function() {
+		Backbone.on('lodgings_search_results_view:render', _.bind(function() {
 			this._setEL();
 		},this));
 	},
 
 	onRequestToBook: function(e) {		
 		e.preventDefault();
-		this.stop_model.set("lodging", this.model.toJSON());
+		this.stop_model.set('lodging', this.model.toJSON());
 	},
 
 	onNextPhoto: function(e) {
 		e.preventDefault();
-		var photosLen = this.model.get("photos").length;
-		var currentActiveIndex = (this.model.get("activePhotoIndex")) || 0;
+		var photosLen = this.model.get('photos').length;
+		var currentActiveIndex = (this.model.get('activePhotoIndex')) || 0;
 		var newActiveIndex = ((currentActiveIndex + 1) >= photosLen) ? 0 : currentActiveIndex + 1;
-		this.model.set("activePhotoIndex", newActiveIndex);
+		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
 	onPrevPhoto: function(e) {
 		e.preventDefault();
-		var photosLen = this.model.get("photos").length;
-		var currentActiveIndex = (this.model.get("activePhotoIndex"));
+		var photosLen = this.model.get('photos').length;
+		var currentActiveIndex = (this.model.get('activePhotoIndex'));
 		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
-		this.model.set("activePhotoIndex", newActiveIndex);
+		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
 
@@ -41305,8 +41327,8 @@ var lodging_result_view = Backbone.View.extend({
 
 module.exports = lodging_result_view;
 },{}],176:[function(require,module,exports){
-var renderer = require("../../../renderer/client_renderer");
-var search_model = require("../backbone_models/search_model");
+var renderer = require('../../../renderer/client_renderer');
+var search_model = require('../backbone_models/search_model');
 
 var lodgings_search_query_view = Backbone.View.extend({
 
@@ -41321,16 +41343,16 @@ var lodgings_search_query_view = Backbone.View.extend({
 			map_api: this.map_api
 		});
 
-		this.model.on("change", _.bind(function(model) {
+		this.model.on('change', _.bind(function(model) {
 			this.render();
 			this.lodgings_collection.fetchDebounced(model.attributes);
 		}, this));
 
-		this.search_model.on("change", _.bind(function() {
+		this.search_model.on('change', _.bind(function() {
 			this.render();
 		}, this));
 
-		Backbone.on("StopView:render", _.bind(function() {
+		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
 		}, this));
 	},
@@ -41342,15 +41364,15 @@ var lodgings_search_query_view = Backbone.View.extend({
 			location_props: search_model 
 		};
 
-		Backbone.trigger("stop_view:query_view:render", dataModel)	
+		Backbone.trigger('stop_view:query_view:render', dataModel)	
 	}
 });
 
 module.exports = lodgings_search_query_view;
 },{"../../../renderer/client_renderer":194,"../backbone_models/search_model":169}],177:[function(require,module,exports){
-var renderer = require("../../../renderer/client_renderer");
-var lodging_view = require("../backbone_views/lodging_result_view");
-var lodging_model = require("../backbone_models/lodging_model");
+var renderer = require('../../../renderer/client_renderer');
+var lodging_view = require('../backbone_views/lodging_result_view');
+var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_search_results_view = Backbone.View.extend({
 
@@ -41363,23 +41385,23 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.parentView				= opts.parentView;
 		this.lodgingViews 			= [];
 
-		this.lodgings_collection.on("sync", _.bind(function() {
+		this.lodgings_collection.on('sync', _.bind(function() {
 			this.render();
 			this.createResultsViews();
 		}, this));
 
-		this.lodgings_collection.on("add", _.bind(function(model) {
+		this.lodgings_collection.on('add', _.bind(function(model) {
 			this.render();
 			this.createResultView(model);
 		}, this));
 
-		this.lodgings_collection.on("change", _.bind(function() {
+		this.lodgings_collection.on('change', _.bind(function() {
 			this.render();
 		}, this));
 
-		Backbone.on("StopView:render", _.bind(function() {
+		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
-			Backbone.trigger("lodgings_search_results_view:render");
+			Backbone.trigger('lodgings_search_results_view:render');
 		}, this));
 	},
 
@@ -41397,7 +41419,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 				stop_model: this.stop_model,
 				lodgings_collection: this.lodgings_collection,
 				parentView: this,
-				el: this.$("[data-id='" + model.get("id") + "']")
+				el: this.$('[data-id=' + model.get('id') + ']')
 			})
 		);
 	},
@@ -41424,7 +41446,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 			}
 		}
 
-		Backbone.trigger("stop_view:search:render", renderModel);
+		Backbone.trigger('stop_view:search:render', renderModel);
 	}
 });
 
@@ -41443,7 +41465,7 @@ var map_view = Backbone.View.extend({
 			disableDefaultUI: true
 		}
 
-		this.map = new google.maps.Map(this.$("#goog_map")[0], mapOptions);
+		this.map = new google.maps.Map(this.$('#goog_map')[0], mapOptions);
 	},
 
 	setCenter: function(opts) {
@@ -41456,13 +41478,13 @@ var map_view = Backbone.View.extend({
 	},
 
 	setMode: function(modeClass) {
-		this.$el.removeClass("trip-view stop-view").addClass(modeClass);
+		this.$el.removeClass('trip-view stop-view').addClass(modeClass);
 	}
 });
 
 module.exports = map_view;
 },{}],179:[function(require,module,exports){
-var renderer = require("../../../renderer/client_renderer");
+var renderer = require('../../../renderer/client_renderer');
 var PageView = Backbone.View.extend({
 
 	render: function(template, data) {
@@ -41476,44 +41498,44 @@ var PageView = Backbone.View.extend({
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
 
-		Backbone.trigger(template.displayName + ":render");
+		Backbone.trigger(template.displayName + ':render');
 	}
 });
 
 module.exports = PageView;
 },{"../../../renderer/client_renderer":194}],180:[function(require,module,exports){
 //backbone views
-var PageView 			= require("./page_view");
-var SearchQueryView 	= require("./lodgings_search_query_view");
-var SearchResultsView 	= require("./lodgings_search_results_view");
+var PageView 			= require('./page_view');
+var SearchQueryView 	= require('./lodgings_search_query_view');
+var SearchResultsView 	= require('./lodgings_search_results_view');
 
 //backbone models
-var searchQueryModel 	= require("../backbone_models/lodgings_search_query_model");
-var lodgingsMetaModel	= require("../backbone_models/lodgings_meta_model");
+var searchQueryModel 	= require('../backbone_models/lodgings_search_query_model');
+var lodgingsMetaModel	= require('../backbone_models/lodgings_meta_model');
 
 //jsx template
-var stop_template 		= require("../../views/StopView");
+var stop_template 		= require('../../views/StopView');
 
 var stop_page_view = PageView.extend({
 	_bootStrapView: function() {
-		var $dataElm = this.$(".bootstrap-data");
+		var $dataElm = this.$('.bootstrap-data');
 
-		var $modelDataElm = $dataElm.find(".bootstrap-data-model");
+		var $modelDataElm = $dataElm.find('.bootstrap-data-model');
 		var modelData = 
 			($modelDataElm.length > 0) 
-			? $modelDataElm.data("modelData")
+			? $modelDataElm.data('modelData')
 			: {};
 
-		var $resultDataElm = $dataElm.find(".bootstrap-data-results");
+		var $resultDataElm = $dataElm.find('.bootstrap-data-results');
 		var resultData = 
 			($resultDataElm.length > 0) 
-			? $resultDataElm.data("resultData")
+			? $resultDataElm.data('resultData')
 			: [];
 
-		var $resultMetaDataElm = $dataElm.find(".bootstrap-data-results-meta");
+		var $resultMetaDataElm = $dataElm.find('.bootstrap-data-results-meta');
 		var resultMetaData =
 			($resultMetaDataElm.length > 0) 
-			? $resultMetaDataElm.data("resultMetaData")
+			? $resultMetaDataElm.data('resultMetaData')
 			: {};
 
 		modelData.isServer = false;
@@ -41542,25 +41564,25 @@ var stop_page_view = PageView.extend({
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
 
-		Backbone.on("stop_view:render", _.bind(function() {
+		Backbone.on('stop_view:render', _.bind(function() {
 			this.render(stop_template, {
-				tripTitle: this.trip_model.get("title")
+				tripTitle: this.trip_model.get('title')
 			});
-			this.map_view.setMode("stop-view");
+			this.map_view.setMode('stop-view');
 		}, this));
 
-		Backbone.on("stop_view:search:render", _.bind(function(lodgingData) {
+		Backbone.on('stop_view:search:render', _.bind(function(lodgingData) {
 			this.render(stop_template, lodgingData);
 		}, this));
 
-		this.model.on("change", _.bind(function() {
+		this.model.on('change', _.bind(function() {
 			this.render(stop_template, {
 				isServer: false,
 				lodgingData: {
 					result: this.lodgings_collection.toJSON(),
-					count: this.lodgings_meta_model.get("count"),
-					resultsPerPage: this.lodgings_meta_model.get("resultsPerPage"),
-					page: this.lodgings_meta_model.get("page")
+					count: this.lodgings_meta_model.get('count'),
+					resultsPerPage: this.lodgings_meta_model.get('resultsPerPage'),
+					page: this.lodgings_meta_model.get('page')
 				}
 			});
 		}, this));
@@ -41570,13 +41592,13 @@ var stop_page_view = PageView.extend({
 	createSubViews: function() {
 		if (!this.searchQueryView) { 
 			this.searchQueryView = new SearchQueryView({
-				el: $(".search-query-wrapper"),
+				el: $('.search-query-wrapper'),
 				parentView: this,
 				model: new searchQueryModel({
-					start: this.trip_model.get("start"),
-					end: this.trip_model.get("end"),
-					location: this.model.get("location"),
-					geo: this.model.get("geo")
+					start: this.trip_model.get('start'),
+					end: this.trip_model.get('end'),
+					location: this.model.get('location'),
+					geo: this.model.get('geo')
 				}),
 				map_api: this.map_api,
 				lodgings_collection: this.lodgings_collection
@@ -41585,7 +41607,7 @@ var stop_page_view = PageView.extend({
 
 		if (!this.searchResultsView) { 
 			this.searchResultsView = new SearchResultsView({
-				el: $(".search-results-wrapper"),
+				el: $('.search-results-wrapper'),
 				parentView: this,
 				lodgings_collection: this.lodgings_collection,
 				lodgings_meta_model: this.lodgings_meta_model,
@@ -41597,15 +41619,15 @@ var stop_page_view = PageView.extend({
 
 module.exports = stop_page_view;
 },{"../../views/StopView":192,"../backbone_models/lodgings_meta_model":167,"../backbone_models/lodgings_search_query_model":168,"./lodgings_search_query_view":176,"./lodgings_search_results_view":177,"./page_view":179}],181:[function(require,module,exports){
-var search_model = require("../backbone_models/search_model");
+var search_model = require('../backbone_models/search_model');
 
 var StopView = Backbone.View.extend({
 	events: {
-		"keydown .stop-location-title"	: "onEditKeyDown",
-		"click .location-item"			: "onLocationItemClick",
-		"click .clear"					: "onClearClick",
-		"click .remove"					: "onRemoveClick",
-		"click .lodging-booking-status" : "onLodgingStatusClick"
+		'keydown .stop-location-title'	: 'onEditKeyDown',
+		'click .location-item'			: 'onLocationItemClick',
+		'click .clear'					: 'onClearClick',
+		'click .remove'					: 'onRemoveClick',
+		'click .lodging-booking-status' : 'onLodgingStatusClick'
 	},
 
 	initialize: function(opts) {
@@ -41615,17 +41637,17 @@ var StopView = Backbone.View.extend({
 			map_api: this.map_api
 		});
 
-		this.model.on("active", _.bind(function() {
+		this.model.on('active', _.bind(function() {
 			this.focus();
 		}, this));
 
-		Backbone.on("TripView:render", _.bind(function() {
+		Backbone.on('TripView:render', _.bind(function() {
 			this.setElement(this.$el.selector);
 		}, this));
 
-		this.search_model.on("change", _.bind(function() {
+		this.search_model.on('change', _.bind(function() {
 			Backbone.trigger(
-				"trip_view:location_search", 
+				'trip_view:location_search', 
 				this.search_model, 
 				this.model
 			);
@@ -41663,57 +41685,57 @@ var StopView = Backbone.View.extend({
 		if (e.keyCode === 13) {
 			if (e && e.preventDefault) { e.preventDefault(); }
 
-			$locationsMenu = $(e.currentTarget).siblings(".locations-menu");
-			$active = $locationsMenu.find(".location-item.active");
+			$locationsMenu = $(e.currentTarget).siblings('.locations-menu');
+			$active = $locationsMenu.find('.location-item.active');
 
 			if ($active.length > 0) {
 				$active.click();
 			} else {
-				$active = $locationsMenu.find(".location-item").first();
+				$active = $locationsMenu.find('.location-item').first();
 				$active.click();
 			}
 		}
 	},
 
 	focusNextLocationItem: function(target, e) {
-		var $locationsMenu = $(target).siblings(".locations-menu"),
-			$locationItems = $locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationsMenu = $(target).siblings('.locations-menu'),
+			$locationItems = $locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$next;
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
-			$locationItems.first().addClass("active");
+			$locationItems.first().addClass('active');
 		} else {
-			$next = $activeItem.removeClass("active").next();
+			$next = $activeItem.removeClass('active').next();
 
 			if ($next.length <= 0) {
-				$locationItems.first().addClass("active");
+				$locationItems.first().addClass('active');
 			} else {	
-				$next.addClass("active");
+				$next.addClass('active');
 			}
 			
 		}
 	},
 
 	focusPrevLocationItem: function(target, e) {
-		var $locationsMenu = $(target).siblings(".locations-menu"),
-			$locationItems = $locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationsMenu = $(target).siblings('.locations-menu'),
+			$locationItems = $locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$prev;
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
-			$locationItems.last().addClass("active");
+			$locationItems.last().addClass('active');
 		} else {
-			$prev = $activeItem.removeClass("active").prev();
+			$prev = $activeItem.removeClass('active').prev();
 
 			if ($prev.length <= 0) {
-				$locationItems.last().addClass("active");
+				$locationItems.last().addClass('active');
 			} else {	
-				$prev.addClass("active");
+				$prev.addClass('active');
 			}
 		}
 	},
@@ -41723,7 +41745,7 @@ var StopView = Backbone.View.extend({
 			text = (
 				target 
 				&& target.textContent 
-				&& typeof(target.textContent) != "undefined"
+				&& typeof(target.textContent) != 'undefined'
 			) 
 			? target.textContent 
 			: target.innerText;		
@@ -41734,8 +41756,8 @@ var StopView = Backbone.View.extend({
 	onLocationItemClick: function(e) {
 		var item = e.currentTarget,
 			$item = this.$(item),
-			placeDescription = $item.attr("data-place-description"),
-			placeId = $item.attr("data-place-id"),
+			placeDescription = $item.attr('data-place-description'),
+			placeId = $item.attr('data-place-id'),
 			offset_y = -0.7,
 			offset_x = 0;
 
@@ -41745,8 +41767,8 @@ var StopView = Backbone.View.extend({
 			{placeId: placeId}, 
 			_.bind(function(place, status) {
 				if (status === google.maps.places.PlacesServiceStatus.OK ) {
-					$item.closest(".locations-menu")
-						.siblings(".stop-location-title")
+					$item.closest('.locations-menu')
+						.siblings('.stop-location-title')
 						.blur();
 					this.clearAllRanges();
 
@@ -41769,11 +41791,11 @@ var StopView = Backbone.View.extend({
 	},
 
 	onClearClick: function(e) {
-		var $target = this.$(e.currentTarget).siblings(".stop-location-title");
+		var $target = this.$(e.currentTarget).siblings('.stop-location-title');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		$target.text("");
+		$target.text('');
 	},
 
 	clearAllRanges: function() {
@@ -41786,16 +41808,16 @@ var StopView = Backbone.View.extend({
 	},
 
 	focus: function(stop) {
-		this.$(".stop-location-title").focus();
+		this.$('.stop-location-title').focus();
 	},
 
 	onRemoveClick: function(e) {
 		var $target = $(e.currentTarget),
-			stopId = $target.closest(".stop").data("stop-id");
+			stopId = $target.closest('.stop').data('stop-id');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		this.$el.addClass("removing");
+		this.$el.addClass('removing');
 
 		//wait for animation
 		_.delay(_.bind(function() {
@@ -41806,7 +41828,7 @@ var StopView = Backbone.View.extend({
 
 	onLodgingStatusClick: function(e) {
 		e.preventDefault();
-		Backbone.trigger("TripView:go_to_stop", this.stopId);
+		Backbone.trigger('TripView:go_to_stop', this.stopId);
 	},
 
 	destroy: function() {
@@ -41823,13 +41845,13 @@ module.exports = StopView;
 },{"../backbone_models/search_model":169}],182:[function(require,module,exports){
 var TravellerView = Backbone.View.extend({
 	events: {
-		"click"						: "toggleEditCard",
-		"click .edit-card"			: "clickEditCard",		
-		"click .close-edit-card"	: "toggleEditCard",
-		"click .save-traveller"		: "saveTraveller",
-		"click .remove-traveller"	: "removeTraveller",
-		"keyup .edit-card input"	: "onEditNameKeyUp",
-		"focus .edit-card input"	: "onFocusEditCardInput"
+		'click'						: 'toggleEditCard',
+		'click .edit-card'			: 'clickEditCard',		
+		'click .close-edit-card'	: 'toggleEditCard',
+		'click .save-traveller'		: 'saveTraveller',
+		'click .remove-traveller'	: 'removeTraveller',
+		'keyup .edit-card input'	: 'onEditNameKeyUp',
+		'focus .edit-card input'	: 'onFocusEditCardInput'
 	},
 
 	initialize: function(opts) {
@@ -41838,20 +41860,20 @@ var TravellerView = Backbone.View.extend({
 
 		if (opts.isNew) { _.delay( _.bind(this.toggleEditCard, this) , 300); }
 
-		Backbone.on("TripView:render", _.bind(function() {
+		Backbone.on('TripView:render', _.bind(function() {
 			this.setElement(this.$el.selector);
 		}, this));
 	},
 
 	toggleEditCard: function() {
-		var $card = this.$(".edit-card");
+		var $card = this.$('.edit-card');
 
-		if ($card.hasClass("active")) {
-			$card.removeClass("active");
-			$card.find("input").blur();	
+		if ($card.hasClass('active')) {
+			$card.removeClass('active');
+			$card.find('input').blur();	
 		} else {
-			$card.addClass("active");
-			_.delay(function() { $card.find("input").focus(); }, 220);
+			$card.addClass('active');
+			_.delay(function() { $card.find('input').focus(); }, 220);
 		}
 	},
 
@@ -41863,7 +41885,7 @@ var TravellerView = Backbone.View.extend({
 
 	saveTraveller: function(e) {
 		var data = {
-			name: this.$("input").val()
+			name: this.$('input').val()
 		};
 
 		e.preventDefault();
@@ -41901,10 +41923,10 @@ var TravellerView = Backbone.View.extend({
 
 module.exports = TravellerView;
 },{}],183:[function(require,module,exports){
-var PageView 		= require("./page_view");
-var StopView 		= require("./stop_view");
-var TravellerView 	= require("./traveller_view");
-var trip_template 	= require("../../views/TripView");
+var PageView 		= require('./page_view');
+var StopView 		= require('./stop_view');
+var TravellerView 	= require('./traveller_view');
+var trip_template 	= require('../../views/TripView');
 
 var TripView = PageView.extend({
 
@@ -41915,13 +41937,13 @@ var TripView = PageView.extend({
 	elms: {},
 
 	events: {
-		"click .add-stop-btn"			: "onAddStopClick",
-		"click .add-traveller"			: "onAddTravellerClick",
-		"blur .title"					: "onTitleBlur",
-		"keydown .title"				: "onEditKeyDown",
-		"click .trip-blurb.editable h3"	: "onTripBlurbClick",
-		"change .gas-slider"			: "onGasSliderChange",
-		"input .gas-slider"				: "onGasSliderChange"
+		'click .add-stop-btn'			: 'onAddStopClick',
+		'click .add-traveller'			: 'onAddTravellerClick',
+		'blur .title'					: 'onTitleBlur',
+		'keydown .title'				: 'onEditKeyDown',
+		'click .trip-blurb.editable h3'	: 'onTripBlurbClick',
+		'change .gas-slider'			: 'onGasSliderChange',
+		'input .gas-slider'				: 'onGasSliderChange'
 	},
 
 	initialize: function(opts) {
@@ -41932,37 +41954,37 @@ var TripView = PageView.extend({
 
 		this.map_api.clearMarkers();
 
-		this.model.once("ready", _.bind(function(data){
+		this.model.once('ready', _.bind(function(data){
 			//stops collection and related
 			this.stops_collection = new opts.stops_collection;
-			this.stops_collection.add(this.model.get("stops"));
+			this.stops_collection.add(this.model.get('stops'));
 			this.renderNewMapStop();
 			this.createStopViews();
 
-			this.stops_collection.on("change", _.bind(function(stopModel){
+			this.stops_collection.on('change', _.bind(function(stopModel){
 				this.setStopsCollectionInModel();
 				this.render(trip_template);
 				
 				if (stopModel 
 					&& stopModel.get 
-					&& stopModel.get("isNew") === true) 
+					&& stopModel.get('isNew') === true) 
 				{
 					this.createNewStopView(stopModel);
-				} else if (!stopModel || stopModel.get("location") !== "") {
+				} else if (!stopModel || stopModel.get('location') !== '') {
 					this.renderNewMapStop();
 				}
 			}, this));
 
 			//travellers collection and related
 			this.travellers_collection = new opts.travellers_collection();
-			this.travellers_collection.add(this.model.get("travellers"));
+			this.travellers_collection.add(this.model.get('travellers'));
 			this.createTravellersViews();
 
-			this.travellers_collection.on("change", _.bind(function() {
+			this.travellers_collection.on('change', _.bind(function() {
 				this.setTravellersCollectionInModel({sync: true});
 			}, this));
 
-			this.travellers_collection.on("add", 
+			this.travellers_collection.on('add', 
 				_.bind(function(travellerModel) {
 					//view will call sync on model 
 					//once user types in traveller name
@@ -41972,7 +41994,7 @@ var TripView = PageView.extend({
 				}, this)
 			);
 
-			this.travellers_collection.on("remove", 
+			this.travellers_collection.on('remove', 
 				_.bind(function(travellerModel) {
 					this.setTravellersCollectionInModel({sync: true});
 					this.removeTravellerView(travellerModel);
@@ -41981,12 +42003,12 @@ var TripView = PageView.extend({
 			
 		}, this));
 
-		this.model.on("change", _.bind(function() {
+		this.model.on('change', _.bind(function() {
 			this.render(trip_template);
-			this.map_view.setMode("trip-view");
+			this.map_view.setMode('trip-view');
 		}, this));
 
-		Backbone.on("trip_view:location_search", 
+		Backbone.on('trip_view:location_search', 
 			_.bind(function(location_model, stop_model) {
 				var data = {};
 
@@ -42000,12 +42022,12 @@ var TripView = PageView.extend({
 			}, this)
 		);
 
-		Backbone.on("TripView:render", _.bind(function() {
+		Backbone.on('TripView:render', _.bind(function() {
 			//rebind date pickers, but wait for renders to finish
 			this.bindDatePickersDebounced();
 		}, this));
 
-		Backbone.on("removeStop", _.bind(function(stopId) {
+		Backbone.on('removeStop', _.bind(function(stopId) {
 			var view = _.find(this.stop_views, function(view, index) {
 				return view.stopId === stopId;
 			});
@@ -42020,16 +42042,16 @@ var TripView = PageView.extend({
 	},
 
 	bindDatePickers: function() {
-		var $dateWrapper = this.$(".trip-dates-wrapper");
+		var $dateWrapper = this.$('.trip-dates-wrapper');
 
-		$dateWrapper.find(".date.start").datepicker({
+		$dateWrapper.find('.date.start').datepicker({
 			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				//re calc stuff
 				//then save to model
 			}, this)
 		});
-		$dateWrapper.find(".date.end").datepicker({
+		$dateWrapper.find('.date.end').datepicker({
 			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				//re calc stuff
@@ -42043,14 +42065,14 @@ var TripView = PageView.extend({
 	}, 500),
 
 	setStopsCollectionInModel: function() {
-		this.model.set("stops", this.stops_collection.toJSON(), {silent: true});
+		this.model.set('stops', this.stops_collection.toJSON(), {silent: true});
 	},
 
 	setTravellersCollectionInModel: function(opts) {
 		opts || (opts = {});
-		this.model.set("travellers", this.travellers_collection.toJSON());
+		this.model.set('travellers', this.travellers_collection.toJSON());
 		if (opts.sync) {
-			this.model.sync("update", this.model, {url: this.model.url});
+			this.model.sync('update', this.model, {url: this.model.url});
 		}
 	},
 
@@ -42065,8 +42087,8 @@ var TripView = PageView.extend({
 			new StopView({
 				model: stopModel,
 				map_api: this.map_api,
-				el: ".stop[data-stop-id='" + stopModel.get("_id") + "']",
-				stopId: stopModel.get("_id")
+				el: '.stop[data-stop-id=' + stopModel.get('_id') + ']',
+				stopId: stopModel.get('_id')
 			})
 		);
 	},
@@ -42084,17 +42106,17 @@ var TripView = PageView.extend({
 		this.travellers_views.push(
 			new TravellerView({
 				model: travellerModel,
-				el: ".traveller[data-traveller-id='" 
-					+ travellerModel.get("_id") 
-					+ "']",
-				travellerId: travellerModel.get("_id"),
+				el: '.traveller[data-traveller-id=' 
+					+ travellerModel.get('_id') 
+					+ ']',
+				travellerId: travellerModel.get('_id'),
 				isNew: opts.isNew || false
 			})
 		);
 	},
 
 	removeTravellerView: function(travellerModel) {
-		var id = travellerModel.get("_id");
+		var id = travellerModel.get('_id');
 
 		var view = _.find(this.travellers_views, _.bind(function(view, index) {
 			if (view && view.travellerId === id) {
@@ -42106,7 +42128,7 @@ var TripView = PageView.extend({
 	},
 
 	onAddStopClick: function(e) {
-		var stopIndex = $(e.currentTarget).closest(".stop").data("stopIndex");
+		var stopIndex = $(e.currentTarget).closest('.stop').data('stopIndex');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
@@ -42114,7 +42136,7 @@ var TripView = PageView.extend({
 			this.stops_collection.addStop(stopIndex + 1, {
 				isNew: true, 
 				stopNum: stopIndex + 2, 
-				_id: _.uniqueId("stop__") 
+				_id: _.uniqueId('stop__') 
 			});
 		}
 		
@@ -42124,7 +42146,7 @@ var TripView = PageView.extend({
 		e.preventDefault();
 
 		this.travellers_collection.add({
-			_id: _.uniqueId("traveller__") 
+			_id: _.uniqueId('traveller__') 
 		});
 	},
 
@@ -42133,15 +42155,15 @@ var TripView = PageView.extend({
 			text = (
 				target 
 				&& target.textContent 
-				&& typeof(target.textContent) != "undefined"
+				&& typeof(target.textContent) != 'undefined'
 			) 
 				? target.textContent 
 				: target.innerText;
 
-		if (this.model.get("title") !== text) {
-			this.model.set("title", text);
+		if (this.model.get('title') !== text) {
+			this.model.set('title', text);
 			this.model.saveLocalStorageReference();
-			this.model.sync("update", this.model, {url: this.model.url});
+			this.model.sync('update', this.model, {url: this.model.url});
 		}
 		
 	},
@@ -42151,7 +42173,7 @@ var TripView = PageView.extend({
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		$target.closest(".trip-blurb").toggleClass("active");
+		$target.closest('.trip-blurb').toggleClass('active');
 	},
 
 	onEditKeyDown: function(e) {
@@ -42165,8 +42187,8 @@ var TripView = PageView.extend({
 	onGasSliderChange: function(e) {
 		var $target = $(e.currentTarget),
 			val = $target.val(),
-			modelAttr = $target.data("model-attr"),
-			toFixAttr = $target.data("to-fixed");
+			modelAttr = $target.data('model-attr'),
+			toFixAttr = $target.data('to-fixed');
 
 		if (toFixAttr) {
 			val = parseFloat(val).toFixed(parseInt(toFixAttr));
@@ -42196,7 +42218,7 @@ var TripView = PageView.extend({
 		this.setStopsCollectionInModel();
 		this.setModel(null, {silent: true});
 		this.render(trip_template);
-		this.model.sync("update", this.model, { url: this.model.url });
+		this.model.sync('update', this.model, { url: this.model.url });
 	},
 
 	setModelThrottle: _.throttle(function(modelAttr, val) {
@@ -42206,16 +42228,16 @@ var TripView = PageView.extend({
 	}, 100),
 
 	syncModelDebounced: _.debounce(function() {
-		this.model.sync("update", this.model, { url: this.model.url });
+		this.model.sync('update', this.model, { url: this.model.url });
 	}, 700),
 
 	setModel: function(opts, setOpts) {
 		var data;
-		var lastTotal = this.stops_collection.last().get("totals");
+		var lastTotal = this.stops_collection.last().get('totals');
 		var distance = lastTotal.distance.value;
 		var duration = lastTotal.duration.text;
-		var mpg = this.model.get("mpg");
-		var gasPrice = this.model.get("gasPrice"); 
+		var mpg = this.model.get('mpg');
+		var gasPrice = this.model.get('gasPrice'); 
 		var cost = ((distance / mpg) * gasPrice).toFixed(2);
 
 		var defaults = {

@@ -1,7 +1,7 @@
 var trip_model = Backbone.Model.extend({
 	defaults: {
-		start: "",
-		end: "",
+		start: '',
+		end: '',
 		tripDistance: 0,
 		tripDuration: 0,
 		numStops: 0,
@@ -12,16 +12,16 @@ var trip_model = Backbone.Model.extend({
 		stops: []
 	},
 
-	defaultUrl: "/trips",
+	defaultUrl: '/trips',
 
-	url: "/trips",
+	url: '/trips',
 
-	initialize: function(opts) {
+	initialize: function() {
 		this.resetUrl();
 	},
 
 	setUrl: function(TripId) {
-		this.url = this.defaultUrl + "/" + TripId;
+		this.url = this.defaultUrl + '/' + TripId;
 	},
 
 	resetUrl: function() {
@@ -29,13 +29,13 @@ var trip_model = Backbone.Model.extend({
 	},
 
 	saveLocalStorageReference: function() {
-		var tripList = localStorage.getItem("tripList");
+		var tripList = localStorage.getItem('tripList');
 		var newTrip = {
-			title: this.get("title"),
-			id: this.get("_id"),
-			startDate: this.get("start"),
-			endDate: this.get("end")
-		}
+			title: this.get('title'),
+			id: this.get('_id'),
+			startDate: this.get('start'),
+			endDate: this.get('end')
+		};
 		var prevTrip;
 
 		if (!tripList) {
@@ -54,12 +54,12 @@ var trip_model = Backbone.Model.extend({
 			tripList.push(newTrip);
 		}
 
-		localStorage.setItem("tripList", JSON.stringify(tripList));
+		localStorage.setItem('tripList', JSON.stringify(tripList));
 		this.updateTripReferences(tripList);
 	},
 
 	updateTripReferences: function(newTripList) {
-		Backbone.trigger("triplist:update", newTripList);
+		Backbone.trigger('triplist:update', newTripList);
 	} 
 });
 

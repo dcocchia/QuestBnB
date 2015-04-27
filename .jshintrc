@@ -1,0 +1,19 @@
+{
+  "globals": {
+    "Backbone": true,
+    "_": true,
+    "google": true
+  },
+  "browser": true,
+  "jquery": true,
+  "node": true,
+  "camelcase": false,
+  "eqeqeq": true,
+  "latedef": true,
+  "maxlen": 80,
+  "newcap": true,
+  "quotmark": "single",
+  "undef": true,
+  "unused": true,
+  "eqnull": true
+}

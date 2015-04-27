@@ -1,4 +1,4 @@
-var renderer = require("../../../renderer/client_renderer");
+var renderer = require('../../../renderer/client_renderer');
 var PageView = Backbone.View.extend({
 
 	render: function(template, data) {
@@ -12,7 +12,7 @@ var PageView = Backbone.View.extend({
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
 
-		Backbone.trigger(template.displayName + ":render");
+		Backbone.trigger(template.displayName + ':render');
 	}
 });
 

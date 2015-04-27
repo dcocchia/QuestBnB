@@ -1,6 +1,6 @@
 var header_model = Backbone.Model.extend({
 	defaults: {
-		"open": false
+		'open': false
 	}
 
 });

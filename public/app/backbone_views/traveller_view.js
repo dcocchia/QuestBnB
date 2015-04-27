@@ -1,12 +1,12 @@
 var TravellerView = Backbone.View.extend({
 	events: {
-		"click"						: "toggleEditCard",
-		"click .edit-card"			: "clickEditCard",		
-		"click .close-edit-card"	: "toggleEditCard",
-		"click .save-traveller"		: "saveTraveller",
-		"click .remove-traveller"	: "removeTraveller",
-		"keyup .edit-card input"	: "onEditNameKeyUp",
-		"focus .edit-card input"	: "onFocusEditCardInput"
+		'click'						: 'toggleEditCard',
+		'click .edit-card'			: 'clickEditCard',		
+		'click .close-edit-card'	: 'toggleEditCard',
+		'click .save-traveller'		: 'saveTraveller',
+		'click .remove-traveller'	: 'removeTraveller',
+		'keyup .edit-card input'	: 'onEditNameKeyUp',
+		'focus .edit-card input'	: 'onFocusEditCardInput'
 	},
 
 	initialize: function(opts) {
@@ -15,20 +15,20 @@ var TravellerView = Backbone.View.extend({
 
 		if (opts.isNew) { _.delay( _.bind(this.toggleEditCard, this) , 300); }
 
-		Backbone.on("TripView:render", _.bind(function() {
+		Backbone.on('TripView:render', _.bind(function() {
 			this.setElement(this.$el.selector);
 		}, this));
 	},
 
 	toggleEditCard: function() {
-		var $card = this.$(".edit-card");
+		var $card = this.$('.edit-card');
 
-		if ($card.hasClass("active")) {
-			$card.removeClass("active");
-			$card.find("input").blur();	
+		if ($card.hasClass('active')) {
+			$card.removeClass('active');
+			$card.find('input').blur();	
 		} else {
-			$card.addClass("active");
-			_.delay(function() { $card.find("input").focus(); }, 220);
+			$card.addClass('active');
+			_.delay(function() { $card.find('input').focus(); }, 220);
 		}
 	},
 
@@ -40,7 +40,7 @@ var TravellerView = Backbone.View.extend({
 
 	saveTraveller: function(e) {
 		var data = {
-			name: this.$("input").val()
+			name: this.$('input').val()
 		};
 
 		e.preventDefault();

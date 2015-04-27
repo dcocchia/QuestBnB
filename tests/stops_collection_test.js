@@ -294,6 +294,29 @@ describe('stops_collection', function(){
 			expect(spy).to.have.been.calledWith(stop);
 
 		});
+
+		it('should not trigger active event when no new stops', function() {
+			var spy = sinon.spy();
+			var stop;
+
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: 4, 
+					_id: 4 
+				}
+			]);
+
+			stop = stops.models[3];
+			stops.on("change", spy);
+
+			expect(spy).not.to.have.been.called;
+
+			stops.setStopsActive();
+
+			expect(spy).not.to.have.been.called;
+
+		});
 					
 	});
 	
@@ -369,6 +392,75 @@ describe('stops_collection', function(){
 	});
 
 	describe('mergeMapData', function(){
+		var lastStopDefaults = {
+			distance: {
+				text: '0',
+				value: 0
+			},
+			duration: {
+				text: '0',
+				value: 0
+			},
+			totals: {
+				distance: {
+					text: '0 mi',
+					value: 0
+				},
+				duration: {
+					text: '0',
+					value: 0
+				}
+			}
+		}
+
+		var mockMappingResultBad = {
+			routes: [
+				{
+					legs: [
+						{},
+						{
+							distance: {
+								text: "1,252 mi",
+								value: 2014912
+							},
+							duration: {
+								text: "18 hours 9 mins",
+								value: 65369
+							},
+							start_location: {
+								lat: function() {
+									return 44.11;
+								},
+								lng: function() {
+									return -118.13;
+								}
+							},
+							end_location: {
+								lat: function() {
+									return 44.11;
+								},
+								lng: function() {
+									return -118.13;
+								}
+							}
+						},
+						{}
+					]
+				}
+			]
+		}
+
+		var mockMappingResultEmpy = {
+			routes: [
+				{
+					legs: [
+						{},
+						{}
+					]
+				}
+			]
+		}
+
 		var mockMappingResult = {
 			routes: [
 				{
@@ -622,5 +714,159 @@ describe('stops_collection', function(){
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 		});
+
+		it('should run without error even with no result argument', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+
+			stops.mergeMapData();
+			
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+		});
+
+		it('should run without error even with no routes', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+
+			stops.mergeMapData({});
+			
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+		});
+
+		it('should run without error even with bad map data', function() {
+			var stops = new stops_collection();
+
+			stops.mergeMapData(mockMappingResult);
+			
+			expect(stops.models.length).to.equal(0);
+		});
+
+		it('should run without error even with a bad model', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3, stop4;
+
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 4},
+					_id: 4
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+			stop4 = stops.models[3];
+
+
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+
+			stops.mergeMapData(mockMappingResultBad);
+			
+			expect(stops.models.length).to.be.equal(4);
+			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0 mins", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "18 hours 9 mins", value: 65369});
+			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "18 hours 9 mins", value: 65369});
+
+		});
+
+		it('should run without error even with all empty models and not using collection.add()', function() {
+			var stops = new stops_collection();
+			var stop1, stop2, stop3;
+			
+			stops.add([{}]);
+			stops.models.push({});
+			stops.models.push({});
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
+			//expect(stop2.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
+			//expect(stop3).to.be.deep.equal({});
+
+			stops.mergeMapData(mockMappingResultEmpy);
+			
+			expect(stop1.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
+			//expect(stop2.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
+			//expect(stop3).to.be.deep.equal({});
+		});
+
 	});
 })

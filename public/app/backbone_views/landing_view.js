@@ -1,33 +1,33 @@
-var Promise = require("bluebird");
-var PageView = require("./page_view");
-var landing_template = require("../../views/LandingView");
-var locationsMenu = require("../../views/LocationsMenu");
-var renderer = require("../../../renderer/client_renderer");
+var Promise = require('bluebird');
+var PageView = require('./page_view');
+var landing_template = require('../../views/LandingView');
+var locationsMenu = require('../../views/LocationsMenu');
+var renderer = require('../../../renderer/client_renderer');
 
 var LandingView = PageView.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
-		this.elms.$searchArea = this.$(".search-area");
-		this.elms.$searchBox = this.elms.$searchArea.find(".search-box");
-		this.elms.$searchForm = this.elms.$searchBox.find(".search-form");
-		this.elms.$locationsMenu = this.elms.$searchBox.find(".locations-menu");
-		this.elms.$locationInput = this.elms.$searchBox.find(".form-control.location");
-		this.elms.$startCalendar = this.elms.$searchBox.find(".form-control.date.start");
-		this.elms.$endCalendar = this.elms.$searchBox.find(".form-control.date.end");
-		this.elms.$travellers = this.elms.$searchBox.find(".form-control.travellers");
-		this.elms.$searchBtn = this.elms.$searchBox.find(".search-btn");
+		this.elms.$searchArea = this.$('.search-area');
+		this.elms.$searchBox = this.elms.$searchArea.find('.search-box');
+		this.elms.$searchForm = this.elms.$searchBox.find('.search-form');
+		this.elms.$locationsMenu = this.elms.$searchBox.find('.locations-menu');
+		this.elms.$locationInput = this.elms.$searchBox.find('.form-control.location');
+		this.elms.$startCalendar = this.elms.$searchBox.find('.form-control.date.start');
+		this.elms.$endCalendar = this.elms.$searchBox.find('.form-control.date.end');
+		this.elms.$travellers = this.elms.$searchBox.find('.form-control.travellers');
+		this.elms.$searchBtn = this.elms.$searchBox.find('.search-btn');
 	},
 
 	elms: {},
 
 	events: {
-		"keyup .form-control.location"		: "onLocationKeyup",
-		"keydown .form-control.location"	: "onLocationKeydown",
-		"click .location-item"				: "onLocationItemClick",
-		"focusin .form-control.location"	: "renderSearchResults",
-		"focusin .form-control.date"		: "onCalendarInputFocus",
-		"change .form-control.travellers"	: "onTravellerChange",
-		"submit .search-form"				: "onSubmit"
+		'keyup .form-control.location'		: 'onLocationKeyup',
+		'keydown .form-control.location'	: 'onLocationKeydown',
+		'click .location-item'				: 'onLocationItemClick',
+		'focusin .form-control.location'	: 'renderSearchResults',
+		'focusin .form-control.date'		: 'onCalendarInputFocus',
+		'change .form-control.travellers'	: 'onTravellerChange',
+		'submit .search-form'				: 'onSubmit'
 	},
 
 	initialize: function(opts) {
@@ -42,9 +42,9 @@ var LandingView = PageView.extend({
 
 		this.map_api = opts.map_api;
 
-		this.model.on("change", _.bind(this.renderSearchResults, this));
+		this.model.on('change', _.bind(this.renderSearchResults, this));
 
-		Backbone.on("landing_view:render", _.bind(function() {
+		Backbone.on('landing_view:render', _.bind(function() {
 			this.render(landing_template);
 		}, this));
 
@@ -56,26 +56,26 @@ var LandingView = PageView.extend({
 	},
 
 	storeClientGeo: function() {
-		var localGeo = localStorage.getItem("geo");
+		var localGeo = localStorage.getItem('geo');
 
 		if (!localGeo && navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(function(position) {
 				try{
-					localStorage.setItem("geo", JSON.stringify(position));
+					localStorage.setItem('geo', JSON.stringify(position));
 				} catch(e) {/* safari private mode fails localStorage set calls */}
 			})
 		}
 	},
 
 	getClientGeo: function() {
-		var localGeo = localStorage.getItem("geo");
+		var localGeo = localStorage.getItem('geo');
 		try{
 			return JSON.parse(localGeo);
 		} catch(e) {/* json parse fail. Just move on. */}
 	},
 
 	reverseGeocodeClientGeo: function(clientGeo) {
-		var clientGeo = localStorage.getItem("geoPlaceData");
+		var clientGeo = localStorage.getItem('geoPlaceData');
 		var latLng, localGeo, result;
 		
 		var geoPromise = new Promise(_.bind(function(resolve, reject) {
@@ -91,7 +91,7 @@ var LandingView = PageView.extend({
 					this.map_api.reverseGeoCode( { 'location': latLng}, function(results, status) {
 						if (status == google.maps.GeocoderStatus.OK) {
 							result = results[0];
-							localStorage.setItem("geoPlaceData", JSON.stringify(result));
+							localStorage.setItem('geoPlaceData', JSON.stringify(result));
 							resolve(result);
 						} else {
 							reject(status);
@@ -128,12 +128,12 @@ var LandingView = PageView.extend({
 		if (e.keyCode === 13) {
 			if (e && e.preventDefault) { e.preventDefault(); }
 
-			$active = this.elms.$locationsMenu.find(".location-item.active");
+			$active = this.elms.$locationsMenu.find('.location-item.active');
 
 			if ($active.length > 0) {
 				$active.click();
 			} else {
-				$active = this.elms.$locationsMenu.find(".location-item").first();
+				$active = this.elms.$locationsMenu.find('.location-item').first();
 				$active.click();
 			}
 		}
@@ -169,29 +169,29 @@ var LandingView = PageView.extend({
 	},
 
 	showLocationMenu: function() {
-		this.elms.$locationsMenu.removeClass("hide");
-		this.elms.$locationsMenu.attr("aria-expanded", "true");
+		this.elms.$locationsMenu.removeClass('hide');
+		this.elms.$locationsMenu.attr('aria-expanded', 'true');
 	},
 
 	hideLocationMenu: function() {
-		this.elms.$locationsMenu.addClass("hide");
-		this.elms.$locationsMenu.attr("aria-expanded", "false");
+		this.elms.$locationsMenu.addClass('hide');
+		this.elms.$locationsMenu.attr('aria-expanded', 'false');
 	},
 
 	focusNextLocationItem: function() {
-		var $locationItems = this.elms.$locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationItems = this.elms.$locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$next;
 
 		if ($activeItem.length <= 0) {
-			$locationItems.first().addClass("active");
+			$locationItems.first().addClass('active');
 		} else {
-			$next = $activeItem.removeClass("active").next();
+			$next = $activeItem.removeClass('active').next();
 
 			if ($next.length <= 0) {
-				$locationItems.first().addClass("active");
+				$locationItems.first().addClass('active');
 			} else {	
-				$next.addClass("active");
+				$next.addClass('active');
 			}
 			
 		}
@@ -199,40 +199,40 @@ var LandingView = PageView.extend({
 	},
 
 	focusPrevLocationItem: function() {
-		var $locationItems = this.elms.$locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationItems = this.elms.$locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$prev;
 
 		if ($activeItem.length <= 0) {
-			$locationItems.last().addClass("active");
+			$locationItems.last().addClass('active');
 		} else {
-			$prev = $activeItem.removeClass("active").prev();
+			$prev = $activeItem.removeClass('active').prev();
 
 			if ($prev.length <= 0) {
-				$locationItems.last().addClass("active");
+				$locationItems.last().addClass('active');
 			} else {	
-				$prev.addClass("active");
+				$prev.addClass('active');
 			}
 			
 		}
 	},
 
 	renderSearchResults: function() {
-		var status = this.model.get("queryStatus");
+		var status = this.model.get('queryStatus');
 		switch(status) {
-			case "OK":
+			case 'OK':
 				renderer.render(
 					locationsMenu, 
-					{predictions: this.model.get("queryPredictions")}, this.elms.$locationsMenu[0]
+					{predictions: this.model.get('queryPredictions')}, this.elms.$locationsMenu[0]
 				);
 				this.showLocationMenu();
 				break;
-			case "noResults":
+			case 'noResults':
 				this.hideLocationMenu();
 				break;
 			default:
 				this.hideLocationMenu();
-				console.warn("Google Query Failure: ", status);
+				console.warn('Google Query Failure: ', status);
 				break;
 		}
 	},
@@ -240,8 +240,8 @@ var LandingView = PageView.extend({
 	onLocationItemClick: function(e) {
 		var item = e.currentTarget,
 			$item = this.$(item),
-			placeDescription = $item.attr("data-place-description"),
-			placeId = $item.attr("data-place-id"),
+			placeDescription = $item.attr('data-place-description'),
+			placeId = $item.attr('data-place-id'),
 			offset_y = -0.7,
 			offset_x = 0;
 
@@ -249,14 +249,14 @@ var LandingView = PageView.extend({
 
 		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
-				Backbone.trigger("map:clearMarkers");
-				Backbone.trigger("map:setCenter", {
+				Backbone.trigger('map:clearMarkers');
+				Backbone.trigger('map:setCenter', {
 					lat: place.geometry.location.k + offset_y, long: place.geometry.location.D + offset_x
 				});
-				Backbone.trigger("map:setMarker", {
+				Backbone.trigger('map:setMarker', {
 					location: place.geometry.location
 				});
-				Backbone.trigger("map:setZoom", 8);
+				Backbone.trigger('map:setZoom', 8);
 			}
 		});
 
@@ -273,11 +273,11 @@ var LandingView = PageView.extend({
 	},
 
 	slideOutSearchArea: function() {
-		this.elms.$searchArea.addClass("out");
+		this.elms.$searchArea.addClass('out');
 	},
 
 	slideInSearchArea: function() {
-		this.elms.$searchArea.removeClass("out");
+		this.elms.$searchArea.removeClass('out');
 	},
 
 	onSubmit: function(e) {
@@ -292,7 +292,7 @@ var LandingView = PageView.extend({
 
 				this.slideOutSearchArea();
 
-				Backbone.trigger("landing_view:submit", data);
+				Backbone.trigger('landing_view:submit', data);
 			}, this));
 	}
 

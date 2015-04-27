@@ -5,9 +5,9 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		"click .result-request-stay-btn"	: "onRequestToBook",
-		"click .next-photo"					: "onNextPhoto",
-		"click .prev-photo"					: "onPrevPhoto"
+		'click .result-request-stay-btn'	: 'onRequestToBook',
+		'click .next-photo'					: 'onNextPhoto',
+		'click .prev-photo'					: 'onPrevPhoto'
 	},
 
 	initialize: function(opts) {
@@ -18,30 +18,30 @@ var lodging_result_view = Backbone.View.extend({
 
 		this._setEL();
 
-		Backbone.on("lodgings_search_results_view:render", _.bind(function() {
+		Backbone.on('lodgings_search_results_view:render', _.bind(function() {
 			this._setEL();
 		},this));
 	},
 
 	onRequestToBook: function(e) {		
 		e.preventDefault();
-		this.stop_model.set("lodging", this.model.toJSON());
+		this.stop_model.set('lodging', this.model.toJSON());
 	},
 
 	onNextPhoto: function(e) {
 		e.preventDefault();
-		var photosLen = this.model.get("photos").length;
-		var currentActiveIndex = (this.model.get("activePhotoIndex")) || 0;
+		var photosLen = this.model.get('photos').length;
+		var currentActiveIndex = (this.model.get('activePhotoIndex')) || 0;
 		var newActiveIndex = ((currentActiveIndex + 1) >= photosLen) ? 0 : currentActiveIndex + 1;
-		this.model.set("activePhotoIndex", newActiveIndex);
+		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
 	onPrevPhoto: function(e) {
 		e.preventDefault();
-		var photosLen = this.model.get("photos").length;
-		var currentActiveIndex = (this.model.get("activePhotoIndex"));
+		var photosLen = this.model.get('photos').length;
+		var currentActiveIndex = (this.model.get('activePhotoIndex'));
 		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
-		this.model.set("activePhotoIndex", newActiveIndex);
+		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
 

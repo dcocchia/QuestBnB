@@ -1,12 +1,12 @@
-var search_model = require("../backbone_models/search_model");
+var search_model = require('../backbone_models/search_model');
 
 var StopView = Backbone.View.extend({
 	events: {
-		"keydown .stop-location-title"	: "onEditKeyDown",
-		"click .location-item"			: "onLocationItemClick",
-		"click .clear"					: "onClearClick",
-		"click .remove"					: "onRemoveClick",
-		"click .lodging-booking-status" : "onLodgingStatusClick"
+		'keydown .stop-location-title'	: 'onEditKeyDown',
+		'click .location-item'			: 'onLocationItemClick',
+		'click .clear'					: 'onClearClick',
+		'click .remove'					: 'onRemoveClick',
+		'click .lodging-booking-status' : 'onLodgingStatusClick'
 	},
 
 	initialize: function(opts) {
@@ -16,17 +16,17 @@ var StopView = Backbone.View.extend({
 			map_api: this.map_api
 		});
 
-		this.model.on("active", _.bind(function() {
+		this.model.on('active', _.bind(function() {
 			this.focus();
 		}, this));
 
-		Backbone.on("TripView:render", _.bind(function() {
+		Backbone.on('TripView:render', _.bind(function() {
 			this.setElement(this.$el.selector);
 		}, this));
 
-		this.search_model.on("change", _.bind(function() {
+		this.search_model.on('change', _.bind(function() {
 			Backbone.trigger(
-				"trip_view:location_search", 
+				'trip_view:location_search', 
 				this.search_model, 
 				this.model
 			);
@@ -64,57 +64,57 @@ var StopView = Backbone.View.extend({
 		if (e.keyCode === 13) {
 			if (e && e.preventDefault) { e.preventDefault(); }
 
-			$locationsMenu = $(e.currentTarget).siblings(".locations-menu");
-			$active = $locationsMenu.find(".location-item.active");
+			$locationsMenu = $(e.currentTarget).siblings('.locations-menu');
+			$active = $locationsMenu.find('.location-item.active');
 
 			if ($active.length > 0) {
 				$active.click();
 			} else {
-				$active = $locationsMenu.find(".location-item").first();
+				$active = $locationsMenu.find('.location-item').first();
 				$active.click();
 			}
 		}
 	},
 
 	focusNextLocationItem: function(target, e) {
-		var $locationsMenu = $(target).siblings(".locations-menu"),
-			$locationItems = $locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationsMenu = $(target).siblings('.locations-menu'),
+			$locationItems = $locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$next;
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
-			$locationItems.first().addClass("active");
+			$locationItems.first().addClass('active');
 		} else {
-			$next = $activeItem.removeClass("active").next();
+			$next = $activeItem.removeClass('active').next();
 
 			if ($next.length <= 0) {
-				$locationItems.first().addClass("active");
+				$locationItems.first().addClass('active');
 			} else {	
-				$next.addClass("active");
+				$next.addClass('active');
 			}
 			
 		}
 	},
 
 	focusPrevLocationItem: function(target, e) {
-		var $locationsMenu = $(target).siblings(".locations-menu"),
-			$locationItems = $locationsMenu.find(".location-item"),
-			$activeItem = $locationItems.filter(".active"),
+		var $locationsMenu = $(target).siblings('.locations-menu'),
+			$locationItems = $locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
 			$prev;
 
 		if (e && e.preventDefault) { e.preventDefault(); }
 
 		if ($activeItem.length <= 0) {
-			$locationItems.last().addClass("active");
+			$locationItems.last().addClass('active');
 		} else {
-			$prev = $activeItem.removeClass("active").prev();
+			$prev = $activeItem.removeClass('active').prev();
 
 			if ($prev.length <= 0) {
-				$locationItems.last().addClass("active");
+				$locationItems.last().addClass('active');
 			} else {	
-				$prev.addClass("active");
+				$prev.addClass('active');
 			}
 		}
 	},
@@ -124,7 +124,7 @@ var StopView = Backbone.View.extend({
 			text = (
 				target 
 				&& target.textContent 
-				&& typeof(target.textContent) != "undefined"
+				&& typeof(target.textContent) != 'undefined'
 			) 
 			? target.textContent 
 			: target.innerText;		
@@ -135,8 +135,8 @@ var StopView = Backbone.View.extend({
 	onLocationItemClick: function(e) {
 		var item = e.currentTarget,
 			$item = this.$(item),
-			placeDescription = $item.attr("data-place-description"),
-			placeId = $item.attr("data-place-id"),
+			placeDescription = $item.attr('data-place-description'),
+			placeId = $item.attr('data-place-id'),
 			offset_y = -0.7,
 			offset_x = 0;
 
@@ -146,8 +146,8 @@ var StopView = Backbone.View.extend({
 			{placeId: placeId}, 
 			_.bind(function(place, status) {
 				if (status === google.maps.places.PlacesServiceStatus.OK ) {
-					$item.closest(".locations-menu")
-						.siblings(".stop-location-title")
+					$item.closest('.locations-menu')
+						.siblings('.stop-location-title')
 						.blur();
 					this.clearAllRanges();
 
@@ -170,11 +170,11 @@ var StopView = Backbone.View.extend({
 	},
 
 	onClearClick: function(e) {
-		var $target = this.$(e.currentTarget).siblings(".stop-location-title");
+		var $target = this.$(e.currentTarget).siblings('.stop-location-title');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		$target.text("");
+		$target.text('');
 	},
 
 	clearAllRanges: function() {
@@ -187,16 +187,16 @@ var StopView = Backbone.View.extend({
 	},
 
 	focus: function(stop) {
-		this.$(".stop-location-title").focus();
+		this.$('.stop-location-title').focus();
 	},
 
 	onRemoveClick: function(e) {
 		var $target = $(e.currentTarget),
-			stopId = $target.closest(".stop").data("stop-id");
+			stopId = $target.closest('.stop').data('stop-id');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
-		this.$el.addClass("removing");
+		this.$el.addClass('removing');
 
 		//wait for animation
 		_.delay(_.bind(function() {
@@ -207,7 +207,7 @@ var StopView = Backbone.View.extend({
 
 	onLodgingStatusClick: function(e) {
 		e.preventDefault();
-		Backbone.trigger("TripView:go_to_stop", this.stopId);
+		Backbone.trigger('TripView:go_to_stop', this.stopId);
 	},
 
 	destroy: function() {

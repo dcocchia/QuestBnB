@@ -10,6 +10,7 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
+var jshint = require('gulp-jshint');
 
 gulp.task('less', function () {
   return gulp.src('./public/app/less/**/*.less')
@@ -43,6 +44,12 @@ gulp.task('test', function (cb) {
         .pipe(istanbul.writeReports())
         .on('end', cb);
     });
+});
+
+gulp.task('lint', function() {
+  return gulp.src(['./public/app/backbone_collections/*.js', './public/app/backbone_models/*.js'])
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
 });
 
 gulp.task('develop', function() {

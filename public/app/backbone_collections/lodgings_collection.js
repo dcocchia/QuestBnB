@@ -1,10 +1,10 @@
-var lodging_model = require("../backbone_models/lodging_model");
+var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_collection = Backbone.Collection.extend({
 	model: lodging_model,
 
 	initialize: function(models, opts) {
-		opts || (opts = {});
+		if (!opts) { opts = {}; }
 		this.url 					= opts.url;
 		this.lodgings_meta_model 	= opts.lodgings_meta_model;
 	},
@@ -26,8 +26,8 @@ var lodgings_collection = Backbone.Collection.extend({
 	}, 500),
 
 	getLodging: function(resultId) {
-		return _.find(this.models, _.bind(function(model, index) {
-			return ( model.get("id") === resultId );
+		return _.find(this.models, _.bind(function(model) {
+			return ( model.get('id') === resultId );
 		}, this));
 	}
 });

@@ -1,6 +1,6 @@
-var renderer = require("../../../renderer/client_renderer");
-var lodging_view = require("../backbone_views/lodging_result_view");
-var lodging_model = require("../backbone_models/lodging_model");
+var renderer = require('../../../renderer/client_renderer');
+var lodging_view = require('../backbone_views/lodging_result_view');
+var lodging_model = require('../backbone_models/lodging_model');
 
 var lodgings_search_results_view = Backbone.View.extend({
 
@@ -13,23 +13,23 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.parentView				= opts.parentView;
 		this.lodgingViews 			= [];
 
-		this.lodgings_collection.on("sync", _.bind(function() {
+		this.lodgings_collection.on('sync', _.bind(function() {
 			this.render();
 			this.createResultsViews();
 		}, this));
 
-		this.lodgings_collection.on("add", _.bind(function(model) {
+		this.lodgings_collection.on('add', _.bind(function(model) {
 			this.render();
 			this.createResultView(model);
 		}, this));
 
-		this.lodgings_collection.on("change", _.bind(function() {
+		this.lodgings_collection.on('change', _.bind(function() {
 			this.render();
 		}, this));
 
-		Backbone.on("StopView:render", _.bind(function() {
+		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
-			Backbone.trigger("lodgings_search_results_view:render");
+			Backbone.trigger('lodgings_search_results_view:render');
 		}, this));
 	},
 
@@ -47,7 +47,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 				stop_model: this.stop_model,
 				lodgings_collection: this.lodgings_collection,
 				parentView: this,
-				el: this.$("[data-id='" + model.get("id") + "']")
+				el: this.$('[data-id=' + model.get('id') + ']')
 			})
 		);
 	},
@@ -74,7 +74,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 			}
 		}
 
-		Backbone.trigger("stop_view:search:render", renderModel);
+		Backbone.trigger('stop_view:search:render', renderModel);
 	}
 });
 
