@@ -126,6 +126,13 @@
 			.result-request-stay-btn {
 				display: block;
 			}
+
+			.next-photo,
+			.prev-photo {
+				&:after {
+					opacity: 1;
+				}
+			}
 		}
 
 		.result-img {
@@ -133,6 +140,46 @@
 
 			img {
 				width: 100%;
+			}
+		}
+
+		.next-photo,
+		.prev-photo {
+			position: absolute;
+			width: 25%;
+			height: 100%;
+			cursor: pointer;
+
+			&:after {
+				opacity: 0;
+				color: #fff;
+				width: 100%;
+				height: 55px;
+				line-height: .8;
+				font-size: 65px;
+				text-align: center;
+				font-family: 'Courier New', 'Courier', 'Lucida Sans Typewriter', 'Lucida Typewriter';
+				display: block;
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				margin: auto;
+			}
+		}
+
+		.next-photo {
+			right: 0;
+			&:after {
+				content: ">";
+			}
+		}
+
+		.prev-photo {
+			left: 0;
+			&:after {
+				content: "<";
 			}
 		}
 

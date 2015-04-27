@@ -40585,7 +40585,7 @@ module.exports = header_model;
 },{}],166:[function(require,module,exports){
 var lodging_model = Backbone.Model.extend({
 	defaults: {
-		
+		activePhotoIndex: 0
 	}
 
 });
@@ -41257,7 +41257,9 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		"click .result-request-stay-btn": "onRequestToBook"
+		"click .result-request-stay-btn"	: "onRequestToBook",
+		"click .next-photo"					: "onNextPhoto",
+		"click .prev-photo"					: "onPrevPhoto"
 	},
 
 	initialize: function(opts) {
@@ -41277,6 +41279,23 @@ var lodging_result_view = Backbone.View.extend({
 		e.preventDefault();
 		this.stop_model.set("lodging", this.model.toJSON());
 	},
+
+	onNextPhoto: function(e) {
+		e.preventDefault();
+		var photosLen = this.model.get("photos").length;
+		var currentActiveIndex = (this.model.get("activePhotoIndex")) || 0;
+		var newActiveIndex = ((currentActiveIndex + 1) >= photosLen) ? 0 : currentActiveIndex + 1;
+		this.model.set("activePhotoIndex", newActiveIndex);
+	},
+
+	onPrevPhoto: function(e) {
+		e.preventDefault();
+		var photosLen = this.model.get("photos").length;
+		var currentActiveIndex = (this.model.get("activePhotoIndex"));
+		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
+		this.model.set("activePhotoIndex", newActiveIndex);
+	},
+
 
 	destory: function() {
 		this.undelegateEvents();
@@ -41352,6 +41371,10 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgings_collection.on("add", _.bind(function(model) {
 			this.render();
 			this.createResultView(model);
+		}, this));
+
+		this.lodgings_collection.on("change", _.bind(function() {
+			this.render();
 		}, this));
 
 		Backbone.on("StopView:render", _.bind(function() {
@@ -42819,6 +42842,10 @@ var PageButton = React.createClass({displayName: "PageButton",
 var Result = React.createClass({displayName: "Result",
 	render: function() {
 		var result = this.props.result || {};
+		var photos = result.photos || [];
+		var activePhotoIndex = result.activePhotoIndex || 0;
+		var photoSource = (result.photos[activePhotoIndex]) ? result.photos[activePhotoIndex].medium : "";
+		var altTxt = (result.photos[0]) ? result.photos[0].caption : "";
 		return (
 			React.createElement("li", {className: "lodging-result col-sm-12 col-md-6", "data-id": result.id}, 
 				React.createElement("div", {className: "result-img img-wrapper"}, 
@@ -42826,7 +42853,9 @@ var Result = React.createClass({displayName: "Result",
 					React.createElement("div", {className: "result-price"}, 
 						React.createElement("h6", null, React.createElement("span", {className: "dollar"}, "$"), result.price.nightly)
 					), 
-					React.createElement("img", {className: "center", src: (result.photos && result.photos[0]) ? result.photos[0].medium : "", alt: result.photos[0].caption})
+					React.createElement("img", {className: "center", src: photoSource, alt: altTxt}), 
+					React.createElement("div", {className: "next-photo", role: "button", "aria-label": "next photo"}), 
+					React.createElement("div", {className: "prev-photo", role: "button", "aria-label": "previous photo"})
 				), 
 				React.createElement("div", {className: "result-body"}, 
 					React.createElement("h3", {className: "text-ellip"}, result.attr.heading), 

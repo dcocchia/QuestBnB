@@ -23,6 +23,10 @@ var lodgings_search_results_view = Backbone.View.extend({
 			this.createResultView(model);
 		}, this));
 
+		this.lodgings_collection.on("change", _.bind(function() {
+			this.render();
+		}, this));
+
 		Backbone.on("StopView:render", _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
 			Backbone.trigger("lodgings_search_results_view:render");

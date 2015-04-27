@@ -66,6 +66,10 @@ var PageButton = React.createClass({
 var Result = React.createClass({
 	render: function() {
 		var result = this.props.result || {};
+		var photos = result.photos || [];
+		var activePhotoIndex = result.activePhotoIndex || 0;
+		var photoSource = (result.photos[activePhotoIndex]) ? result.photos[activePhotoIndex].medium : "";
+		var altTxt = (result.photos[0]) ? result.photos[0].caption : "";
 		return (
 			<li className="lodging-result col-sm-12 col-md-6" data-id={result.id}>
 				<div className="result-img img-wrapper">
@@ -73,7 +77,9 @@ var Result = React.createClass({
 					<div className="result-price">
 						<h6><span className="dollar">$</span>{result.price.nightly}</h6>
 					</div>
-					<img className="center" src={(result.photos && result.photos[0]) ? result.photos[0].medium : ""}  alt={result.photos[0].caption}/>
+					<img className="center" src={photoSource}  alt={altTxt}/>
+					<div className="next-photo" role="button" aria-label="next photo"></div>
+					<div className="prev-photo" role="button" aria-label="previous photo"></div>
 				</div>
 				<div className="result-body">
 					<h3 className="text-ellip">{result.attr.heading}</h3>
