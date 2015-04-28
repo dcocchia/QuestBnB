@@ -132,7 +132,9 @@
 					el: $(".stop-page"),
 					map_api: this.map_api,
 					map_view: this.views["map_view"],
-					model: new stop_model(),
+					model: new stop_model({
+						url: "/trips/" + tripId + "/stops/" + stopId
+					}),
 					trip_model: this.models["trip_model"],
 					lodgings_collection: this.collections["lodgings_collection"]
 				})._bootStrapView();
@@ -159,7 +161,7 @@
 		},
 
 		_load: function(obj, type, name, options) {
-			if (type === "collections") {
+			if (_.isArray(options)) {
 				if (this[type][name]) {
 					this[type][name].initialize.apply(this[type][name], options);
 				} else {
@@ -40799,6 +40801,12 @@ var stop_model = Backbone.Model.extend({
 		}
 	},
 
+	initialize: function(opts) {
+		if (!opts) { opts={}; }
+
+		if (opts.url) { this.url = opts.url; }
+	},
+
 	remove: function(stopId) {
 		//collection deals with overhead
 		this.trigger('removeStop', stopId);
@@ -41337,20 +41345,35 @@ var search_model = require('../backbone_models/search_model');
 
 var lodgings_search_query_view = Backbone.View.extend({
 
+	events: {
+		'keydown .stop-location-title'	: 'onEditKeyDown',
+		'click .location-item'			: 'onLocationItemClick',
+		'click .clear'					: 'onClearClick',
+		'click .remove'					: 'onRemoveClick'
+	},
+
 	initialize: function(opts) {
 		opts || (opts = {});
 		this.template 				= opts.template;
 		this.map_api 				= opts.map_api;
 		this.lodgings_collection 	= opts.lodgings_collection;
 		this.parentView				= opts.parentView;
+		this.stop_model				= opts.stop_model;
 		
 		this.search_model = new search_model({
 			map_api: this.map_api
 		});
 
+		this.sendQuery = _.debounce( _.bind( function(options) {
+			this.search_model.getQueryPredictions(options);
+		}, this), 500);
+
 		this.model.on('change', _.bind(function(model) {
 			this.render();
-			this.lodgings_collection.fetchDebounced(model.attributes);
+			this.stop_model.set({
+				location: this.model.get('location'),
+				geo: this.model.get('geo')
+			});
 		}, this));
 
 		this.search_model.on('change', _.bind(function() {
@@ -41359,7 +41382,10 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
+			this.bindDatePickersDebounced();
 		}, this));
+
+		this.bindDatePickers();
 	},
 
 	render: function(data) {
@@ -41370,6 +41396,177 @@ var lodgings_search_query_view = Backbone.View.extend({
 		};
 
 		Backbone.trigger('stop_view:query_view:render', dataModel)	
+	},
+
+	bindDatePickers: function() {
+		var $dateWrapper = this.$('.date-input-wrapper');
+
+		$dateWrapper.find('.date.start').datepicker({
+			minDate: 0,
+			onSelect: _.bind( function(resp) {
+				//re calc stuff
+				//then save to model
+			}, this)
+		});
+		$dateWrapper.find('.date.end').datepicker({
+			minDate: 0,
+			onSelect: _.bind( function(resp) {
+				//re calc stuff
+				//then save to model
+			}, this)
+		});
+	},
+
+	bindDatePickersDebounced: _.debounce(function() { 
+		this.bindDatePickers();
+	}, 500),
+
+	onEditKeyDown: function(e) {
+		var target = e.currentTarget;
+
+		switch(e.keyCode) {
+			case 40:
+				this.focusNextLocationItem(target, e);
+				break;
+			case 38:
+				this.focusPrevLocationItem(target, e);
+				break;
+			case 13: 
+				this.onLocationKeydown(e);
+				break;
+			default: 
+				this.locationSearch(e);
+				break;
+		}
+		
+	},
+
+	onLocationKeydown: function(e) {
+		var $active, $locationsMenu;
+
+		if (e.keyCode === 13) {
+			if (e && e.preventDefault) { e.preventDefault(); }
+
+			$locationsMenu = $(e.currentTarget).siblings('.locations-menu');
+			$active = $locationsMenu.find('.location-item.active');
+
+			if ($active.length > 0) {
+				$active.click();
+			} else {
+				$active = $locationsMenu.find('.location-item').first();
+				$active.click();
+			}
+		}
+	},
+
+	focusNextLocationItem: function(target, e) {
+		var $locationsMenu = $(target).siblings('.locations-menu'),
+			$locationItems = $locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
+			$next;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
+
+		if ($activeItem.length <= 0) {
+			$locationItems.first().addClass('active');
+		} else {
+			$next = $activeItem.removeClass('active').next();
+
+			if ($next.length <= 0) {
+				$locationItems.first().addClass('active');
+			} else {	
+				$next.addClass('active');
+			}
+			
+		}
+	},
+
+	focusPrevLocationItem: function(target, e) {
+		var $locationsMenu = $(target).siblings('.locations-menu'),
+			$locationItems = $locationsMenu.find('.location-item'),
+			$activeItem = $locationItems.filter('.active'),
+			$prev;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
+
+		if ($activeItem.length <= 0) {
+			$locationItems.last().addClass('active');
+		} else {
+			$prev = $activeItem.removeClass('active').prev();
+
+			if ($prev.length <= 0) {
+				$locationItems.last().addClass('active');
+			} else {	
+				$prev.addClass('active');
+			}
+		}
+	},
+
+	locationSearch: function(e) {
+		var target = e.currentTarget,
+			text = (
+				target 
+				&& target.textContent 
+				&& typeof(target.textContent) != 'undefined'
+			) 
+			? target.textContent 
+			: target.innerText;		
+
+		if (text) { this.sendQuery({input: text}); }
+	},
+
+	onLocationItemClick: function(e) {
+		var item = e.currentTarget,
+			$item = this.$(item),
+			placeDescription = $item.attr('data-place-description'),
+			placeId = $item.attr('data-place-id'),
+			offset_y = -0.7,
+			offset_x = 0;
+
+		if (e && e.preventDefault) { e.preventDefault(); }
+
+		this.map_api.getPlaceDetails(
+			{placeId: placeId}, 
+			_.bind(function(place, status) {
+				if (status === google.maps.places.PlacesServiceStatus.OK ) {
+					$item.closest('.locations-menu')
+						.siblings('.stop-location-title')
+						.blur();
+					this.clearAllRanges();
+
+					this.model.set({
+						location: placeDescription,
+						address: place.formatted_address,
+						place_id: place.place_id,
+						id: place.id,
+						geo: {
+							lat: place.geometry.location.lat(),
+							lng: place.geometry.location.lng()
+						}
+					});
+					
+					this.search_model.clear();
+				}
+			}, this)
+		);
+
+	},
+
+	onClearClick: function(e) {
+		var $target = this.$(e.currentTarget).siblings('.stop-location-title');
+
+		if (e.preventDefault) { e.preventDefault(); }
+
+		$target.text('');
+	},
+
+	clearAllRanges: function() {
+		if (window.getSelection) {
+			window.getSelection().removeAllRanges();
+		} else if (document.selection.createRange) {
+			var range = document.selection.createRange();
+			document.selection.empty();
+		}
 	}
 });
 
@@ -41596,6 +41793,19 @@ var stop_page_view = PageView.extend({
 			this.render(stop_template, lodgingData);
 		}, this));
 
+		Backbone.on('stop_view:query_view:render', _.bind(function(data) {
+			this.render(stop_template, {
+				isServer: false,
+				lodgingData: {
+					result: this.lodgings_collection.toJSON(),
+					count: this.lodgings_meta_model.get('count'),
+					resultsPerPage: this.lodgings_meta_model.get('resultsPerPage'),
+					page: this.lodgings_meta_model.get('page')
+				},
+				locationProps: data.location_props
+			});
+		}, this));
+
 		this.model.on('change', _.bind(function() {
 			this.render(stop_template, {
 				isServer: false,
@@ -41606,9 +41816,14 @@ var stop_page_view = PageView.extend({
 					page: this.lodgings_meta_model.get('page')
 				}
 			});
+			this.synModelDebounced();
 		}, this));
 		
 	},
+
+	synModelDebounced: _.debounce(function() { 
+		this.model.sync('update', this.model, {url: this.model.url});
+	}, 500),
 
 	createSubViews: function() {
 		if (!this.searchQueryView) { 
@@ -41621,6 +41836,7 @@ var stop_page_view = PageView.extend({
 					location: this.model.get('location'),
 					geo: this.model.get('geo')
 				}),
+				stop_model: this.model,
 				map_api: this.map_api,
 				lodgings_collection: this.lodgings_collection
 			}); 
@@ -43113,6 +43329,10 @@ var Traveller = React.createClass({displayName: "Traveller",
 var Lodging = React.createClass({displayName: "Lodging",
 	render: function() {
 		var lodging = (this.props.lodging || {} );
+		var attributes = lodging.attr || {};
+		var heading = attributes.heading || "";
+		var photos = lodging.photos || [];
+		var mainPhoto = photos[0] || { medium: "", caption: ""};
 		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
 		var lodgingElm, bookingStatusElm, stopUrl;
 
@@ -43171,10 +43391,10 @@ var Lodging = React.createClass({displayName: "Lodging",
 				React.createElement("div", {className: "lodging-wrapper"}, 
 					React.createElement("div", {className: "lodging-post-card"}, 
 						React.createElement("div", {className: "lodging-img-wrapper col-sm-6 col-m-6 col-lg-6"}, 
-							React.createElement("img", {src: "/app/img/fake-place.jpg", className: "absolute-center"})
+							React.createElement("img", {src: mainPhoto.medium, alt: mainPhoto.caption, className: "absolute-center"})
 						), 
 						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
-							React.createElement("h4", {className: "text-ellip"}, "Lodging Title"), 
+							React.createElement("h4", {className: "text-ellip"}, heading), 
 							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
 							React.createElement("p", {className: "text-ellip"}, "March 13th"), 
 							React.createElement("p", {className: "en-dash"}, "–"), 

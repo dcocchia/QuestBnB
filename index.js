@@ -31,7 +31,6 @@ var viewsPath = "./views/"
 
 var landingView = React.createFactory(require(viewsPath + 'LandingView.jsx'));
 var tripView = React.createFactory(require(viewsPath + 'TripView.jsx'));
-var stopsView = React.createFactory(require(viewsPath + 'StopsView.jsx'));
 var stopView = React.createFactory(require(viewsPath + 'StopView.jsx'));
 var overviewView = React.createFactory(require(viewsPath + 'overviewView.jsx'));
 
@@ -170,7 +169,48 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 });
 
 app.put('/trips/:id/stops/:stopId', function(req, res) {
+	var tripId = req.params.id;
+	var stopId = req.params.stopId;
+	var ObjectId = mongojs.ObjectId;
+	var data = req.body;
+	var doc;
+	var stopIndex = 0;
 
+	if (!data) {
+		res.status(500).send({"error": "No data sent"});
+		return;
+	}
+
+	trips.findAsync({_id: ObjectId(tripId)})
+		.then(function(docs) {
+			if (docs && docs.length > 0) {			
+				doc = docs[0];
+
+				_.find(doc.stops, function(stop, index) {
+					if (stop._id === stopId) {
+						_.defaults(data, doc.stops[index]);
+						doc.stops[index] = data;
+						stopIndex = index;
+						return true
+					}
+				});
+
+				trips.findAndModifyAsync({
+					query: { _id: ObjectId(tripId) },
+					update: doc,
+					new: true
+				}).then(function(updatedDocs) {
+					res.send(updatedDocs[0].stops[stopIndex]);
+				}).catch(function(e) {
+					res.status(500).send({"error": e});
+				});
+
+			} else {
+				res.status(404).send({"error": e});
+			}
+		}).catch(function(e) {
+			res.status(500).send({"error": e});
+		});
 });
 
 app.get('/lodgings', function(req, res) {

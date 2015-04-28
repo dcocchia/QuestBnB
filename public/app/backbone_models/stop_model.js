@@ -95,6 +95,12 @@ var stop_model = Backbone.Model.extend({
 		}
 	},
 
+	initialize: function(opts) {
+		if (!opts) { opts={}; }
+
+		if (opts.url) { this.url = opts.url; }
+	},
+
 	remove: function(stopId) {
 		//collection deals with overhead
 		this.trigger('removeStop', stopId);

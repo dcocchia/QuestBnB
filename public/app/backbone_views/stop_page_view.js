@@ -70,6 +70,19 @@ var stop_page_view = PageView.extend({
 			this.render(stop_template, lodgingData);
 		}, this));
 
+		Backbone.on('stop_view:query_view:render', _.bind(function(data) {
+			this.render(stop_template, {
+				isServer: false,
+				lodgingData: {
+					result: this.lodgings_collection.toJSON(),
+					count: this.lodgings_meta_model.get('count'),
+					resultsPerPage: this.lodgings_meta_model.get('resultsPerPage'),
+					page: this.lodgings_meta_model.get('page')
+				},
+				locationProps: data.location_props
+			});
+		}, this));
+
 		this.model.on('change', _.bind(function() {
 			this.render(stop_template, {
 				isServer: false,
@@ -80,9 +93,14 @@ var stop_page_view = PageView.extend({
 					page: this.lodgings_meta_model.get('page')
 				}
 			});
+			this.synModelDebounced();
 		}, this));
 		
 	},
+
+	synModelDebounced: _.debounce(function() { 
+		this.model.sync('update', this.model, {url: this.model.url});
+	}, 500),
 
 	createSubViews: function() {
 		if (!this.searchQueryView) { 
@@ -95,6 +113,7 @@ var stop_page_view = PageView.extend({
 					location: this.model.get('location'),
 					geo: this.model.get('geo')
 				}),
+				stop_model: this.model,
 				map_api: this.map_api,
 				lodgings_collection: this.lodgings_collection
 			}); 

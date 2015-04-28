@@ -47,7 +47,7 @@ gulp.task('test', function (cb) {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(['./public/app/backbone_collections/*.js', './public/app/backbone_models/*.js'])
+  return gulp.src(['./public/app/backbone_collections/*.js', './public/app/backbone_models/*.js', './public/app/app.js'])
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
 });

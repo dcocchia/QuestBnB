@@ -136,6 +136,11 @@ describe('stop_model', function(){
 		it('should set default values', function(){
 			expect(stop.attributes).to.be.deep.equal(stopModelDefaults);
 		});
+
+		it('should set url', function(){
+			stop = new stop_model({url: "/some/url"});
+			expect(stop.url).to.be.equal("/some/url");
+		});
 	});
 
 	describe('remove', function(){

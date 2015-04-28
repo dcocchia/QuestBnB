@@ -107,6 +107,10 @@ var Traveller = React.createClass({
 var Lodging = React.createClass({
 	render: function() {
 		var lodging = (this.props.lodging || {} );
+		var attributes = lodging.attr || {};
+		var heading = attributes.heading || "";
+		var photos = lodging.photos || [];
+		var mainPhoto = photos[0] || { medium: "", caption: ""};
 		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
 		var lodgingElm, bookingStatusElm, stopUrl;
 
@@ -165,10 +169,10 @@ var Lodging = React.createClass({
 				<div className="lodging-wrapper">
 					<div className="lodging-post-card">
 						<div className="lodging-img-wrapper col-sm-6 col-m-6 col-lg-6">
-							<img src="/app/img/fake-place.jpg" className="absolute-center"/>
+							<img src={mainPhoto.medium} alt={mainPhoto.caption} className="absolute-center"/>
 						</div>
 						<div className="lodging-post-card-text col-sm-6 col-m-6 col-lg-6">
-							<h4 className="text-ellip">Lodging Title</h4>
+							<h4 className="text-ellip">{heading}</h4>
 							<p className="text-ellip">$999.99</p>
 							<p className="text-ellip">March 13th</p>
 							<p className="en-dash">&#8211;</p>

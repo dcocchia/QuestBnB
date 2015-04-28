@@ -1,188 +1,190 @@
 ;(function(window){
-	var Promise 				= require("bluebird");
 	var React 					= require('react');
-	var moment 					= require("moment");
+	var moment 					= require('moment');
 	
-	require("moment-duration-format");
+	require('moment-duration-format');
 	window.moment 				= moment;
 	window.React 				= React;
 
 	//view/event orchestrator
-	var view_orchestrator 		= require("./util/view_orchestrator");
+	var View_orchestrator 		= require('./util/view_orchestrator');
 
 	//map
-	var map_api 				= require("./util/map_api");
-	var map_view 				= require("./backbone_views/map_view");
+	var Map_api 				= require('./util/map_api');
+	var Map_view 				= require('./backbone_views/map_view');
 
 	//backbone views
-	var header_view 			= require("./backbone_views/header_view");
-	var landing_view 			= require("./backbone_views/landing_view");
-	var trip_view 				= require("./backbone_views/trip_view");
-	var stop_page_view 			= require("./backbone_views/stop_page_view");
+	var Header_view 			= require('./backbone_views/header_view');
+	var Landing_view 			= require('./backbone_views/landing_view');
+	var Trip_view 				= require('./backbone_views/trip_view');
+	var Stop_page_view 			= require('./backbone_views/stop_page_view');
 
 	//backbone collections
-	var stops_collection 		= require("./backbone_collections/stops_collection");
-	var travellers_collection 	= require("./backbone_collections/travellers_collection");
-	var lodgings_collection 	= require("./backbone_collections/lodgings_collection");
+	var Stops_collection 		= require('./backbone_collections/stops_collection');
+	var Travellers_collection 	= require('./backbone_collections/travellers_collection');
+	var Lodgings_collection 	= require('./backbone_collections/lodgings_collection');
 
 	//backbone models
-	var header_model 			= require("./backbone_models/header_model");
-	var search_model 			= require("./backbone_models/search_model");
-	var trip_model 				= require("./backbone_models/trip_model");
-	var stop_model 				= require("./backbone_models/stop_model");
-	var lodgings_meta_model		= require("./backbone_models/lodgings_meta_model");
+	var Header_model 			= require('./backbone_models/header_model');
+	var Search_model 			= require('./backbone_models/search_model');
+	var Trip_model 				= require('./backbone_models/trip_model');
+	var Stop_model 				= require('./backbone_models/stop_model');
+	var Lodgings_meta_model		= require('./backbone_models/lodgings_meta_model');
 
 
 	var Router = Backbone.Router.extend({ 
 		routes: {
-			""							: "landing",
-			"trips/:id"					: "trip",
-			"trips/:id/"				: "trip",
-			"trips/:id/stops/:stopId"	: "stop",
-			"trips/:id/stops/:stopId/"	: "stop"
+			''							: 'landing',
+			'trips/:id'					: 'trip',
+			'trips/:id/'				: 'trip',
+			'trips/:id/stops/:stopId'	: 'stop',
+			'trips/:id/stops/:stopId/'	: 'stop'
 		}
 	});
 
-	var App = view_orchestrator.extend({
+	var App = View_orchestrator.extend({
 		initialize: function(opts) {
 			this.router = opts.router;
 			this.models = {};
 			this.views = {};
 			this.collections = {};
-			this.loadView(header_view, "header_view", {
-				$parentEl: $(".header-nav-wrapper"),
-				el: $(".header-nav"), 
-				model: this.loadModel(header_model, "header_model")
+			this.loadView(Header_view, 'header_view', {
+				$parentEl: $('.header-nav-wrapper'),
+				el: $('.header-nav'), 
+				model: this.loadModel(Header_model, 'header_model')
 			});
-			this.loadView(map_view, "map_view", { el: $(".map")});
-			this.map_api = new map_api(this.views["map_view"].map);
+			this.loadView(Map_view, 'map_view', { el: $('.map')});
+			this.map_api = new Map_api(this.views.map_view.map);
 			this.setRouteListeners();
 			this.startOrchestrator({
 				Models: {
-					search_model: search_model,
-					trip_model: trip_model
+					search_model: Search_model,
+					trip_model: Trip_model
 				},
 				Views: {
-					landing_view: landing_view,
-					trip_view: trip_view,
-					stop_page_view: stop_page_view
+					landing_view: Landing_view,
+					trip_view: Trip_view,
+					stop_page_view: Stop_page_view
 				},
 				Collections: {
-					stops_collection: stops_collection,
-					travellers_collection: travellers_collection,
-					lodgings_collection: lodgings_collection
+					stops_collection: Stops_collection,
+					travellers_collection: Travellers_collection,
+					lodgings_collection: Lodgings_collection
 				}
 			});
 			Backbone.history.start({pushState: true});
 		},
 
 		setRouteListeners: function() {
-			this.router.on("route:landing", _.bind( function() {
-				this.loadModel(search_model, "search_model", {
+			this.router.on('route:landing', _.bind( function() {
+				this.loadModel(Search_model, 'search_model', {
 					map_api: this.map_api
 				});
-				this.loadView(landing_view, "landing_view", { 
+				this.loadView(Landing_view, 'landing_view', { 
 					$parentEl: this.$el,
-					el: $(".landing-page"), 
+					el: $('.landing-page'), 
 					map_api: this.map_api, 
-					model: this.models["search_model"] 
+					model: this.models.search_model
 				});
 			}, this));
 
-			this.router.on("route:trip", _.bind( function(tripId) { 
-				this.loadModel(trip_model, "trip_model");
-				this.models["trip_model"].setUrl(tripId);
+			this.router.on('route:trip', _.bind( function(tripId) { 
+				this.loadModel(Trip_model, 'trip_model');
+				this.models.trip_model.setUrl(tripId);
 				
-				this.loadView(trip_view, "trip_view", {
+				this.loadView(Trip_view, 'trip_view', {
 					$parentEl: this.$el, 
-					el: $(".trip-page"), 
+					el: $('.trip-page'), 
 					map_api: this.map_api,
-					map_view: this.views["map_view"],
-					model: this.models["trip_model"],
-					stops_collection: stops_collection,
-					travellers_collection: travellers_collection
+					map_view: this.views.map_view,
+					model: this.models.trip_model,
+					stops_collection: Stops_collection,
+					travellers_collection: Travellers_collection
 				});
 
-				this.models["trip_model"].fetch({
-					success: _.bind(function(resp) {
-						this.models["trip_model"].trigger("ready");
+				this.models.trip_model.fetch({
+					success: _.bind(function() {
+						this.models.trip_model.trigger('ready');
 					}, this)
 				});
 
 			}, this));
 
-			this.router.on("route:stop", _.bind(function(tripId, stopId) {
-				this.loadModel(trip_model, "trip_model");
-				this.loadModel(lodgings_meta_model, "lodgings_meta_model");
+			this.router.on('route:stop', _.bind(function(tripId, stopId) {
+				this.loadModel(Trip_model, 'trip_model');
+				this.loadModel(Lodgings_meta_model, 'lodgings_meta_model');
 				this.loadCollection(
-					lodgings_collection, 
-					"lodgings_collection",
+					Lodgings_collection, 
+					'lodgings_collection',
 					[
 						[],
 						{
-							url: "/lodgings",
-							lodgings_meta_model: this.models["lodgings_meta_model"]
+							url: '/lodgings',
+							lodgings_meta_model: this.models.lodgings_meta_model
 						}
 					]
 				);
 
-				this.loadView(stop_page_view, "stop_page_view", {
+				this.loadView(Stop_page_view, 'stop_page_view', {
 					$parentEl: this.$el,
-					el: $(".stop-page"),
+					el: $('.stop-page'),
 					map_api: this.map_api,
-					map_view: this.views["map_view"],
-					model: new stop_model(),
-					trip_model: this.models["trip_model"],
-					lodgings_collection: this.collections["lodgings_collection"]
+					map_view: this.views.map_view,
+					model: new Stop_model({
+						url: '/trips/' + tripId + '/stops/' + stopId
+					}),
+					trip_model: this.models.trip_model,
+					lodgings_collection: this.collections.lodgings_collection
 				})._bootStrapView();
 
-				this.views["stop_page_view"].trigger("ready");
+				this.views.stop_page_view.trigger('ready');
 			}, this));
 		},
 
 		loadView: function(view, viewName, options) {
-			return this._load(view, "views", viewName, options);
+			return this._load(view, 'views', viewName, options);
 		},
 
 		loadModel: function(model, modelName, options) {
-			return this._load(model, "models", modelName, options);
+			return this._load(model, 'models', modelName, options);
 		},
 
 		loadCollection: function(collection, collectionName, options) {
 			return this._load(
 				collection, 
-				"collections", 
+				'collections', 
 				collectionName, 
 				options
 			);
 		},
 
-		_load: function(obj, type, name, options) {
-			if (type === "collections") {
-				if (this[type][name]) {
-					this[type][name].initialize.apply(this[type][name], options);
+		_load: function(Obj, type, name, options) {
+			var ref = this[type][name];
+			if (_.isArray(options)) {
+				if (ref) {
+					ref.initialize.apply(ref, options);
 				} else {
-					this[type][name] = new obj(options[0], options[1]);
+					ref = new Obj(options[0], options[1]);
 				}
 
-				return this[type][name];
+				return ref;
 			} else {
 			
-				if (this[type][name]) {
-					this[type][name].initialize(options);
+				if (ref) {
+					ref.initialize(options);
 				} else {
-					this[type][name] = new obj(options);
+					ref = new Obj(options);
 				}
 
-				return this[type][name];
+				return ref;
 			}
 		}
 	});
 
 	$(function() { 
-		var app = new App({
+		new App({
 			router: new Router(),
-			el: $(".page-view")
+			el: $('.page-view')
 		});
 	});
 })(window);

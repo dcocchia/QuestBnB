@@ -23,9 +23,9 @@ var lodgings_collection = Backbone.Collection.extend({
 	fetchDebounced: _.debounce(function() { 
 		this.fetch({
 			data: {
-				page: this.lodgings_meta_model.get("page"),
-				latitude: this.stop_model.get("geo").lat,
-				longitude: this.stop_model.get("geo").lng
+				page: this.lodgings_meta_model.get('page'),
+				latitude: this.stop_model.get('geo').lat,
+				longitude: this.stop_model.get('geo').lng
 			}
 		});
 	}, 500),
