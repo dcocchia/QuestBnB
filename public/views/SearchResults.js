@@ -1,4 +1,5 @@
 var React = require('react');
+var Stars = require('./Stars');
 
 var buildPageBtns = function(page, count, resultsPerPage) {
 	var numPages = Math.ceil(count.totalResults / resultsPerPage);
@@ -70,6 +71,19 @@ var Result = React.createClass({displayName: "Result",
 		var activePhotoIndex = result.activePhotoIndex || 0;
 		var photoSource = (result.photos[activePhotoIndex]) ? result.photos[activePhotoIndex].medium : "";
 		var altTxt = (result.photos[0]) ? result.photos[0].caption : "";
+		var photoBtns = function() {
+			if (photos.length > 1) {
+				return (
+					React.createElement("div", {className: "photo-btns-wrapper"}, 
+						React.createElement("div", {className: "next-photo", role: "button", "aria-label": "next photo"}), 
+						React.createElement("div", {className: "prev-photo", role: "button", "aria-label": "previous photo"})
+					)
+				)
+			} else {
+				return undefined;
+			}
+		}();
+
 		return (
 			React.createElement("li", {className: "lodging-result col-sm-12 col-md-6", "data-id": result.id}, 
 				React.createElement("div", {className: "result-img img-wrapper"}, 
@@ -78,15 +92,14 @@ var Result = React.createClass({displayName: "Result",
 						React.createElement("h6", null, React.createElement("span", {className: "dollar"}, "$"), result.price.nightly)
 					), 
 					React.createElement("img", {className: "center", src: photoSource, alt: altTxt}), 
-					React.createElement("div", {className: "next-photo", role: "button", "aria-label": "next photo"}), 
-					React.createElement("div", {className: "prev-photo", role: "button", "aria-label": "previous photo"})
+					photoBtns
 				), 
 				React.createElement("div", {className: "result-body"}, 
 					React.createElement("h3", {className: "text-ellip"}, result.attr.heading), 
 					React.createElement("div", {className: "result-info text-muted text-ellip"}, 
 						React.createElement("span", null, result.attr.roomType.text, " · "), 
 						React.createElement("div", {className: "star-rating"}, 
-							"· ", React.createElement("span", null, result.reviews.count, " reviews")
+							React.createElement(Stars, {rating: result.reviews.rating}), " · ", React.createElement("span", null, result.reviews.count, " reviews")
 						)
 					)
 				)
@@ -101,6 +114,7 @@ var SearchResults = React.createClass({displayName: "SearchResults",
 		var count = this.props.count || {};
 		var countTop = (this.props.resultsPerPage * this.props.page);
 		var countBottom = (countTop + 1) - this.props.resultsPerPage;
+		var isLoading = this.props.isLoading || false;
 		
 		if (countTop > count.totalResults) {
 			countTop = count.totalResults;
@@ -108,7 +122,7 @@ var SearchResults = React.createClass({displayName: "SearchResults",
 		}
 
 		return (
-			React.createElement("div", {className: "search-results-wrapper-inner"}, 
+			React.createElement("div", {className: (isLoading) ? "search-results-wrapper-inner loading" : "search-results-wrapper-inner"}, 
 				React.createElement("div", {className: "search-results-header"}, 
 					React.createElement("h2", {className: "text-ellip"}, count.totalResults, " Rentals – ", this.props.location)
 				), 

@@ -184,6 +184,10 @@ img {
 	border-radius: 50%;
 }
 
+.loading {
+	opacity: .1;
+}
+
 .text-ellip {
 	white-space: nowrap;
 	max-width: 100%;
@@ -244,6 +248,47 @@ img {
 
 		&:hover {
 			cursor: pointer;
+		}
+	}
+}
+
+.star-rating {
+	.foreground {
+		z-index: 5;
+		position: relative;
+	}
+	
+	.star {
+		display: inline-block;
+		position: relative;
+		width: 1em;
+		line-height: 1;
+
+		&:before {
+			content: "\2605";
+			position: absolute;
+			left: 0;
+			top: -12px;
+		}
+	}
+
+	.star-empty {
+		&:before {
+			color: @star-empty;
+		}
+	}
+
+	.star-filled {
+		&:before {
+			color: @star-filled;
+		}
+	}
+
+	.star-half-filled {
+		&:before {
+			overflow: hidden;
+			width: 50%;
+			color: @star-filled;
 		}
 	}
 }

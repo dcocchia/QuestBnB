@@ -17,21 +17,25 @@ var stop_page_view = PageView.extend({
 		var $modelDataElm = $dataElm.find('.bootstrap-data-model');
 		var modelData = 
 			($modelDataElm.length > 0) 
-			? $modelDataElm.data('modelData')
+			? $modelDataElm.attr('data-model-data')
 			: {};
 
 		var $resultDataElm = $dataElm.find('.bootstrap-data-results');
 		var resultData = 
 			($resultDataElm.length > 0) 
-			? $resultDataElm.data('resultData')
+			? $resultDataElm.attr('data-result-data')
 			: [];
 
 		var $resultMetaDataElm = $dataElm.find('.bootstrap-data-results-meta');
 		var resultMetaData =
 			($resultMetaDataElm.length > 0) 
-			? $resultMetaDataElm.data('resultMetaData')
+			? $resultMetaDataElm.attr('data-result-meta-data')
 			: {};
 
+		modelData 		= JSON.parse(modelData);
+		resultData 		= JSON.parse(resultData);
+		resultMetaData 	= JSON.parse(resultMetaData);
+		
 		modelData.isServer = false;
 		this.model.set(modelData, {silent: true});
 		this.lodgings_collection.add(resultData, {silent: true});

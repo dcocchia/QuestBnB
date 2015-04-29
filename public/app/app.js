@@ -20,22 +20,18 @@
 	var Stop_page_view 			= require('./backbone_views/stop_page_view');
 
 	//backbone collections
-	var Stops_collection 		= require('./backbone_collections/' + 
-											'stops_collection');
+	var Stops_collection 		= require('./backbone_collections/stops_collection');
 
-	var Travellers_collection 	= require('./backbone_collections/' +
-											'travellers_collection');
+	var Travellers_collection 	= require('./backbone_collections/travellers_collection');
 
-	var Lodgings_collection 	= require('./backbone_collections/' + 
-											'lodgings_collection');
+	var Lodgings_collection 	= require('./backbone_collections/lodgings_collection');
 
 	//backbone models
 	var Header_model 			= require('./backbone_models/header_model');
 	var Search_model 			= require('./backbone_models/search_model');
 	var Trip_model 				= require('./backbone_models/trip_model');
 	var Stop_model 				= require('./backbone_models/stop_model');
-	var Lodgings_meta_model		= require('./backbone_models/' +
-											'lodgings_meta_model');
+	var Lodgings_meta_model		= require('./backbone_models/lodgings_meta_model');
 
 
 	var Router = Backbone.Router.extend({ 
@@ -170,7 +166,7 @@
 				if (ref) {
 					ref.initialize.apply(ref, options);
 				} else {
-					ref = new Obj(options[0], options[1]);
+					this[type][name] = new Obj(options[0], options[1]);
 				}
 
 				return ref;
@@ -179,10 +175,10 @@
 				if (ref) {
 					ref.initialize(options);
 				} else {
-					ref = new Obj(options);
+					this[type][name] = new Obj(options);
 				}
 
-				return ref;
+				return this[type][name];
 			}
 		}
 	});

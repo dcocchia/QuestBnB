@@ -203,7 +203,7 @@ var TripView = PageView.extend({
 	},
 
 	onAddStopClick: function(e) {
-		var stopIndex = $(e.currentTarget).closest('.stop').data('stopIndex');
+		var stopIndex = $(e.currentTarget).closest('.stop').attr('data-stop-index');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
@@ -262,8 +262,8 @@ var TripView = PageView.extend({
 	onGasSliderChange: function(e) {
 		var $target = $(e.currentTarget),
 			val = $target.val(),
-			modelAttr = $target.data('model-attr'),
-			toFixAttr = $target.data('to-fixed');
+			modelAttr = $target.attr('data-model-attr'),
+			toFixAttr = $target.attr('data-to-fixed');
 
 		if (toFixAttr) {
 			val = parseFloat(val).toFixed(parseInt(toFixAttr));

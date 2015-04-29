@@ -17,9 +17,29 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.parentView				= opts.parentView;
 		this.lodgingViews 			= [];
 
+		this.spinner = new Spinner({
+			lines: 11, // The number of lines to draw
+			length: 40, // The length of each line
+			width: 3, // The line thickness
+			radius: 18, // The radius of the inner circle
+			corners: 1, // Corner roundness (0..1)
+			rotate: 0, // The rotation offset
+			direction: 1, // 1: clockwise, -1: counterclockwise
+			color: '#ff5a5f', // #rgb or #rrggbb or array of colors
+			speed: 1.4, // Rounds per second
+			trail: 46, // Afterglow percentage
+			shadow: false, // Whether to render a shadow
+			hwaccel: true, // Whether to use hardware acceleration
+			className: 'spinner', // The CSS class to assign to the spinner
+			zIndex: 2e9, // The z-index (defaults to 2000000000)
+			top: '50%', // Top position relative to parent
+			left: '50%' // Left position relative to parent
+		});
+
 		this.lodgings_collection.on('sync', _.bind(function() {
 			this.render();
 			this.createResultsViews();
+			this.hideSpinner();
 		}, this));
 
 		this.lodgings_collection.on('add', _.bind(function(model) {
@@ -70,6 +90,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 		var renderModel = {
 			isServer: false,
+			isLoading: lodgingsMetaData.isLoading,
 			lodgingData: {
 				result: collectionData,
 				count: lodgingsMetaData.count,
@@ -83,13 +104,27 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 	onPaginate: function(e) {
 		var $target = $(e.currentTarget);
-		var page = $target.parent().data("page");
+		var page = $target.parent().attr("data-page");
 		
 		e.preventDefault();
 
+		this.showSpinner();
 		this.lodgings_meta_model.set("page", page);
 		this.lodgings_collection.fetchDebounced();
 
+	},
+
+	showSpinner: function() {
+		this.spinner.spin();
+		this.lodgings_meta_model.set("isLoading", true);
+		this.render();
+		this.$el.append(this.spinner.el);
+	},
+
+	hideSpinner: function() {
+		this.spinner.stop();
+		this.lodgings_meta_model.set("isLoading", false);
+		this.render();
 	}
 });
 

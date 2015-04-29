@@ -21,22 +21,18 @@
 	var Stop_page_view 			= require('./backbone_views/stop_page_view');
 
 	//backbone collections
-	var Stops_collection 		= require('./backbone_collections/' + 
-											'stops_collection');
+	var Stops_collection 		= require('./backbone_collections/stops_collection');
 
-	var Travellers_collection 	= require('./backbone_collections/' +
-											'travellers_collection');
+	var Travellers_collection 	= require('./backbone_collections/travellers_collection');
 
-	var Lodgings_collection 	= require('./backbone_collections/' + 
-											'lodgings_collection');
+	var Lodgings_collection 	= require('./backbone_collections/lodgings_collection');
 
 	//backbone models
 	var Header_model 			= require('./backbone_models/header_model');
 	var Search_model 			= require('./backbone_models/search_model');
 	var Trip_model 				= require('./backbone_models/trip_model');
 	var Stop_model 				= require('./backbone_models/stop_model');
-	var Lodgings_meta_model		= require('./backbone_models/' +
-											'lodgings_meta_model');
+	var Lodgings_meta_model		= require('./backbone_models/lodgings_meta_model');
 
 
 	var Router = Backbone.Router.extend({ 
@@ -171,7 +167,7 @@
 				if (ref) {
 					ref.initialize.apply(ref, options);
 				} else {
-					ref = new Obj(options[0], options[1]);
+					this[type][name] = new Obj(options[0], options[1]);
 				}
 
 				return ref;
@@ -180,10 +176,10 @@
 				if (ref) {
 					ref.initialize(options);
 				} else {
-					ref = new Obj(options);
+					this[type][name] = new Obj(options);
 				}
 
-				return ref;
+				return this[type][name];
 			}
 		}
 	});
@@ -195,7 +191,7 @@
 		});
 	});
 })(window);
-},{"./backbone_models/header_model":162,"./backbone_models/search_model":166,"./backbone_models/stop_model":167,"./backbone_models/trip_model":168,"./backbone_views/header_view":169,"./backbone_views/landing_view":170,"./backbone_views/map_view":174,"./backbone_views/stop_page_view":176,"./backbone_views/trip_view":179,"./util/map_api":180,"./util/view_orchestrator":181,"moment":6,"moment-duration-format":5,"react":161}],2:[function(require,module,exports){
+},{"./backbone_collections/lodgings_collection":162,"./backbone_collections/stops_collection":163,"./backbone_collections/travellers_collection":164,"./backbone_models/header_model":165,"./backbone_models/lodgings_meta_model":167,"./backbone_models/search_model":169,"./backbone_models/stop_model":170,"./backbone_models/trip_model":172,"./backbone_views/header_view":173,"./backbone_views/landing_view":174,"./backbone_views/map_view":178,"./backbone_views/stop_page_view":180,"./backbone_views/trip_view":183,"./util/map_api":184,"./util/view_orchestrator":185,"moment":6,"moment-duration-format":5,"react":161}],2:[function(require,module,exports){
 (function (process,global){
 /* @preserve
  * The MIT License (MIT)
@@ -222,8 +218,8 @@
  * 
  */
 /**
- * bluebird build version 2.9.14
- * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, progress, cancel, using, filter, any, each, timers
+ * bluebird build version 2.9.24
+ * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, cancel, using, filter, any, each, timers
 */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 "use strict";
@@ -254,12 +250,13 @@ var firstLineError;
 try {throw new Error(); } catch (e) {firstLineError = e;}
 var schedule = _dereq_("./schedule.js");
 var Queue = _dereq_("./queue.js");
-var _process = typeof process !== "undefined" ? process : undefined;
+var util = _dereq_("./util.js");
 
 function Async() {
     this._isTickUsed = false;
     this._lateQueue = new Queue(16);
     this._normalQueue = new Queue(16);
+    this._trampolineEnabled = true;
     var self = this;
     this.drainQueues = function () {
         self._drainQueues();
@@ -268,17 +265,23 @@ function Async() {
         schedule.isStatic ? schedule(this.drainQueues) : schedule;
 }
 
-Async.prototype.haveItemsQueued = function () {
-    return this._normalQueue.length() > 0;
+Async.prototype.disableTrampolineIfNecessary = function() {
+    if (util.hasDevTools) {
+        this._trampolineEnabled = false;
+    }
 };
 
-Async.prototype._withDomain = function(fn) {
-    if (_process !== undefined &&
-        _process.domain != null &&
-        !fn.domain) {
-        fn = _process.domain.bind(fn);
+Async.prototype.enableTrampoline = function() {
+    if (!this._trampolineEnabled) {
+        this._trampolineEnabled = true;
+        this._schedule = function(fn) {
+            setTimeout(fn, 0);
+        };
     }
-    return fn;
+};
+
+Async.prototype.haveItemsQueued = function () {
+    return this._normalQueue.length() > 0;
 };
 
 Async.prototype.throwLater = function(fn, arg) {
@@ -286,7 +289,8 @@ Async.prototype.throwLater = function(fn, arg) {
         arg = fn;
         fn = function () { throw arg; };
     }
-    fn = this._withDomain(fn);
+    var domain = this._getDomain();
+    if (domain !== undefined) fn = domain.bind(fn);
     if (typeof setTimeout !== "undefined") {
         setTimeout(function() {
             fn(arg);
@@ -300,26 +304,114 @@ Async.prototype.throwLater = function(fn, arg) {
     }
 };
 
-Async.prototype.invokeLater = function (fn, receiver, arg) {
-    fn = this._withDomain(fn);
+Async.prototype._getDomain = function() {};
+
+if (util.isNode) {
+    var EventsModule = _dereq_("events");
+
+    var domainGetter = function() {
+        var domain = process.domain;
+        if (domain === null) return undefined;
+        return domain;
+    };
+
+    if (EventsModule.usingDomains) {
+        Async.prototype._getDomain = domainGetter;
+    } else {
+        var descriptor =
+            Object.getOwnPropertyDescriptor(EventsModule, "usingDomains");
+
+        if (!descriptor.configurable) {
+            process.on("domainsActivated", function() {
+                Async.prototype._getDomain = domainGetter;
+            });
+        } else {
+            var usingDomains = false;
+            Object.defineProperty(EventsModule, "usingDomains", {
+                configurable: false,
+                enumerable: true,
+                get: function() {
+                    return usingDomains;
+                },
+                set: function(value) {
+                    if (usingDomains || !value) return;
+                    usingDomains = true;
+                    Async.prototype._getDomain = domainGetter;
+                    util.toFastProperties(process);
+                    process.emit("domainsActivated");
+                }
+            });
+        }
+
+
+    }
+}
+
+function AsyncInvokeLater(fn, receiver, arg) {
+    var domain = this._getDomain();
+    if (domain !== undefined) fn = domain.bind(fn);
     this._lateQueue.push(fn, receiver, arg);
     this._queueTick();
-};
+}
 
-Async.prototype.invokeFirst = function (fn, receiver, arg) {
-    fn = this._withDomain(fn);
-    this._normalQueue.unshift(fn, receiver, arg);
-    this._queueTick();
-};
-
-Async.prototype.invoke = function (fn, receiver, arg) {
-    fn = this._withDomain(fn);
+function AsyncInvoke(fn, receiver, arg) {
+    var domain = this._getDomain();
+    if (domain !== undefined) fn = domain.bind(fn);
     this._normalQueue.push(fn, receiver, arg);
     this._queueTick();
-};
+}
 
-Async.prototype.settlePromises = function(promise) {
-    this._normalQueue._pushOne(promise);
+function AsyncSettlePromises(promise) {
+    var domain = this._getDomain();
+    if (domain !== undefined) {
+        var fn = domain.bind(promise._settlePromises);
+        this._normalQueue.push(fn, promise, undefined);
+    } else {
+        this._normalQueue._pushOne(promise);
+    }
+    this._queueTick();
+}
+
+if (!util.hasDevTools) {
+    Async.prototype.invokeLater = AsyncInvokeLater;
+    Async.prototype.invoke = AsyncInvoke;
+    Async.prototype.settlePromises = AsyncSettlePromises;
+} else {
+    Async.prototype.invokeLater = function (fn, receiver, arg) {
+        if (this._trampolineEnabled) {
+            AsyncInvokeLater.call(this, fn, receiver, arg);
+        } else {
+            setTimeout(function() {
+                fn.call(receiver, arg);
+            }, 100);
+        }
+    };
+
+    Async.prototype.invoke = function (fn, receiver, arg) {
+        if (this._trampolineEnabled) {
+            AsyncInvoke.call(this, fn, receiver, arg);
+        } else {
+            setTimeout(function() {
+                fn.call(receiver, arg);
+            }, 0);
+        }
+    };
+
+    Async.prototype.settlePromises = function(promise) {
+        if (this._trampolineEnabled) {
+            AsyncSettlePromises.call(this, promise);
+        } else {
+            setTimeout(function() {
+                promise._settlePromises();
+            }, 0);
+        }
+    };
+}
+
+Async.prototype.invokeFirst = function (fn, receiver, arg) {
+    var domain = this._getDomain();
+    if (domain !== undefined) fn = domain.bind(fn);
+    this._normalQueue.unshift(fn, receiver, arg);
     this._queueTick();
 };
 
@@ -356,7 +448,7 @@ Async.prototype._reset = function () {
 module.exports = new Async();
 module.exports.firstLineError = firstLineError;
 
-},{"./queue.js":28,"./schedule.js":31}],3:[function(_dereq_,module,exports){
+},{"./queue.js":28,"./schedule.js":31,"./util.js":38,"events":39}],3:[function(_dereq_,module,exports){
 "use strict";
 module.exports = function(Promise, INTERNAL, tryConvertToPromise) {
 var rejectThis = function(_, e) {
@@ -597,6 +689,7 @@ Promise.prototype.cancel = function (reason) {
 
 Promise.prototype.cancellable = function () {
     if (this._cancellable()) return this;
+    async.enableTrampoline();
     this._setCancellable();
     this._cancellationParent = undefined;
     return this;
@@ -708,7 +801,7 @@ CapturedTrace.prototype.attachExtraTrace = function(error) {
     }
     removeCommonRoots(stacks);
     removeDuplicateOrEmptyJumps(stacks);
-    error.stack = reconstructStack(message, stacks);
+    util.notEnumerableProp(error, "stack", reconstructStack(message, stacks));
     util.notEnumerableProp(error, "__stackCleaned__", true);
 };
 
@@ -1233,6 +1326,10 @@ var debugging = false || (util.isNode &&
                     (!!process.env["BLUEBIRD_DEBUG"] ||
                      process.env["NODE_ENV"] === "development"));
 
+if (debugging) {
+    async.disableTrampolineIfNecessary();
+}
+
 Promise.prototype._ensurePossibleRejectionHandled = function () {
     this._setRejectionIsUnhandled();
     async.invokeLater(this._notifyUnhandledRejection, this, undefined);
@@ -1312,7 +1409,8 @@ Promise.prototype._attachExtraTrace = function (error, ignoreSelf) {
             trace.attachExtraTrace(error);
         } else if (!error.__stackCleaned__) {
             var parsed = CapturedTrace.parseStackAndMessage(error);
-            error.stack = parsed.message + "\n" + parsed.stack.join("\n");
+            util.notEnumerableProp(error, "stack",
+                parsed.message + "\n" + parsed.stack.join("\n"));
             util.notEnumerableProp(error, "__stackCleaned__", true);
         }
     }
@@ -1345,6 +1443,9 @@ Promise.longStackTraces = function () {
         throw new Error("cannot enable long stack traces after promises have been created\u000a\u000a    See http://goo.gl/DT1qyG\u000a");
     }
     debugging = CapturedTrace.isSupported();
+    if (debugging) {
+        async.disableTrampolineIfNecessary();
+    }
 };
 
 Promise.hasLongStackTraces = function () {
@@ -2208,6 +2309,7 @@ function errorAdapter(reason, nodeback) {
     }
 }
 
+Promise.prototype.asCallback = 
 Promise.prototype.nodeify = function (nodeback, options) {
     if (typeof nodeback == "function") {
         var adapter = successAdapter;
@@ -2955,6 +3057,7 @@ Promise.prototype._settlePromises = function () {
 };
 
 Promise._makeSelfResolutionError = makeSelfResolutionError;
+_dereq_("./progress.js")(Promise, PromiseArray);
 _dereq_("./method.js")(Promise, INTERNAL, tryConvertToPromise, apiRejection);
 _dereq_("./bind.js")(Promise, INTERNAL, tryConvertToPromise);
 _dereq_("./finally.js")(Promise, NEXT_FILTER, tryConvertToPromise);
@@ -2963,18 +3066,17 @@ _dereq_("./synchronous_inspection.js")(Promise);
 _dereq_("./join.js")(Promise, PromiseArray, tryConvertToPromise, INTERNAL);
 Promise.Promise = Promise;
 _dereq_('./map.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL);
+_dereq_('./cancel.js')(Promise);
 _dereq_('./using.js')(Promise, apiRejection, tryConvertToPromise, createContext);
 _dereq_('./generators.js')(Promise, apiRejection, INTERNAL, tryConvertToPromise);
 _dereq_('./nodeify.js')(Promise);
-_dereq_('./cancel.js')(Promise);
-_dereq_('./promisify.js')(Promise, INTERNAL);
+_dereq_('./call_get.js')(Promise);
 _dereq_('./props.js')(Promise, PromiseArray, tryConvertToPromise, apiRejection);
 _dereq_('./race.js')(Promise, INTERNAL, tryConvertToPromise, apiRejection);
 _dereq_('./reduce.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL);
 _dereq_('./settle.js')(Promise, PromiseArray);
-_dereq_('./call_get.js')(Promise);
 _dereq_('./some.js')(Promise, PromiseArray, apiRejection);
-_dereq_('./progress.js')(Promise, PromiseArray);
+_dereq_('./promisify.js')(Promise, INTERNAL);
 _dereq_('./any.js')(Promise);
 _dereq_('./each.js')(Promise, INTERNAL);
 _dereq_('./timers.js')(Promise, INTERNAL);
@@ -3289,7 +3391,7 @@ var TypeError = _dereq_("./errors").TypeError;
 var defaultSuffix = "Async";
 var defaultPromisified = {__isPromisified__: true};
 var noCopyPropsPattern =
-    /^(?:length|name|arguments|caller|prototype|__isPromisified__)$/;
+    /^(?:length|name|arguments|caller|callee|prototype|__isPromisified__)$/;
 var defaultFilter = function(name, func) {
     return util.isIdentifier(name) &&
         name.charAt(0) !== "_" &&
@@ -3941,8 +4043,23 @@ Promise.reduce = function (promises, fn, initialValue, _each) {
 },{"./async.js":2,"./util.js":38}],31:[function(_dereq_,module,exports){
 "use strict";
 var schedule;
+var noAsyncScheduler = function() {
+    throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/m3OTXk\u000a");
+};
 if (_dereq_("./util.js").isNode) {
-    schedule = process.nextTick;
+    var version = process.versions.node.split(".").map(Number);
+    schedule = (version[0] === 0 && version[1] > 10) || (version[0] > 0)
+        ? global.setImmediate : process.nextTick;
+
+    if (!schedule) {
+        if (typeof setImmediate !== "undefined") {
+            schedule = setImmediate;
+        } else if (typeof setTimeout !== "undefined") {
+            schedule = setTimeout;
+        } else {
+            schedule = noAsyncScheduler;
+        }
+    }
 } else if (typeof MutationObserver !== "undefined") {
     schedule = function(fn) {
         var div = document.createElement("div");
@@ -3951,14 +4068,16 @@ if (_dereq_("./util.js").isNode) {
         return function() { div.classList.toggle("foo"); };
     };
     schedule.isStatic = true;
+} else if (typeof setImmediate !== "undefined") {
+    schedule = function (fn) {
+        setImmediate(fn);
+    };
 } else if (typeof setTimeout !== "undefined") {
     schedule = function (fn) {
         setTimeout(fn, 0);
     };
 } else {
-    schedule = function() {
-        throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/m3OTXk\u000a");
-    };
+    schedule = noAsyncScheduler;
 }
 module.exports = schedule;
 
@@ -4753,10 +4872,12 @@ function isClass(fn) {
 }
 
 function toFastProperties(obj) {
-    /*jshint -W027*/
+    /*jshint -W027,-W055,-W031*/
     function f() {}
     f.prototype = obj;
-    return f;
+    var l = 8;
+    while (l--) new f();
+    return obj;
     eval(obj);
 }
 
@@ -4854,13 +4975,318 @@ var ret = {
     markAsOriginatingFromRejection: markAsOriginatingFromRejection,
     classString: classString,
     copyDescriptors: copyDescriptors,
+    hasDevTools: typeof chrome !== "undefined" && chrome &&
+                 typeof chrome.loadTimes === "function",
     isNode: typeof process !== "undefined" &&
         classString(process).toLowerCase() === "[object process]"
 };
 try {throw new Error(); } catch (e) {ret.lastLineError = e;}
 module.exports = ret;
 
-},{"./es5.js":14}]},{},[4])(4)
+},{"./es5.js":14}],39:[function(_dereq_,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function(n) {
+  if (!isNumber(n) || n < 0 || isNaN(n))
+    throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
+};
+
+EventEmitter.prototype.emit = function(type) {
+  var er, handler, len, args, i, listeners;
+
+  if (!this._events)
+    this._events = {};
+
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error ||
+        (isObject(this._events.error) && !this._events.error.length)) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      }
+      throw TypeError('Uncaught, unspecified "error" event.');
+    }
+  }
+
+  handler = this._events[type];
+
+  if (isUndefined(handler))
+    return false;
+
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        len = arguments.length;
+        args = new Array(len - 1);
+        for (i = 1; i < len; i++)
+          args[i - 1] = arguments[i];
+        handler.apply(this, args);
+    }
+  } else if (isObject(handler)) {
+    len = arguments.length;
+    args = new Array(len - 1);
+    for (i = 1; i < len; i++)
+      args[i - 1] = arguments[i];
+
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++)
+      listeners[i].apply(this, args);
+  }
+
+  return true;
+};
+
+EventEmitter.prototype.addListener = function(type, listener) {
+  var m;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events)
+    this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener)
+    this.emit('newListener', type,
+              isFunction(listener.listener) ?
+              listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;
+  else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);
+  else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    var m;
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' +
+                    'leak detected. %d listeners added. ' +
+                    'Use emitter.setMaxListeners() to increase limit.',
+                    this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.once = function(type, listener) {
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function(type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener))
+    throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type])
+    return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener ||
+      (isFunction(list.listener) && list.listener === listener)) {
+    delete this._events[type];
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener ||
+          (list[i].listener && list[i].listener === listener)) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0)
+      return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener)
+      this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function(type) {
+  var key, listeners;
+
+  if (!this._events)
+    return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0)
+      this._events = {};
+    else if (this._events[type])
+      delete this._events[type];
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else {
+    // LIFO order
+    while (listeners.length)
+      this.removeListener(type, listeners[listeners.length - 1]);
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function(type) {
+  var ret;
+  if (!this._events || !this._events[type])
+    ret = [];
+  else if (isFunction(this._events[type]))
+    ret = [this._events[type]];
+  else
+    ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.listenerCount = function(emitter, type) {
+  var ret;
+  if (!emitter._events || !emitter._events[type])
+    ret = 0;
+  else if (isFunction(emitter._events[type]))
+    ret = 1;
+  else
+    ret = emitter._events[type].length;
+  return ret;
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+},{}]},{},[4])(4)
 });                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":3}],3:[function(require,module,exports){
@@ -39940,6 +40366,246 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":34}],162:[function(require,module,exports){
+var lodging_model = require('../backbone_models/lodging_model');
+
+var lodgings_collection = Backbone.Collection.extend({
+	model: lodging_model,
+	url: '/lodgings',
+
+	initialize: function(models, opts) {
+		if (!opts) { opts = {}; }
+		this.url 					= opts.url;
+		this.lodgings_meta_model 	= opts.lodgings_meta_model;
+	},
+
+	parse: function(response) {
+		this.lodgings_meta_model.set({
+			count: response.count,
+			resultsPerPage: response.resultsPerPage,
+			page: response.page
+		});
+		
+		return response.result;
+	},
+	
+	fetchDebounced: _.debounce(function() { 
+		this.fetch({
+			data: {
+				page: this.lodgings_meta_model.get('page'),
+				latitude: this.stop_model.get('geo').lat,
+				longitude: this.stop_model.get('geo').lng
+			}
+		});
+	}, 500),
+
+	getLodging: function(resultId) {
+		return _.find(this.models, _.bind(function(model) {
+			return ( model.get('id') === resultId );
+		}, this));
+	}
+});
+
+module.exports = lodgings_collection;
+},{"../backbone_models/lodging_model":166}],163:[function(require,module,exports){
+var moment = require('moment');
+require('moment-duration-format');
+var stop_model = require('../backbone_models/stop_model');
+
+var stops_colletion = Backbone.Collection.extend({
+	model: stop_model,
+
+	_numberStops: function() {
+		_.each(this.models, function(stop, index) {
+			stop.set('stopNum', {index: index + 1}, {silent: true});
+		});
+	},
+
+	initialize: function() {
+		this.on('removeStop', _.bind(function(stopId) {
+			this.removeStop(stopId);
+		}, this));
+	},
+
+	getStop: function(stopId) {
+		return _.find(this.models, function(stopModel) {
+			 return (stopModel.get('_id') === stopId);
+		});
+	},
+
+	addStop: function(index, opts) {
+		var newStopModel = new stop_model(opts);
+		
+		this.add(newStopModel, {
+			at: index
+		});
+
+		this._numberStops();
+
+		//lets trip_view's trip_model know to update list of stops
+		this.trigger('change', newStopModel);
+		_.delay(_.bind(this.setStopsActive, this), 450);
+	},
+
+	setStopsActive: function() {
+		var returnedStop, thisStop;
+
+		_.each(this.models, function(stop) {
+			thisStop = stop.attributes;
+
+			if (thisStop.isNew === true) {
+				thisStop.isNew = false;
+				returnedStop = stop;
+			}
+			
+		});
+
+		if (returnedStop) { 
+			returnedStop.trigger('active');
+			this.trigger('change', returnedStop); 
+		}
+	},
+
+	removeStop: function(stopId) {
+		this.remove( this.where({_id: stopId}) );
+		this._numberStops();
+		this.trigger('change');
+
+		//listeners will destroy related view
+		Backbone.trigger('removeStop', stopId);
+	},
+
+	mergeMapData: function(result) {
+		var METERCONVERT = 1609.344;
+		var DURATIONFORMAT = 'y [years] d [days] h [hours] m [mins]';
+		var lastStop, totalDistance, totalDuration, legs, thisLeg;
+		var legDistance, lastStopDistance;
+		var legDuration, lastStopDuration;
+
+		var stopDefaults = {
+			distance: {
+				text: '0',
+				value: 0
+			},
+			duration: {
+				text: '0',
+				value: 0
+			},
+			totals: {
+				distance: {
+					text: '0',
+					value: 0
+				},
+				duration: {
+					text: '0',
+					value: 0
+				}
+			},
+			end_location: {
+				lat: function() { return 0; },
+				lng: function() { return 0; }
+			},
+			start_location: {
+				lat: function() { return 0; },
+				lng: function() { return 0; }
+			}
+		};
+
+		if (!result) { result = {}; }
+		if (!result.routes) { result.routes = [{legs:[]}]; }
+		legs = result.routes[0].legs;
+
+		if (legs.length !== this.models.length - 1) { return; }
+
+		_.each(this.models, _.bind(function(stop, index) {
+			if (index > 0) {
+				//bad model
+				if (!stop || !stop.set || !stop.attributes) { return; }
+				
+				lastStop = this.models[index - 1].attributes;
+				thisLeg = legs[index - 1];
+				thisLeg = function() {
+					if (!thisLeg || _.isEmpty(thisLeg) ) {
+						return stopDefaults;
+					} else {
+						return thisLeg;
+					}
+				}();
+
+				legDistance = thisLeg.distance.value / METERCONVERT;
+				lastStopDistance = lastStop.totals.distance.value;
+				totalDistance = Math.round(lastStopDistance + legDistance);
+
+				legDuration = thisLeg.duration.value;
+				lastStopDuration = lastStop.totals.duration.value;
+				totalDuration =  lastStopDuration + legDuration;
+				
+				stop.set('geo', {
+					lat: thisLeg.end_location.lat(),
+					lng: thisLeg.end_location.lng()
+				}, {silent: true});
+
+				stop.set('distance', { 
+					text: thisLeg.distance.text,
+					value: thisLeg.distance.value
+				}, {silent: true});
+
+				stop.set('duration', {
+					text: thisLeg.duration.text,
+					value: thisLeg.duration.value
+				}, {silent: true});
+
+				//NOTE: backbone does not do deep/nested models
+				//Since I'm setting the models above silently, 
+				//I'm ok with directly affecting attributes here
+				stop.attributes.totals = {
+					distance: { 
+						value: totalDistance,
+						text: totalDistance.toString() + ' mi'
+					},
+					duration: {
+						value: totalDuration,
+						text: moment.duration(totalDuration, 'seconds')
+								.format(DURATIONFORMAT)
+					}
+				};
+			} else {
+				thisLeg = legs[0];
+				thisLeg = function() {
+					if (!thisLeg || _.isEmpty(thisLeg) ) {
+						return stopDefaults;
+					} else {
+						return thisLeg;
+					}
+				}();
+				_.first(this.models).set('geo', {
+					lat: thisLeg.start_location.lat(),
+					lng: thisLeg.start_location.lng()
+				}, {silent: true});
+			}
+		}, this));
+	}
+});
+
+module.exports = stops_colletion;
+},{"../backbone_models/stop_model":170,"moment":6,"moment-duration-format":5}],164:[function(require,module,exports){
+var traveller_model = require('../backbone_models/traveller_model');
+
+var travellers_collection = Backbone.Collection.extend({
+	model: traveller_model,
+
+	initialize: function() {
+		this.on('remove_traveller', _.bind(function(id) {
+			this.removeTraveller(id);
+		}, this));
+	},
+
+	removeTraveller: function(id) {
+		this.remove(this.where({_id: id}) );
+	}
+});
+
+module.exports = travellers_collection;
+},{"../backbone_models/traveller_model":171}],165:[function(require,module,exports){
 var header_model = Backbone.Model.extend({
 	defaults: {
 		'open': false
@@ -39948,7 +40614,7 @@ var header_model = Backbone.Model.extend({
 });
 
 module.exports = header_model;
-},{}],163:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 var lodging_model = Backbone.Model.extend({
 	defaults: {
 		activePhotoIndex: 0
@@ -39957,7 +40623,7 @@ var lodging_model = Backbone.Model.extend({
 });
 
 module.exports = lodging_model;
-},{}],164:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 var lodgings_meta_model = Backbone.Model.extend({
 	defaults: {
 		'count': {
@@ -39969,7 +40635,7 @@ var lodgings_meta_model = Backbone.Model.extend({
 });
 
 module.exports = lodgings_meta_model;
-},{}],165:[function(require,module,exports){
+},{}],168:[function(require,module,exports){
 var lodgings_search_query_model = Backbone.Model.extend({
 	defaults: {
 		start: '',
@@ -39991,7 +40657,7 @@ var lodgings_search_query_model = Backbone.Model.extend({
 });
 
 module.exports = lodgings_search_query_model;
-},{}],166:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 var SearchModel = Backbone.Model.extend({
 	defaults: {
 		queryPredictions: [],
@@ -40039,7 +40705,7 @@ var SearchModel = Backbone.Model.extend({
 });
 
 module.exports = SearchModel;
-},{}],167:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 var stop_model = Backbone.Model.extend({
 	defaults: {
 		'location': '',
@@ -40150,7 +40816,22 @@ var stop_model = Backbone.Model.extend({
 });
 
 module.exports = stop_model;
-},{}],168:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
+var traveller_model = Backbone.Model.extend({
+	defaults: {
+		name: '',
+		img: {
+			src: '/app/img/default-icon.png'
+		}
+	},
+
+	removeTraveller: function() {
+		this.trigger('remove_traveller', this.get('_id'));
+	}
+});
+
+module.exports = traveller_model;
+},{}],172:[function(require,module,exports){
 var trip_model = Backbone.Model.extend({
 	defaults: {
 		start: '',
@@ -40217,7 +40898,7 @@ var trip_model = Backbone.Model.extend({
 });
 
 module.exports = trip_model;
-},{}],169:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 var headerViewTemplate = require('../../views/HeaderView');
 var navModalsTemplate = require('../../views/ModalsView');
 var renderer = require('../../../renderer/client_renderer');
@@ -40302,7 +40983,7 @@ var HeaderView = Backbone.View.extend({
 });
 
 module.exports = HeaderView;
-},{"../../../renderer/client_renderer":190,"../../views/HeaderView":182,"../../views/ModalsView":185}],170:[function(require,module,exports){
+},{"../../../renderer/client_renderer":195,"../../views/HeaderView":186,"../../views/ModalsView":189}],174:[function(require,module,exports){
 var Promise = require('bluebird');
 var PageView = require('./page_view');
 var landing_template = require('../../views/LandingView');
@@ -40605,7 +41286,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":190,"../../views/LandingView":183,"../../views/LocationsMenu":184,"./page_view":175,"bluebird":2}],171:[function(require,module,exports){
+},{"../../../renderer/client_renderer":195,"../../views/LandingView":187,"../../views/LocationsMenu":188,"./page_view":179,"bluebird":2}],175:[function(require,module,exports){
 var lodging_result_view = Backbone.View.extend({
 
 	_setEL: function() {
@@ -40660,7 +41341,7 @@ var lodging_result_view = Backbone.View.extend({
 });
 
 module.exports = lodging_result_view;
-},{}],172:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 var renderer = require('../../../renderer/client_renderer');
 var search_model = require('../backbone_models/search_model');
 
@@ -40892,7 +41573,7 @@ var lodgings_search_query_view = Backbone.View.extend({
 });
 
 module.exports = lodgings_search_query_view;
-},{"../../../renderer/client_renderer":190,"../backbone_models/search_model":166}],173:[function(require,module,exports){
+},{"../../../renderer/client_renderer":195,"../backbone_models/search_model":169}],177:[function(require,module,exports){
 var renderer = require('../../../renderer/client_renderer');
 var lodging_view = require('../backbone_views/lodging_result_view');
 var lodging_model = require('../backbone_models/lodging_model');
@@ -40912,9 +41593,29 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.parentView				= opts.parentView;
 		this.lodgingViews 			= [];
 
+		this.spinner = new Spinner({
+			lines: 11, // The number of lines to draw
+			length: 40, // The length of each line
+			width: 3, // The line thickness
+			radius: 18, // The radius of the inner circle
+			corners: 1, // Corner roundness (0..1)
+			rotate: 0, // The rotation offset
+			direction: 1, // 1: clockwise, -1: counterclockwise
+			color: '#ff5a5f', // #rgb or #rrggbb or array of colors
+			speed: 1.4, // Rounds per second
+			trail: 46, // Afterglow percentage
+			shadow: false, // Whether to render a shadow
+			hwaccel: true, // Whether to use hardware acceleration
+			className: 'spinner', // The CSS class to assign to the spinner
+			zIndex: 2e9, // The z-index (defaults to 2000000000)
+			top: '50%', // Top position relative to parent
+			left: '50%' // Left position relative to parent
+		});
+
 		this.lodgings_collection.on('sync', _.bind(function() {
 			this.render();
 			this.createResultsViews();
+			this.hideSpinner();
 		}, this));
 
 		this.lodgings_collection.on('add', _.bind(function(model) {
@@ -40965,6 +41666,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 		var renderModel = {
 			isServer: false,
+			isLoading: lodgingsMetaData.isLoading,
 			lodgingData: {
 				result: collectionData,
 				count: lodgingsMetaData.count,
@@ -40978,18 +41680,32 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 	onPaginate: function(e) {
 		var $target = $(e.currentTarget);
-		var page = $target.parent().data("page");
+		var page = $target.parent().attr("data-page");
 		
 		e.preventDefault();
 
+		this.showSpinner();
 		this.lodgings_meta_model.set("page", page);
 		this.lodgings_collection.fetchDebounced();
 
+	},
+
+	showSpinner: function() {
+		this.spinner.spin();
+		this.lodgings_meta_model.set("isLoading", true);
+		this.render();
+		this.$el.append(this.spinner.el);
+	},
+
+	hideSpinner: function() {
+		this.spinner.stop();
+		this.lodgings_meta_model.set("isLoading", false);
+		this.render();
 	}
 });
 
 module.exports = lodgings_search_results_view;
-},{"../../../renderer/client_renderer":190,"../backbone_models/lodging_model":163,"../backbone_views/lodging_result_view":171}],174:[function(require,module,exports){
+},{"../../../renderer/client_renderer":195,"../backbone_models/lodging_model":166,"../backbone_views/lodging_result_view":175}],178:[function(require,module,exports){
 var map_view = Backbone.View.extend({
 	events: {},
 	initialize: function(opts) {
@@ -41021,7 +41737,7 @@ var map_view = Backbone.View.extend({
 });
 
 module.exports = map_view;
-},{}],175:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 var renderer = require('../../../renderer/client_renderer');
 var PageView = Backbone.View.extend({
 
@@ -41041,7 +41757,7 @@ var PageView = Backbone.View.extend({
 });
 
 module.exports = PageView;
-},{"../../../renderer/client_renderer":190}],176:[function(require,module,exports){
+},{"../../../renderer/client_renderer":195}],180:[function(require,module,exports){
 //backbone views
 var PageView 			= require('./page_view');
 var SearchQueryView 	= require('./lodgings_search_query_view');
@@ -41061,21 +41777,25 @@ var stop_page_view = PageView.extend({
 		var $modelDataElm = $dataElm.find('.bootstrap-data-model');
 		var modelData = 
 			($modelDataElm.length > 0) 
-			? $modelDataElm.data('modelData')
+			? $modelDataElm.attr('data-model-data')
 			: {};
 
 		var $resultDataElm = $dataElm.find('.bootstrap-data-results');
 		var resultData = 
 			($resultDataElm.length > 0) 
-			? $resultDataElm.data('resultData')
+			? $resultDataElm.attr('data-result-data')
 			: [];
 
 		var $resultMetaDataElm = $dataElm.find('.bootstrap-data-results-meta');
 		var resultMetaData =
 			($resultMetaDataElm.length > 0) 
-			? $resultMetaDataElm.data('resultMetaData')
+			? $resultMetaDataElm.attr('data-result-meta-data')
 			: {};
 
+		modelData 		= JSON.parse(modelData);
+		resultData 		= JSON.parse(resultData);
+		resultMetaData 	= JSON.parse(resultMetaData);
+		
 		modelData.isServer = false;
 		this.model.set(modelData, {silent: true});
 		this.lodgings_collection.add(resultData, {silent: true});
@@ -41176,7 +41896,7 @@ var stop_page_view = PageView.extend({
 });
 
 module.exports = stop_page_view;
-},{"../../views/StopView":188,"../backbone_models/lodgings_meta_model":164,"../backbone_models/lodgings_search_query_model":165,"./lodgings_search_query_view":172,"./lodgings_search_results_view":173,"./page_view":175}],177:[function(require,module,exports){
+},{"../../views/StopView":193,"../backbone_models/lodgings_meta_model":167,"../backbone_models/lodgings_search_query_model":168,"./lodgings_search_query_view":176,"./lodgings_search_results_view":177,"./page_view":179}],181:[function(require,module,exports){
 var search_model = require('../backbone_models/search_model');
 
 var StopView = Backbone.View.extend({
@@ -41371,7 +42091,7 @@ var StopView = Backbone.View.extend({
 
 	onRemoveClick: function(e) {
 		var $target = $(e.currentTarget),
-			stopId = $target.closest('.stop').data('stop-id');
+			stopId = $target.closest('.stop').attr('data-stop-id');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
@@ -41400,7 +42120,7 @@ var StopView = Backbone.View.extend({
 });
 
 module.exports = StopView;
-},{"../backbone_models/search_model":166}],178:[function(require,module,exports){
+},{"../backbone_models/search_model":169}],182:[function(require,module,exports){
 var TravellerView = Backbone.View.extend({
 	events: {
 		'click'						: 'toggleEditCard',
@@ -41480,7 +42200,7 @@ var TravellerView = Backbone.View.extend({
 });
 
 module.exports = TravellerView;
-},{}],179:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 var PageView 		= require('./page_view');
 var StopView 		= require('./stop_view');
 var TravellerView 	= require('./traveller_view');
@@ -41686,7 +42406,7 @@ var TripView = PageView.extend({
 	},
 
 	onAddStopClick: function(e) {
-		var stopIndex = $(e.currentTarget).closest('.stop').data('stopIndex');
+		var stopIndex = $(e.currentTarget).closest('.stop').attr('data-stop-index');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
@@ -41745,8 +42465,8 @@ var TripView = PageView.extend({
 	onGasSliderChange: function(e) {
 		var $target = $(e.currentTarget),
 			val = $target.val(),
-			modelAttr = $target.data('model-attr'),
-			toFixAttr = $target.data('to-fixed');
+			modelAttr = $target.attr('data-model-attr'),
+			toFixAttr = $target.attr('data-to-fixed');
 
 		if (toFixAttr) {
 			val = parseFloat(val).toFixed(parseInt(toFixAttr));
@@ -41813,7 +42533,7 @@ var TripView = PageView.extend({
 });
 
 module.exports = TripView;
-},{"../../views/TripView":189,"./page_view":175,"./stop_view":177,"./traveller_view":178}],180:[function(require,module,exports){
+},{"../../views/TripView":194,"./page_view":179,"./stop_view":181,"./traveller_view":182}],184:[function(require,module,exports){
 var Promise = require("bluebird");
 //App only uses single instance of Map, so forgiving this-dot usage inside constructor
 function Map(map) {
@@ -41971,7 +42691,7 @@ Map.prototype = {
 }
 
 module.exports = Map;
-},{"bluebird":2}],181:[function(require,module,exports){
+},{"bluebird":2}],185:[function(require,module,exports){
 var Promise = require("bluebird");
 
 var ViewOrchestrator = Backbone.View.extend({
@@ -42136,7 +42856,7 @@ var ViewOrchestrator = Backbone.View.extend({
 });
 
 module.exports = ViewOrchestrator;
-},{"bluebird":2}],182:[function(require,module,exports){
+},{"bluebird":2}],186:[function(require,module,exports){
 var React = require('react');
 
 var HeaderView = React.createClass({displayName: "HeaderView",
@@ -42161,7 +42881,7 @@ var HeaderView = React.createClass({displayName: "HeaderView",
 });
 
 module.exports = HeaderView;
-},{"react":161}],183:[function(require,module,exports){
+},{"react":161}],187:[function(require,module,exports){
 var React = require('react');
 
 var LandingView = React.createClass({displayName: "LandingView",
@@ -42200,7 +42920,7 @@ var LandingView = React.createClass({displayName: "LandingView",
 });
 
 module.exports = LandingView;
-},{"react":161}],184:[function(require,module,exports){
+},{"react":161}],188:[function(require,module,exports){
 var React = require("react");
 
 var LocationItem = React.createClass({displayName: "LocationItem",
@@ -42229,7 +42949,7 @@ var LocationsMenu = React.createClass({displayName: "LocationsMenu",
 });
 
 module.exports = LocationsMenu;
-},{"react":161}],185:[function(require,module,exports){
+},{"react":161}],189:[function(require,module,exports){
 var React = require('react');
 
 var ModalsView = React.createClass({displayName: "ModalsView",
@@ -42296,7 +43016,7 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 });
 
 module.exports = ModalsView;
-},{"react":161}],186:[function(require,module,exports){
+},{"react":161}],190:[function(require,module,exports){
 var React = require('react');
 var LocationsMenu = require('./LocationsMenu');
 
@@ -42353,8 +43073,9 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 });
 
 module.exports = SearchQuery;
-},{"./LocationsMenu":184,"react":161}],187:[function(require,module,exports){
+},{"./LocationsMenu":188,"react":161}],191:[function(require,module,exports){
 var React = require('react');
+var Stars = require('./Stars');
 
 var buildPageBtns = function(page, count, resultsPerPage) {
 	var numPages = Math.ceil(count.totalResults / resultsPerPage);
@@ -42426,6 +43147,19 @@ var Result = React.createClass({displayName: "Result",
 		var activePhotoIndex = result.activePhotoIndex || 0;
 		var photoSource = (result.photos[activePhotoIndex]) ? result.photos[activePhotoIndex].medium : "";
 		var altTxt = (result.photos[0]) ? result.photos[0].caption : "";
+		var photoBtns = function() {
+			if (photos.length > 1) {
+				return (
+					React.createElement("div", {className: "photo-btns-wrapper"}, 
+						React.createElement("div", {className: "next-photo", role: "button", "aria-label": "next photo"}), 
+						React.createElement("div", {className: "prev-photo", role: "button", "aria-label": "previous photo"})
+					)
+				)
+			} else {
+				return undefined;
+			}
+		}();
+
 		return (
 			React.createElement("li", {className: "lodging-result col-sm-12 col-md-6", "data-id": result.id}, 
 				React.createElement("div", {className: "result-img img-wrapper"}, 
@@ -42434,15 +43168,14 @@ var Result = React.createClass({displayName: "Result",
 						React.createElement("h6", null, React.createElement("span", {className: "dollar"}, "$"), result.price.nightly)
 					), 
 					React.createElement("img", {className: "center", src: photoSource, alt: altTxt}), 
-					React.createElement("div", {className: "next-photo", role: "button", "aria-label": "next photo"}), 
-					React.createElement("div", {className: "prev-photo", role: "button", "aria-label": "previous photo"})
+					photoBtns
 				), 
 				React.createElement("div", {className: "result-body"}, 
 					React.createElement("h3", {className: "text-ellip"}, result.attr.heading), 
 					React.createElement("div", {className: "result-info text-muted text-ellip"}, 
 						React.createElement("span", null, result.attr.roomType.text, " · "), 
 						React.createElement("div", {className: "star-rating"}, 
-							"· ", React.createElement("span", null, result.reviews.count, " reviews")
+							React.createElement(Stars, {rating: result.reviews.rating}), " · ", React.createElement("span", null, result.reviews.count, " reviews")
 						)
 					)
 				)
@@ -42457,6 +43190,7 @@ var SearchResults = React.createClass({displayName: "SearchResults",
 		var count = this.props.count || {};
 		var countTop = (this.props.resultsPerPage * this.props.page);
 		var countBottom = (countTop + 1) - this.props.resultsPerPage;
+		var isLoading = this.props.isLoading || false;
 		
 		if (countTop > count.totalResults) {
 			countTop = count.totalResults;
@@ -42464,7 +43198,7 @@ var SearchResults = React.createClass({displayName: "SearchResults",
 		}
 
 		return (
-			React.createElement("div", {className: "search-results-wrapper-inner"}, 
+			React.createElement("div", {className: (isLoading) ? "search-results-wrapper-inner loading" : "search-results-wrapper-inner"}, 
 				React.createElement("div", {className: "search-results-header"}, 
 					React.createElement("h2", {className: "text-ellip"}, count.totalResults, " Rentals – ", this.props.location)
 				), 
@@ -42485,7 +43219,65 @@ var SearchResults = React.createClass({displayName: "SearchResults",
 });
 
 module.exports = SearchResults;
-},{"react":161}],188:[function(require,module,exports){
+},{"./Stars":192,"react":161}],192:[function(require,module,exports){
+var React = require('react');
+
+var ForeGround = React.createClass({displayName: "ForeGround",
+	render: function() {
+		var rating = this.props.rating;
+		var ratingInt = Math.floor(rating);
+		var ratingDec = parseFloat((rating % 1).toFixed(1));
+		var stars = function() {
+			var arr = [];
+
+			for (var i = 0; i < ratingInt; i++) {
+				arr.push(React.createElement("span", {className: "star-filled star"}));
+			}
+
+			for (var i = 0; i < ratingDec; i++) {
+				arr.push(React.createElement("span", {className: "star-half-filled star"}));
+			}
+
+			return arr;
+		}();
+
+		return (
+			React.createElement("div", {className: "foreground"}, 
+				stars
+			)
+		)
+	}
+});
+
+var BackGround = React.createClass({displayName: "BackGround",
+	render: function() {
+		return (
+			React.createElement("div", {className: "background"}, 
+				React.createElement("span", {className: "star-empty star"}), 
+				React.createElement("span", {className: "star-empty star"}), 
+				React.createElement("span", {className: "star-empty star"}), 
+				React.createElement("span", {className: "star-empty star"}), 
+				React.createElement("span", {className: "star-empty star"})
+			)
+		)
+	}
+})
+
+var Stars = React.createClass({displayName: "Stars",
+	render: function() {
+		var rating = this.props.rating || 0;
+		
+		return (
+			React.createElement("div", {className: "star-rating"}, 
+				React.createElement(ForeGround, {rating: rating}), 
+				React.createElement(BackGround, null)
+			)
+		)
+	}
+});
+
+module.exports = Stars;
+},{"react":161}],193:[function(require,module,exports){
 var _ = require('lodash');
 var React = require('react');
 var SearchQuery = require('./SearchQuery');
@@ -42494,6 +43286,7 @@ var SeachResults = require('./SearchResults');
 var StopView = React.createClass({displayName: "StopView",
 	render: function() {
 		var isServer = this.props.isServer || false;
+		var isLoading = this.props.isLoading || false;
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
@@ -42529,7 +43322,7 @@ var StopView = React.createClass({displayName: "StopView",
 							React.createElement(SearchQuery, {start: this.props.start, end: this.props.end, locationProps: this.props.locationProps, location: this.props.location})
 						), 
 						React.createElement("div", {className: "search-results-wrapper left-full-width"}, 
-							React.createElement(SeachResults, {page: lodgingData.page, count: lodgingData.count, results: results, resultsPerPage: lodgingData.resultsPerPage, location: this.props.location})
+							React.createElement(SeachResults, {page: lodgingData.page, count: lodgingData.count, results: results, resultsPerPage: lodgingData.resultsPerPage, location: this.props.location, isLoading: isLoading})
 						), 
 						bootStrapDataElm
 					)
@@ -42540,7 +43333,7 @@ var StopView = React.createClass({displayName: "StopView",
 });
 
 module.exports = StopView;
-},{"./SearchQuery":186,"./SearchResults":187,"lodash":4,"react":161}],189:[function(require,module,exports){
+},{"./SearchQuery":190,"./SearchResults":191,"lodash":4,"react":161}],194:[function(require,module,exports){
 var React 			= require('react');
 var LocationsMenu 	= require('./LocationsMenu');
 
@@ -42787,7 +43580,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":184,"react":161}],190:[function(require,module,exports){
+},{"./LocationsMenu":188,"react":161}],195:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

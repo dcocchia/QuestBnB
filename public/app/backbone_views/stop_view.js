@@ -192,7 +192,7 @@ var StopView = Backbone.View.extend({
 
 	onRemoveClick: function(e) {
 		var $target = $(e.currentTarget),
-			stopId = $target.closest('.stop').data('stop-id');
+			stopId = $target.closest('.stop').attr('data-stop-id');
 
 		if (e.preventDefault) { e.preventDefault(); }
 
