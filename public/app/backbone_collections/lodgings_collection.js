@@ -14,7 +14,8 @@ var lodgings_collection = Backbone.Collection.extend({
 		this.lodgings_meta_model.set({
 			count: response.count,
 			resultsPerPage: response.resultsPerPage,
-			page: response.page
+			page: response.page,
+			isLoading: false
 		});
 		
 		return response.result;
@@ -29,7 +30,7 @@ var lodgings_collection = Backbone.Collection.extend({
 			}
 		});
 	}, 500),
-
+	
 	getLodging: function(resultId) {
 		return _.find(this.models, _.bind(function(model) {
 			return ( model.get('id') === resultId );

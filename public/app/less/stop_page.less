@@ -35,6 +35,24 @@
 		}
 	}
 
+	.search-page-lodging-wrapper {
+		float: left;
+		width: 100%;
+		background-color: #fff;
+
+		.lodging-chosen {
+			width: 100%;
+			height: auto;
+			padding: 15px 0px;
+			overflow: hidden;
+
+			.img-wrapper {
+				height: 255px;
+				padding-bottom: 0;
+			}
+		}
+	}
+
 	.search-results-wrapper {
 		overflow-x: hidden;
 		overflow-y: auto;
@@ -43,6 +61,7 @@
 
 	.search-results-wrapper-inner {
 		transition: opacity .2s;
+		float: left;
 	}
 
 	.search-results {
@@ -130,7 +149,8 @@
 		line-height: 22px;
 	}
 
-	.lodging-result {
+	.lodging-result,
+	.lodging-chosen {
 		&:hover {
 			.result-request-stay-btn {
 				display: block;

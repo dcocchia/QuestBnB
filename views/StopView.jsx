@@ -2,11 +2,13 @@ var _ = require('lodash');
 var React = require('react');
 var SearchQuery = require('./SearchQuery');
 var SeachResults = require('./SearchResults');
+var ChosenLodging = require('./ChosenLodging');
 
 var StopView = React.createClass({
 	render: function() {
 		var isServer = this.props.isServer || false;
 		var isLoading = this.props.isLoading || false;
+		var chosenLodging = this.props.lodging;
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
@@ -42,6 +44,9 @@ var StopView = React.createClass({
 							<SearchQuery start={this.props.start} end={this.props.end} locationProps={this.props.locationProps} location={this.props.location}/>
 						</div>
 						<div className="search-results-wrapper left-full-width">
+							<div className="search-page-lodging-wrapper">
+								<ChosenLodging data={chosenLodging}/>
+							</div>
 							<SeachResults page={lodgingData.page} count={lodgingData.count} results={results} resultsPerPage={lodgingData.resultsPerPage} location={this.props.location} isLoading={isLoading}/>
 						</div>
 						{bootStrapDataElm}

@@ -77,6 +77,7 @@ var stop_page_view = PageView.extend({
 		Backbone.on('stop_view:query_view:render', _.bind(function(data) {
 			this.render(stop_template, {
 				isServer: false,
+				isLoading: this.lodgings_meta_model.get("isLoading"),
 				lodgingData: {
 					result: this.lodgings_collection.toJSON(),
 					count: this.lodgings_meta_model.get('count'),
@@ -90,6 +91,7 @@ var stop_page_view = PageView.extend({
 		this.model.on('change', _.bind(function() {
 			this.render(stop_template, {
 				isServer: false,
+				isLoading: this.lodgings_meta_model.get("isLoading"),
 				lodgingData: {
 					result: this.lodgings_collection.toJSON(),
 					count: this.lodgings_meta_model.get('count'),
@@ -119,7 +121,8 @@ var stop_page_view = PageView.extend({
 				}),
 				stop_model: this.model,
 				map_api: this.map_api,
-				lodgings_collection: this.lodgings_collection
+				lodgings_collection: this.lodgings_collection,
+				lodgings_meta_model: this.lodgings_meta_model
 			}); 
 		}
 

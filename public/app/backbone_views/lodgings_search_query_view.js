@@ -15,6 +15,7 @@ var lodgings_search_query_view = Backbone.View.extend({
 		this.template 				= opts.template;
 		this.map_api 				= opts.map_api;
 		this.lodgings_collection 	= opts.lodgings_collection;
+		this.lodgings_meta_model	= opts.lodgings_meta_model;
 		this.parentView				= opts.parentView;
 		this.stop_model				= opts.stop_model;
 		
@@ -32,11 +33,17 @@ var lodgings_search_query_view = Backbone.View.extend({
 				location: this.model.get('location'),
 				geo: this.model.get('geo')
 			});
+			Backbone.trigger('StopView:showSpinner');
+			this.lodgings_collection.fetchDebounced();
 		}, this));
 
 		this.search_model.on('change', _.bind(function() {
 			this.render();
 		}, this));
+
+		this.lodgings_collection.on('sync', function() {
+			Backbone.trigger('StopView:showSpinner');
+		});
 
 		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
