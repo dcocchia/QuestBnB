@@ -23,11 +23,12 @@ var lodging_result_view = Backbone.View.extend({
 		Backbone.on('lodgings_search_results_view:render', _.bind(function() {
 			this._setEL();
 		},this));
+
 	},
 
 	syncStopModel: function() {
 		var modelData = this.model.toJSON();
-		this.stop_model.set('lodging', modelData);
+		this.stop_model.set('lodging', modelData, {silent: true});
 		this.stop_model.trigger('change');
 	},
 

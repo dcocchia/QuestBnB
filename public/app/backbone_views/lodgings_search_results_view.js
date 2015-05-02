@@ -95,9 +95,17 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 	createChosenLodgingView: function() {
 		var newView;
+		var newModelData;
 		var lodgingData = this.stop_model.get('lodging');
 
 		if (!lodgingData) { return; }
+
+		if (this.chosenLodgingView) {
+			this.chosenLodgingView.model.set(lodgingData);
+			this.chosenLodgingView.setElement(this.$(".search-page-lodging-wrapper")
+					.find('[data-id=' + lodgingData.id + ']'));
+			return;
+		}
 
 		this.clearChosenLodgingView();
 
@@ -111,7 +119,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 		this.chosenLodgingView = newView;
 
-		newView.model.on('change', _.bind(function(model) {
+		newView.listenTo(newView.model, 'change', _.bind(function(model) {
 			this.stop_model.set('lodging', model.toJSON(), {silent: true});
 			this.render();
 		}, this));
@@ -130,7 +138,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 			this.chosenLodgingView.destroy();
 		}
 
-		this.chosenLodgingView = undefined;
+		delete this.chosenLodgingView;
 	},
 
 	render: function() {
