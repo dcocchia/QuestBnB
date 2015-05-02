@@ -138,7 +138,7 @@ var Lodging = React.createClass({displayName: "Lodging",
 						)
 					);
 					break;
-				case "epired":
+				case "expired":
 					bookingStatusElm = (
 						React.createElement("div", {className: "lodging-booking-status declined", role: "button"}, 
 							React.createElement("a", {href: stopUrl}, "Request Expired >")

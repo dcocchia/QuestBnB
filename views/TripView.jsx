@@ -138,7 +138,7 @@ var Lodging = React.createClass({
 						</div>
 					);
 					break;
-				case "epired":
+				case "expired":
 					bookingStatusElm = (
 						<div className="lodging-booking-status declined" role="button">
 							<a href={stopUrl}>Request Expired &gt;</a>

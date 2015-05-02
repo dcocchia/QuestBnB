@@ -214,6 +214,8 @@ app.put('/trips/:id/stops/:stopId', function(req, res) {
 });
 
 app.get('/lodgings', function(req, res) {
+	var resultDesc;
+
 	var queryDefaults = {
 		provider: "airbnb"
 	};
@@ -254,6 +256,19 @@ app.get('/lodgings', function(req, res) {
 	}, this));
 
 	Promise.all([reqPromise, countPromise]).then( _.bind(function(resps){
+		//add shortDesc to each result
+		_.each(resps[0].result, function(result) {
+			resultDesc = result.attr.description;
+
+			if (!resultDesc || resultDesc.length < 225) { return; }
+
+			result.attr.shortDesc = resultDesc.substring(0, 225);
+
+			if (resultDesc.length > 225) {
+				result.attr.shortDesc += "...";
+			}
+		});
+
 		resps[0].count = resps[1].result;
 		res.send(resps[0]);
 	}, this));

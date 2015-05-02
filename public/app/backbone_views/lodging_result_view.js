@@ -5,9 +5,11 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		'click .result-request-stay-btn'	: 'onRequestToBook',
-		'click .next-photo'					: 'onNextPhoto',
-		'click .prev-photo'					: 'onPrevPhoto'
+		'click .result-request-stay-btn': 'onRequestToBook',
+		'click .chosen'					: 'onClickBookingStatus',
+		'click .set-chosen'				: 'onSetLodingStatus',
+		'click .next-photo'				: 'onNextPhoto',
+		'click .prev-photo'				: 'onPrevPhoto'
 	},
 
 	initialize: function(opts) {
@@ -23,9 +25,17 @@ var lodging_result_view = Backbone.View.extend({
 		},this));
 	},
 
-	onRequestToBook: function(e) {		
+	syncStopModel: function() {
+		var modelData = this.model.toJSON();
+		this.stop_model.set('lodging', modelData);
+		this.stop_model.trigger('change');
+	},
+
+	onRequestToBook: function(e) {
 		e.preventDefault();
-		this.stop_model.set('lodging', this.model.toJSON());
+
+		this.model.set('bookingStatus', 'pending');
+		this.syncStopModel();
 	},
 
 	onNextPhoto: function(e) {
@@ -44,6 +54,24 @@ var lodging_result_view = Backbone.View.extend({
 		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
+	onClickBookingStatus: function(e) {
+		var bookingStatus = this.model.get('showStatusMenu') || false;
+		e.preventDefault();
+
+		this.model.set('showStatusMenu', !bookingStatus);
+	},
+
+	onSetLodingStatus: function(e) {
+		var newStatus = $(e.currentTarget).attr('data-status');
+		e.preventDefault();
+
+		this.model.set({
+			showStatusMenu: false,
+			bookingStatus: newStatus
+		});
+
+		this.syncStopModel();
+	},
 
 	destroy: function() {
 		this.undelegateEvents();
