@@ -15,6 +15,7 @@ function Map(map) {
 	this.directionsService = new google.maps.DirectionsService();
 	this.geocoder = new google.maps.Geocoder();
 	this.infowindow = new google.maps.InfoWindow({});
+	this.bounds = new google.maps.LatLngBounds();
 }
 
 Map.prototype = {
@@ -34,7 +35,7 @@ Map.prototype = {
 		google.maps.event.trigger(this.map, 'resize');
 	},
 
-	makeMarker: function(position, icon, title) {
+	makeMarker: function(position, icon, title, id) {
 		var marker = new google.maps.Marker({
 			position: position,
 			map: this.map,
@@ -48,6 +49,8 @@ Map.prototype = {
 				this.infowindow.open(this.map, marker);
 			}, this));
 		}
+
+		if (id) { marker.set("id", id); }
 
 		this.markers.push(marker);
 	},
@@ -85,7 +88,7 @@ Map.prototype = {
 		iconUrl += "&name=" + (
 			options.backgroundColor === "red" 
 			? "icons/spotlight/spotlight-waypoint-b.png" 
-			: "icons/spotlight/spotlight-waypoint-a.png"
+			: "icons/spotlight/spotlight-waypoint-blue.png"
 		);
 		iconUrl += "&ax=" + options.xPos;
 		iconUrl += "&ay=" + options.yPos;
@@ -150,6 +153,50 @@ Map.prototype = {
 
 			return promise;
 		}
+		
+	},
+
+	fitMapBoundsToMarkers: function() {
+		this.bounds = new google.maps.LatLngBounds();
+
+		_.each(this.markers, _.bind(function(marker) {
+			this.bounds.extend(marker.getPosition());
+		},this));
+
+		this.map.fitBounds(this.bounds);
+	},
+
+	placeLodgingsMapMarkers: function(lodgings_collection) {
+		var attr;
+		var geo;
+		var position;
+		var icon;
+		var title;
+		var id;
+
+		this.clearMarkers();
+
+		_.each(lodgings_collection.models, _.bind(function(lodging, index) {
+			attr = lodging.get('attr');
+			geo = lodging.get('latLng');
+
+			if (geo) {
+				position = {
+					lat: geo[0],
+					lng: geo[1]
+				}
+			}
+
+			icon = this.generateMarkerIcon();
+
+			if (attr) { title = attr.heading; }
+
+			id = lodging.get("id");
+
+			this.makeMarker(position, icon, title, id);
+		}, this));
+
+		this.fitMapBoundsToMarkers();
 		
 	}
 }

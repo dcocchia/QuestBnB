@@ -29,6 +29,11 @@ var lodgings_collection = Backbone.Collection.extend({
 				longitude: this.stop_model.get('geo').lng,
 				pricemax: this.lodgings_meta_model.get('pricemax'),
 				pricemin: this.lodgings_meta_model.get('pricemin')
+				// stimestamp: this.lodgings_meta_model.get('stimestamp'),
+				// etimestamp: this.lodgings_meta_model.get('etimestamp')
+				// NOTE: unfortunately, the Zilyo api does not work well with
+				// timestamps right now. For now, this funactionality is
+				// just for show
 			}
 		});
 	}, 500),

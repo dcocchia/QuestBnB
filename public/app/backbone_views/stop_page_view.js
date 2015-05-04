@@ -44,6 +44,8 @@ var stop_page_view = PageView.extend({
 		this.lodgings_collection.trigger('sync');
 
 		$dataElm.remove();
+
+		this.trigger('ready');
 	},
 
 	_findElms: function($parentEl) {
@@ -60,8 +62,18 @@ var stop_page_view = PageView.extend({
 		this.lodgings_collection = opts.lodgings_collection;
 		this.lodgings_meta_model = opts.lodgings_collection.lodgings_meta_model;
 		this.lodgings_collection.stop_model = this.model;
+		
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
+
+		this.on('ready', _.bind(function() {
+			Backbone.trigger('map:setCenter', {
+				lat: this.model.get('geo').lat, 
+				long: this.model.get('geo').lng
+			});
+
+			Backbone.trigger('map:setZoom', 16);
+		}, this));
 
 		Backbone.on('stop_view:render', _.bind(function() {
 			this.render(stop_template, {
@@ -132,7 +144,8 @@ var stop_page_view = PageView.extend({
 				parentView: this,
 				lodgings_collection: this.lodgings_collection,
 				lodgings_meta_model: this.lodgings_meta_model,
-				stop_model: this.model
+				stop_model: this.model,
+				map_api: this.map_api,
 			}); 
 		}
 	}

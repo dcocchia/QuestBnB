@@ -139,7 +139,6 @@
 					lodgings_collection: this.collections.lodgings_collection
 				})._bootStrapView();
 
-				this.views.stop_page_view.trigger('ready');
 			}, this));
 		},
 

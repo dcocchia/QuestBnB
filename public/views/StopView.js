@@ -41,7 +41,7 @@ var StopView = React.createClass({displayName: "StopView",
 					React.createElement("div", {className: "bleed-width-20"}, 
 						React.createElement("h1", {className: "title left-full-width", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum), 
 						React.createElement("div", {className: "search-query-wrapper"}, 
-							React.createElement(SearchQuery, {start: this.props.start, end: this.props.end, locationProps: this.props.locationProps, location: this.props.location})
+							React.createElement(SearchQuery, {checkin: this.props.checkin, checkout: this.props.checkout, locationProps: this.props.locationProps, location: this.props.location})
 						), 
 						React.createElement("div", {className: "search-results-wrapper left-full-width"}, 
 							React.createElement("div", {className: "search-page-lodging-wrapper"}, 

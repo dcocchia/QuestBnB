@@ -32,6 +32,8 @@ var SearchQuery = React.createClass({
 		var hasPredictions = ( queryPredictions.length > 0 );
 		var sliderMin = this.state.sliderMin || 0;
 		var sliderMax = this.state.sliderMax || 1000;
+		var checkin = this.props.checkin || this.props.tripStart;
+		var checkout = this.props.checkout || this.props.tripEnd;
 
 		return (
 			<div className="search-query-wrapper-inner">
@@ -60,10 +62,10 @@ var SearchQuery = React.createClass({
 						</div>
 						<div className="col-lg-9">
 							<div className="date-input-wrapper col-lg-6 col-md-6">
-								<input type="text" name="startDate" className="start date form-control" placeholder="Check In" aria-label="date start" defaultValue={this.props.start}/>
+								<input type="text" name="startDate" className="start date form-control" placeholder="Check In" aria-label="date start" defaultValue={checkin}/>
 							</div>
 							<div className="date-input-wrapper col-lg-6 col-md-6">
-								<input type="text" name="endDate" className="end date form-control" placeholder="Check Out" aria-label="date end" defaultValue={this.props.end}/>
+								<input type="text" name="endDate" className="end date form-control" placeholder="Check Out" aria-label="date end" defaultValue={checkout}/>
 							</div>
 						</div>
 					</div>
@@ -75,13 +77,13 @@ var SearchQuery = React.createClass({
 						</div>
 						<div className="col-lg-9">
 							<div className="col-lg-12 col-md-12">
-								<ReactSlider defaultValue={[0, 1000]} max={1000} min={0} withBars onChange={this.onSliderChange} />
+								<ReactSlider defaultValue={[1, 1000]} max={1000} min={1} withBars onChange={this.onSliderChange} />
 							</div>
-						</div>
-						<div className="col-lg-12 col-md-12">
+							
 							<div className="col-lg-6 col-md-6">
 								<label>${sliderMin}</label>
 							</div>
+							
 							<div className="col-lg-6 col-md-6 text-right">
 								<label>${sliderMax}</label>
 							</div>

@@ -121,6 +121,8 @@ var SearchResults = React.createClass({
 			countBottom = (countTop + 1) - this.props.resultsPerPage;
 		}
 
+		if (countBottom < 0) { countBottom = 0; }
+
 		return (
 			<div className={(isLoading) ? "search-results-wrapper-inner loading" : "search-results-wrapper-inner"}>
 				<div className="search-results-header">

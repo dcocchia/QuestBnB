@@ -15,6 +15,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgings_meta_model	= opts.lodgings_meta_model;
 		this.stop_model				= opts.stop_model;
 		this.parentView				= opts.parentView;
+		this.map_api				= opts.map_api;
 		this.lodgingViews 			= [];
 
 		this.spinner = new Spinner({
@@ -72,12 +73,15 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}, this));
 
 		this.createChosenLodgingView();
+
+		this.map_api.placeLodgingsMapMarkers(this.lodgings_collection);
 	},
 
 	createResultView: function(model, opts) {
 		var defaults = {
 			model: model,
 			stop_model: this.stop_model,
+			map_api: this.map_api,
 			lodgings_collection: this.lodgings_collection,
 			parentView: this,
 			el: this.$('.search-results-wrapper-inner')

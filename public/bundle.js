@@ -140,7 +140,6 @@
 					lodgings_collection: this.collections.lodgings_collection
 				})._bootStrapView();
 
-				this.views.stop_page_view.trigger('ready');
 			}, this));
 		},
 
@@ -41124,6 +41123,11 @@ var lodgings_collection = Backbone.Collection.extend({
 				longitude: this.stop_model.get('geo').lng,
 				pricemax: this.lodgings_meta_model.get('pricemax'),
 				pricemin: this.lodgings_meta_model.get('pricemin')
+				// stimestamp: this.lodgings_meta_model.get('stimestamp'),
+				// etimestamp: this.lodgings_meta_model.get('etimestamp')
+				// NOTE: unfortunately, the Zilyo api does not work well with
+				// timestamps right now. For now, this funactionality is
+				// just for show
 			}
 		});
 	}, 500),
@@ -41354,6 +41358,7 @@ var lodging_model = Backbone.Model.extend({
 
 module.exports = lodging_model;
 },{}],168:[function(require,module,exports){
+var moment = require('moment');
 var lodgings_meta_model = Backbone.Model.extend({
 	defaults: {
 		'count': {
@@ -41362,12 +41367,24 @@ var lodgings_meta_model = Backbone.Model.extend({
 		},
 		'resultsPerPage': 20,
 		'pricemax': 1000,
-		'pricemin': 0
+		'pricemin': 1,
+		'stimestamp': moment().add(1, 'week').valueOf(), //checkin time,
+		'etimestamp': moment().add(2, 'week').valueOf() //checkout time
+
+	},
+
+	parse: function(resp) {
+		resp.checkin = moment(resp.stimestamp).format('MM/DD/YYYY');
+		resp.checkout = moment(resp.etimestamp).format('MM/DD/YYYY');
+
+		return resp;
 	}
+
+
 });
 
 module.exports = lodgings_meta_model;
-},{}],169:[function(require,module,exports){
+},{"moment":6}],169:[function(require,module,exports){
 var lodgings_search_query_model = Backbone.Model.extend({
 	defaults: {
 		start: '',
@@ -42030,7 +42047,9 @@ var lodging_result_view = Backbone.View.extend({
 		'click .chosen'					: 'onClickBookingStatus',
 		'click .set-chosen'				: 'onSetLodingStatus',
 		'click .next-photo'				: 'onNextPhoto',
-		'click .prev-photo'				: 'onPrevPhoto'
+		'click .prev-photo'				: 'onPrevPhoto',
+		'mouseenter'					: 'onMouseEnter',
+		'mouseleave'					: 'onMouseLeave'
 	},
 
 	initialize: function(opts) {
@@ -42038,6 +42057,7 @@ var lodging_result_view = Backbone.View.extend({
 		this.parentView				= opts.parentView;
 		this.stop_model				= opts.stop_model;
 		this.lodgings_collection	= opts.lodgings_collection;
+		this.map_api				= opts.map_api;
 
 		this._setEL();
 
@@ -42074,6 +42094,32 @@ var lodging_result_view = Backbone.View.extend({
 		var currentActiveIndex = (this.model.get('activePhotoIndex'));
 		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
 		this.model.set('activePhotoIndex', newActiveIndex);
+	},
+
+	onMouseEnter: function(e) {
+		this.updateMapMarker({
+			backgroundColor: 'blue'
+		});
+	},
+
+	onMouseLeave: function(e) {
+		this.updateMapMarker({
+			backgroundColor: 'red'
+		});
+	},
+
+	updateMapMarker: function(opts) {
+		var marker = _.find(
+			this.map_api.markers, _.bind(function(marker) {
+				return (marker.get('id') === this.model.get('id'))
+			}, this)
+		);
+
+		if (!marker) { return; }
+
+		marker.setIcon(this.map_api.generateMarkerIcon({
+			backgroundColor: opts.backgroundColor
+		}));
 	},
 
 	onClickBookingStatus: function(e) {
@@ -42146,10 +42192,6 @@ var lodgings_search_query_view = Backbone.View.extend({
 			this.render();
 		}, this));
 
-		this.lodgings_collection.on('sync', function() {
-			Backbone.trigger('StopView:showSpinner');
-		});
-
 		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
 			this.bindDatePickersDebounced();
@@ -42157,8 +42199,8 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		Backbone.on('slider:update', _.bind(function(values) {
 			this.lodgings_meta_model.set({
-				pricemax: values[0],
-				pricemin: values[1]
+				pricemin: values[0],
+				pricemax: values[1]
 			});
 			Backbone.trigger('StopView:showSpinner');
 			this.lodgings_collection.fetchDebounced();
@@ -42177,21 +42219,40 @@ var lodgings_search_query_view = Backbone.View.extend({
 		Backbone.trigger('stop_view:query_view:render', dataModel)	
 	},
 
+	updateStopDates: function(timeType, newTime) {
+		var start;
+		var end;
+
+		this.lodgings_meta_model.attributes[timeType] = 
+			moment(newTime).valueOf();
+
+		start = this.lodgings_meta_model.get("stimestamp");
+		end = this.lodgings_meta_model.get("etimestamp");
+
+		this.stop_model.set({
+			checkin: moment(start).format('MM/DD/YYYY'),
+			checkout: moment(end).format('MM/DD/YYYY') 
+		});
+
+		Backbone.trigger('StopView:showSpinner');
+		this.lodgings_collection.fetchDebounced();
+	},
+
 	bindDatePickers: function() {
 		var $dateWrapper = this.$('.date-input-wrapper');
 
 		$dateWrapper.find('.date.start').datepicker({
-			minDate: 0,
+			minDate: this.stop_model.get('tripStart') || 0,
+			maxDate: this.stop_model.get('tripEnd') || 0,
 			onSelect: _.bind( function(resp) {
-				//re calc stuff
-				//then save to model
+				this.updateStopDates('stimestamp', resp);
 			}, this)
 		});
 		$dateWrapper.find('.date.end').datepicker({
-			minDate: 0,
+			minDate: this.stop_model.get('tripStart') || 0,
+			maxDate: this.stop_model.get('tripEnd') || 0,
 			onSelect: _.bind( function(resp) {
-				//re calc stuff
-				//then save to model
+				this.updateStopDates('etimestamp', resp);
 			}, this)
 		});
 	},
@@ -42368,6 +42429,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgings_meta_model	= opts.lodgings_meta_model;
 		this.stop_model				= opts.stop_model;
 		this.parentView				= opts.parentView;
+		this.map_api				= opts.map_api;
 		this.lodgingViews 			= [];
 
 		this.spinner = new Spinner({
@@ -42425,12 +42487,15 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}, this));
 
 		this.createChosenLodgingView();
+
+		this.map_api.placeLodgingsMapMarkers(this.lodgings_collection);
 	},
 
 	createResultView: function(model, opts) {
 		var defaults = {
 			model: model,
 			stop_model: this.stop_model,
+			map_api: this.map_api,
 			lodgings_collection: this.lodgings_collection,
 			parentView: this,
 			el: this.$('.search-results-wrapper-inner')
@@ -42644,6 +42709,8 @@ var stop_page_view = PageView.extend({
 		this.lodgings_collection.trigger('sync');
 
 		$dataElm.remove();
+
+		this.trigger('ready');
 	},
 
 	_findElms: function($parentEl) {
@@ -42660,8 +42727,18 @@ var stop_page_view = PageView.extend({
 		this.lodgings_collection = opts.lodgings_collection;
 		this.lodgings_meta_model = opts.lodgings_collection.lodgings_meta_model;
 		this.lodgings_collection.stop_model = this.model;
+		
 		this._findElms(opts.$parentEl);
 		this.createSubViews();
+
+		this.on('ready', _.bind(function() {
+			Backbone.trigger('map:setCenter', {
+				lat: this.model.get('geo').lat, 
+				long: this.model.get('geo').lng
+			});
+
+			Backbone.trigger('map:setZoom', 16);
+		}, this));
 
 		Backbone.on('stop_view:render', _.bind(function() {
 			this.render(stop_template, {
@@ -42732,7 +42809,8 @@ var stop_page_view = PageView.extend({
 				parentView: this,
 				lodgings_collection: this.lodgings_collection,
 				lodgings_meta_model: this.lodgings_meta_model,
-				stop_model: this.model
+				stop_model: this.model,
+				map_api: this.map_api,
 			}); 
 		}
 	}
@@ -43394,6 +43472,7 @@ function Map(map) {
 	this.directionsService = new google.maps.DirectionsService();
 	this.geocoder = new google.maps.Geocoder();
 	this.infowindow = new google.maps.InfoWindow({});
+	this.bounds = new google.maps.LatLngBounds();
 }
 
 Map.prototype = {
@@ -43413,7 +43492,7 @@ Map.prototype = {
 		google.maps.event.trigger(this.map, 'resize');
 	},
 
-	makeMarker: function(position, icon, title) {
+	makeMarker: function(position, icon, title, id) {
 		var marker = new google.maps.Marker({
 			position: position,
 			map: this.map,
@@ -43427,6 +43506,8 @@ Map.prototype = {
 				this.infowindow.open(this.map, marker);
 			}, this));
 		}
+
+		if (id) { marker.set("id", id); }
 
 		this.markers.push(marker);
 	},
@@ -43464,7 +43545,7 @@ Map.prototype = {
 		iconUrl += "&name=" + (
 			options.backgroundColor === "red" 
 			? "icons/spotlight/spotlight-waypoint-b.png" 
-			: "icons/spotlight/spotlight-waypoint-a.png"
+			: "icons/spotlight/spotlight-waypoint-blue.png"
 		);
 		iconUrl += "&ax=" + options.xPos;
 		iconUrl += "&ay=" + options.yPos;
@@ -43529,6 +43610,50 @@ Map.prototype = {
 
 			return promise;
 		}
+		
+	},
+
+	fitMapBoundsToMarkers: function() {
+		this.bounds = new google.maps.LatLngBounds();
+
+		_.each(this.markers, _.bind(function(marker) {
+			this.bounds.extend(marker.getPosition());
+		},this));
+
+		this.map.fitBounds(this.bounds);
+	},
+
+	placeLodgingsMapMarkers: function(lodgings_collection) {
+		var attr;
+		var geo;
+		var position;
+		var icon;
+		var title;
+		var id;
+
+		this.clearMarkers();
+
+		_.each(lodgings_collection.models, _.bind(function(lodging, index) {
+			attr = lodging.get('attr');
+			geo = lodging.get('latLng');
+
+			if (geo) {
+				position = {
+					lat: geo[0],
+					lng: geo[1]
+				}
+			}
+
+			icon = this.generateMarkerIcon();
+
+			if (attr) { title = attr.heading; }
+
+			id = lodging.get("id");
+
+			this.makeMarker(position, icon, title, id);
+		}, this));
+
+		this.fitMapBoundsToMarkers();
 		
 	}
 }
@@ -44021,6 +44146,8 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 		var hasPredictions = ( queryPredictions.length > 0 );
 		var sliderMin = this.state.sliderMin || 0;
 		var sliderMax = this.state.sliderMax || 1000;
+		var checkin = this.props.checkin || this.props.tripStart;
+		var checkout = this.props.checkout || this.props.tripEnd;
 
 		return (
 			React.createElement("div", {className: "search-query-wrapper-inner"}, 
@@ -44049,10 +44176,10 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 						), 
 						React.createElement("div", {className: "col-lg-9"}, 
 							React.createElement("div", {className: "date-input-wrapper col-lg-6 col-md-6"}, 
-								React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Check In", "aria-label": "date start", defaultValue: this.props.start})
+								React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Check In", "aria-label": "date start", defaultValue: checkin})
 							), 
 							React.createElement("div", {className: "date-input-wrapper col-lg-6 col-md-6"}, 
-								React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Check Out", "aria-label": "date end", defaultValue: this.props.end})
+								React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Check Out", "aria-label": "date end", defaultValue: checkout})
 							)
 						)
 					)
@@ -44064,13 +44191,13 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 						), 
 						React.createElement("div", {className: "col-lg-9"}, 
 							React.createElement("div", {className: "col-lg-12 col-md-12"}, 
-								React.createElement(ReactSlider, {defaultValue: [0, 1000], max: 1000, min: 0, withBars: true, onChange: this.onSliderChange})
-							)
-						), 
-						React.createElement("div", {className: "col-lg-12 col-md-12"}, 
+								React.createElement(ReactSlider, {defaultValue: [1, 1000], max: 1000, min: 1, withBars: true, onChange: this.onSliderChange})
+							), 
+							
 							React.createElement("div", {className: "col-lg-6 col-md-6"}, 
 								React.createElement("label", null, "$", sliderMin)
 							), 
+							
 							React.createElement("div", {className: "col-lg-6 col-md-6 text-right"}, 
 								React.createElement("label", null, "$", sliderMax)
 							)
@@ -44207,6 +44334,8 @@ var SearchResults = React.createClass({displayName: "SearchResults",
 			countBottom = (countTop + 1) - this.props.resultsPerPage;
 		}
 
+		if (countBottom < 0) { countBottom = 0; }
+
 		return (
 			React.createElement("div", {className: (isLoading) ? "search-results-wrapper-inner loading" : "search-results-wrapper-inner"}, 
 				React.createElement("div", {className: "search-results-header"}, 
@@ -44331,7 +44460,7 @@ var StopView = React.createClass({displayName: "StopView",
 					React.createElement("div", {className: "bleed-width-20"}, 
 						React.createElement("h1", {className: "title left-full-width", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum), 
 						React.createElement("div", {className: "search-query-wrapper"}, 
-							React.createElement(SearchQuery, {start: this.props.start, end: this.props.end, locationProps: this.props.locationProps, location: this.props.location})
+							React.createElement(SearchQuery, {checkin: this.props.checkin, checkout: this.props.checkout, locationProps: this.props.locationProps, location: this.props.location})
 						), 
 						React.createElement("div", {className: "search-results-wrapper left-full-width"}, 
 							React.createElement("div", {className: "search-page-lodging-wrapper"}, 

@@ -9,7 +9,9 @@ var lodging_result_view = Backbone.View.extend({
 		'click .chosen'					: 'onClickBookingStatus',
 		'click .set-chosen'				: 'onSetLodingStatus',
 		'click .next-photo'				: 'onNextPhoto',
-		'click .prev-photo'				: 'onPrevPhoto'
+		'click .prev-photo'				: 'onPrevPhoto',
+		'mouseenter'					: 'onMouseEnter',
+		'mouseleave'					: 'onMouseLeave'
 	},
 
 	initialize: function(opts) {
@@ -17,6 +19,7 @@ var lodging_result_view = Backbone.View.extend({
 		this.parentView				= opts.parentView;
 		this.stop_model				= opts.stop_model;
 		this.lodgings_collection	= opts.lodgings_collection;
+		this.map_api				= opts.map_api;
 
 		this._setEL();
 
@@ -53,6 +56,32 @@ var lodging_result_view = Backbone.View.extend({
 		var currentActiveIndex = (this.model.get('activePhotoIndex'));
 		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
 		this.model.set('activePhotoIndex', newActiveIndex);
+	},
+
+	onMouseEnter: function(e) {
+		this.updateMapMarker({
+			backgroundColor: 'blue'
+		});
+	},
+
+	onMouseLeave: function(e) {
+		this.updateMapMarker({
+			backgroundColor: 'red'
+		});
+	},
+
+	updateMapMarker: function(opts) {
+		var marker = _.find(
+			this.map_api.markers, _.bind(function(marker) {
+				return (marker.get('id') === this.model.get('id'))
+			}, this)
+		);
+
+		if (!marker) { return; }
+
+		marker.setIcon(this.map_api.generateMarkerIcon({
+			backgroundColor: opts.backgroundColor
+		}));
 	},
 
 	onClickBookingStatus: function(e) {

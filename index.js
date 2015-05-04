@@ -142,6 +142,8 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 
 			_.extend(stopDoc, {
 				tripTitle: doc.title,
+				tripStart: doc.start,
+				tripEnd: doc.end,
 				mapStyleClasses: "map stop-view",
 				isServer: true
 			});

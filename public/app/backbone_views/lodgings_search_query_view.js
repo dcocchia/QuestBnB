@@ -41,10 +41,6 @@ var lodgings_search_query_view = Backbone.View.extend({
 			this.render();
 		}, this));
 
-		this.lodgings_collection.on('sync', function() {
-			Backbone.trigger('StopView:showSpinner');
-		});
-
 		Backbone.on('StopView:render', _.bind(function() {
 			this.setElement(this.parentView.$el.find(this.$el.selector));
 			this.bindDatePickersDebounced();
@@ -52,8 +48,8 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		Backbone.on('slider:update', _.bind(function(values) {
 			this.lodgings_meta_model.set({
-				pricemax: values[0],
-				pricemin: values[1]
+				pricemin: values[0],
+				pricemax: values[1]
 			});
 			Backbone.trigger('StopView:showSpinner');
 			this.lodgings_collection.fetchDebounced();
@@ -72,21 +68,40 @@ var lodgings_search_query_view = Backbone.View.extend({
 		Backbone.trigger('stop_view:query_view:render', dataModel)	
 	},
 
+	updateStopDates: function(timeType, newTime) {
+		var start;
+		var end;
+
+		this.lodgings_meta_model.attributes[timeType] = 
+			moment(newTime).valueOf();
+
+		start = this.lodgings_meta_model.get("stimestamp");
+		end = this.lodgings_meta_model.get("etimestamp");
+
+		this.stop_model.set({
+			checkin: moment(start).format('MM/DD/YYYY'),
+			checkout: moment(end).format('MM/DD/YYYY') 
+		});
+
+		Backbone.trigger('StopView:showSpinner');
+		this.lodgings_collection.fetchDebounced();
+	},
+
 	bindDatePickers: function() {
 		var $dateWrapper = this.$('.date-input-wrapper');
 
 		$dateWrapper.find('.date.start').datepicker({
-			minDate: 0,
+			minDate: this.stop_model.get('tripStart') || 0,
+			maxDate: this.stop_model.get('tripEnd') || 0,
 			onSelect: _.bind( function(resp) {
-				//re calc stuff
-				//then save to model
+				this.updateStopDates('stimestamp', resp);
 			}, this)
 		});
 		$dateWrapper.find('.date.end').datepicker({
-			minDate: 0,
+			minDate: this.stop_model.get('tripStart') || 0,
+			maxDate: this.stop_model.get('tripEnd') || 0,
 			onSelect: _.bind( function(resp) {
-				//re calc stuff
-				//then save to model
+				this.updateStopDates('etimestamp', resp);
 			}, this)
 		});
 	},

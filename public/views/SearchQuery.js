@@ -32,6 +32,8 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 		var hasPredictions = ( queryPredictions.length > 0 );
 		var sliderMin = this.state.sliderMin || 0;
 		var sliderMax = this.state.sliderMax || 1000;
+		var checkin = this.props.checkin || this.props.tripStart;
+		var checkout = this.props.checkout || this.props.tripEnd;
 
 		return (
 			React.createElement("div", {className: "search-query-wrapper-inner"}, 
@@ -60,10 +62,10 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 						), 
 						React.createElement("div", {className: "col-lg-9"}, 
 							React.createElement("div", {className: "date-input-wrapper col-lg-6 col-md-6"}, 
-								React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Check In", "aria-label": "date start", defaultValue: this.props.start})
+								React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Check In", "aria-label": "date start", defaultValue: checkin})
 							), 
 							React.createElement("div", {className: "date-input-wrapper col-lg-6 col-md-6"}, 
-								React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Check Out", "aria-label": "date end", defaultValue: this.props.end})
+								React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Check Out", "aria-label": "date end", defaultValue: checkout})
 							)
 						)
 					)
@@ -75,13 +77,13 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 						), 
 						React.createElement("div", {className: "col-lg-9"}, 
 							React.createElement("div", {className: "col-lg-12 col-md-12"}, 
-								React.createElement(ReactSlider, {defaultValue: [0, 1000], max: 1000, min: 0, withBars: true, onChange: this.onSliderChange})
-							)
-						), 
-						React.createElement("div", {className: "col-lg-12 col-md-12"}, 
+								React.createElement(ReactSlider, {defaultValue: [1, 1000], max: 1000, min: 1, withBars: true, onChange: this.onSliderChange})
+							), 
+							
 							React.createElement("div", {className: "col-lg-6 col-md-6"}, 
 								React.createElement("label", null, "$", sliderMin)
 							), 
+							
 							React.createElement("div", {className: "col-lg-6 col-md-6 text-right"}, 
 								React.createElement("label", null, "$", sliderMax)
 							)
