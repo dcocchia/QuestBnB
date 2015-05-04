@@ -26,11 +26,13 @@ var lodgings_collection = Backbone.Collection.extend({
 			data: {
 				page: this.lodgings_meta_model.get('page'),
 				latitude: this.stop_model.get('geo').lat,
-				longitude: this.stop_model.get('geo').lng
+				longitude: this.stop_model.get('geo').lng,
+				pricemax: this.lodgings_meta_model.get('pricemax'),
+				pricemin: this.lodgings_meta_model.get('pricemin')
 			}
 		});
 	}, 500),
-	
+
 	getLodging: function(resultId) {
 		return _.find(this.models, _.bind(function(model) {
 			return ( model.get('id') === resultId );

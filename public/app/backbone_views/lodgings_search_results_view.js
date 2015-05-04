@@ -39,6 +39,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgings_collection.on('sync', _.bind(function() {
 			this.render();
 			this.createResultsViews();
+			this.scrollToTop();
 			this.hideSpinner();
 		}, this));
 
@@ -102,7 +103,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 		if (this.chosenLodgingView) {
 			this.chosenLodgingView.model.set(lodgingData);
-			this.chosenLodgingView.setElement(this.$(".search-page-lodging-wrapper")
+			this.chosenLodgingView.setElement(this.$('.search-page-lodging-wrapper')
 					.find('[data-id=' + lodgingData.id + ']'));
 			return;
 		}
@@ -113,7 +114,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 			new lodging_model( 
 				lodgingData 
 			), {
-				el: this.$(".search-page-lodging-wrapper")
+				el: this.$('.search-page-lodging-wrapper')
 					.find('[data-id=' + lodgingData.id + ']')
 			});
 
@@ -161,27 +162,32 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 	onPaginate: function(e) {
 		var $target = $(e.currentTarget);
-		var page = $target.parent().attr("data-page");
+		var page = $target.parent().attr('data-page');
 		
 		e.preventDefault();
 
 		this.showSpinner();
-		this.lodgings_meta_model.set("page", page);
+		this.lodgings_meta_model.set('page', page);
 		this.lodgings_collection.fetchDebounced();
 
 	},
 
 	showSpinner: function() {
 		this.spinner.spin();
-		this.lodgings_meta_model.set("isLoading", true);
+		this.lodgings_meta_model.set('isLoading', true);
 		this.render();
 		this.$el.append(this.spinner.el);
 	},
 
 	hideSpinner: function() {
 		this.spinner.stop();
-		this.lodgings_meta_model.set("isLoading", false);
+		this.lodgings_meta_model.set('isLoading', false);
 		this.render();
+	},
+
+	scrollToTop: function() {
+		var $panel = this.parentView.$el.find('.side-bar');
+		$panel.animate({scrollTop:0}, '1500', 'linear');
 	}
 });
 

@@ -50,6 +50,15 @@ var lodgings_search_query_view = Backbone.View.extend({
 			this.bindDatePickersDebounced();
 		}, this));
 
+		Backbone.on('slider:update', _.bind(function(values) {
+			this.lodgings_meta_model.set({
+				pricemax: values[0],
+				pricemin: values[1]
+			});
+			Backbone.trigger('StopView:showSpinner');
+			this.lodgings_collection.fetchDebounced();
+		}, this));
+
 		this.bindDatePickers();
 	},
 

@@ -4,7 +4,9 @@ var lodgings_meta_model = Backbone.Model.extend({
 			'totalResults': 20,
 			'totalPages': 1
 		},
-		'resultsPerPage': 20
+		'resultsPerPage': 20,
+		'pricemax': 1000,
+		'pricemin': 0
 	}
 });
 

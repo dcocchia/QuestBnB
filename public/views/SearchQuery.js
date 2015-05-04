@@ -1,11 +1,38 @@
 var React = require('react');
+var ReactSlider = require('react-slider');
 var LocationsMenu = require('./LocationsMenu');
+var _ = require('lodash');
 
 var SearchQuery = React.createClass({displayName: "SearchQuery",
+	_updateModelDebounced: _.debounce( _.bind( function(value) {
+		Backbone.trigger("slider:update", value);
+	}, this), 500),
+
+	getInitialState: function() {
+		return { 
+			sliderMin: 0,
+			sliderMax: 1000
+		}
+	},
+
+	onSliderChange: function(value) {
+		this.setState({ 
+			sliderMin: value[0],
+			sliderMax: value[1]
+		});
+
+		if (!Backbone) { return; }
+
+		this._updateModelDebounced(value);
+	},
+
 	render: function() {
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] );
 		var hasPredictions = ( queryPredictions.length > 0 );
+		var sliderMin = this.state.sliderMin || 0;
+		var sliderMax = this.state.sliderMax || 1000;
+
 		return (
 			React.createElement("div", {className: "search-query-wrapper-inner"}, 
 				React.createElement("div", {className: "filters-section panel-body panel-light"}, 
@@ -45,6 +72,19 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 					React.createElement("div", {className: "row"}, 
 						React.createElement("div", {className: "col-lg-2 col-md-12"}, 
 							React.createElement("label", null, "Price Range")
+						), 
+						React.createElement("div", {className: "col-lg-9"}, 
+							React.createElement("div", {className: "col-lg-12 col-md-12"}, 
+								React.createElement(ReactSlider, {defaultValue: [0, 1000], max: 1000, min: 0, withBars: true, onChange: this.onSliderChange})
+							)
+						), 
+						React.createElement("div", {className: "col-lg-12 col-md-12"}, 
+							React.createElement("div", {className: "col-lg-6 col-md-6"}, 
+								React.createElement("label", null, "$", sliderMin)
+							), 
+							React.createElement("div", {className: "col-lg-6 col-md-6 text-right"}, 
+								React.createElement("label", null, "$", sliderMax)
+							)
 						)
 					)
 				)
