@@ -80,11 +80,11 @@ var SearchQuery = React.createClass({
 								<ReactSlider defaultValue={[1, 1000]} max={1000} min={1} withBars onChange={this.onSliderChange} />
 							</div>
 							
-							<div className="col-lg-6 col-md-6">
+							<div className="col-lg-6 col-md-6 col-sm-6 col-xs-6">
 								<label>${sliderMin}</label>
 							</div>
 							
-							<div className="col-lg-6 col-md-6 text-right">
+							<div className="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right">
 								<label>${sliderMax}</label>
 							</div>
 						</div>

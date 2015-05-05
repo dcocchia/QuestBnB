@@ -44,11 +44,6 @@ var lodgings_search_results_view = Backbone.View.extend({
 			this.hideSpinner();
 		}, this));
 
-		this.lodgings_collection.on('add', _.bind(function(model) {
-			this.render();
-			this.createResultView(model);
-		}, this));
-
 		this.lodgings_collection.on('change', _.bind(function() {
 			this.render();
 		}, this));
@@ -61,6 +56,9 @@ var lodgings_search_results_view = Backbone.View.extend({
 			this.setElement(this.parentView.$el.find(this.$el.selector));
 			Backbone.trigger('lodgings_search_results_view:render');
 		}, this));
+
+		Backbone.on('StopView:scrollTop', _.bind(this.scrollToTop, this));
+		Backbone.on('StopView:scrollToElm', _.bind(this.scrollToElm, this));
 
 		Backbone.on('StopView:showSpinner', _.bind(this.showSpinner, this));
 		Backbone.on('StopView:hideSpinner', _.bind(this.hideSpinner, this));
@@ -190,8 +188,17 @@ var lodgings_search_results_view = Backbone.View.extend({
 	},
 
 	scrollToTop: function() {
+		this.scrollToElm();
+	},
+
+	scrollToElm: function($elm) {
 		var $panel = this.parentView.$el.find('.side-bar');
-		$panel.animate({scrollTop:0}, '1500', 'linear');
+
+		if (!$elm) { $elm = $panel; }
+		
+		$panel.animate({
+			scrollTop: $elm.offset().top
+		}, '1500', 'linear');
 	}
 });
 

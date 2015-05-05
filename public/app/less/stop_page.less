@@ -306,4 +306,42 @@
 		}
 		 
 	}
+
+	@media (max-width: 768px) {
+		.side-bar {
+			width: 100%;
+			z-index: 99999;
+
+			h1 {
+				font-size: 22px;
+			}
+
+			.date-input-wrapper{
+				&:first-child{
+					.date {
+						margin-bottom: 10px;
+					}
+				}
+
+				.date {
+					z-index: 999999;
+				}
+			}
+
+			.result-request-stay-btn {
+				display: block;
+			}
+
+			.search-results-footer {
+				span.ellip {
+					margin-left: 5px;
+				}
+
+				li a {
+					margin-left: 5px;
+				}
+			}
+		}
+	}
 }
+

@@ -40,13 +40,21 @@ var lodging_result_view = Backbone.View.extend({
 
 		this.model.set('bookingStatus', 'pending');
 		this.syncStopModel();
+		Backbone.trigger(
+			'StopView:scrollToElm', 
+			this.parentView.$el.find('.search-page-lodging-wrapper')
+		);
 	},
 
 	onNextPhoto: function(e) {
 		e.preventDefault();
 		var photosLen = this.model.get('photos').length;
 		var currentActiveIndex = (this.model.get('activePhotoIndex')) || 0;
-		var newActiveIndex = ((currentActiveIndex + 1) >= photosLen) ? 0 : currentActiveIndex + 1;
+		var newActiveIndex = 
+			((currentActiveIndex + 1) >= photosLen) 
+			? 0 
+			: currentActiveIndex + 1;
+
 		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
@@ -54,7 +62,11 @@ var lodging_result_view = Backbone.View.extend({
 		e.preventDefault();
 		var photosLen = this.model.get('photos').length;
 		var currentActiveIndex = (this.model.get('activePhotoIndex'));
-		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
+		var newActiveIndex = 
+			(currentActiveIndex === 0) 
+			? photosLen - 1 
+			: currentActiveIndex - 1;
+			
 		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 

@@ -80,11 +80,11 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 								React.createElement(ReactSlider, {defaultValue: [1, 1000], max: 1000, min: 1, withBars: true, onChange: this.onSliderChange})
 							), 
 							
-							React.createElement("div", {className: "col-lg-6 col-md-6"}, 
+							React.createElement("div", {className: "col-lg-6 col-md-6 col-sm-6 col-xs-6"}, 
 								React.createElement("label", null, "$", sliderMin)
 							), 
 							
-							React.createElement("div", {className: "col-lg-6 col-md-6 text-right"}, 
+							React.createElement("div", {className: "col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"}, 
 								React.createElement("label", null, "$", sliderMax)
 							)
 						)

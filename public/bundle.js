@@ -42078,13 +42078,21 @@ var lodging_result_view = Backbone.View.extend({
 
 		this.model.set('bookingStatus', 'pending');
 		this.syncStopModel();
+		Backbone.trigger(
+			'StopView:scrollToElm', 
+			this.parentView.$el.find('.search-page-lodging-wrapper')
+		);
 	},
 
 	onNextPhoto: function(e) {
 		e.preventDefault();
 		var photosLen = this.model.get('photos').length;
 		var currentActiveIndex = (this.model.get('activePhotoIndex')) || 0;
-		var newActiveIndex = ((currentActiveIndex + 1) >= photosLen) ? 0 : currentActiveIndex + 1;
+		var newActiveIndex = 
+			((currentActiveIndex + 1) >= photosLen) 
+			? 0 
+			: currentActiveIndex + 1;
+
 		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
@@ -42092,7 +42100,11 @@ var lodging_result_view = Backbone.View.extend({
 		e.preventDefault();
 		var photosLen = this.model.get('photos').length;
 		var currentActiveIndex = (this.model.get('activePhotoIndex'));
-		var newActiveIndex = (currentActiveIndex === 0) ? photosLen - 1 : currentActiveIndex - 1;
+		var newActiveIndex = 
+			(currentActiveIndex === 0) 
+			? photosLen - 1 
+			: currentActiveIndex - 1;
+			
 		this.model.set('activePhotoIndex', newActiveIndex);
 	},
 
@@ -42458,11 +42470,6 @@ var lodgings_search_results_view = Backbone.View.extend({
 			this.hideSpinner();
 		}, this));
 
-		this.lodgings_collection.on('add', _.bind(function(model) {
-			this.render();
-			this.createResultView(model);
-		}, this));
-
 		this.lodgings_collection.on('change', _.bind(function() {
 			this.render();
 		}, this));
@@ -42475,6 +42482,9 @@ var lodgings_search_results_view = Backbone.View.extend({
 			this.setElement(this.parentView.$el.find(this.$el.selector));
 			Backbone.trigger('lodgings_search_results_view:render');
 		}, this));
+
+		Backbone.on('StopView:scrollTop', _.bind(this.scrollToTop, this));
+		Backbone.on('StopView:scrollToElm', _.bind(this.scrollToElm, this));
 
 		Backbone.on('StopView:showSpinner', _.bind(this.showSpinner, this));
 		Backbone.on('StopView:hideSpinner', _.bind(this.hideSpinner, this));
@@ -42604,8 +42614,17 @@ var lodgings_search_results_view = Backbone.View.extend({
 	},
 
 	scrollToTop: function() {
+		this.scrollToElm();
+	},
+
+	scrollToElm: function($elm) {
 		var $panel = this.parentView.$el.find('.side-bar');
-		$panel.animate({scrollTop:0}, '1500', 'linear');
+
+		if (!$elm) { $elm = $panel; }
+		
+		$panel.animate({
+			scrollTop: $elm.offset().top
+		}, '1500', 'linear');
 	}
 });
 
@@ -44194,11 +44213,11 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 								React.createElement(ReactSlider, {defaultValue: [1, 1000], max: 1000, min: 1, withBars: true, onChange: this.onSliderChange})
 							), 
 							
-							React.createElement("div", {className: "col-lg-6 col-md-6"}, 
+							React.createElement("div", {className: "col-lg-6 col-md-6 col-sm-6 col-xs-6"}, 
 								React.createElement("label", null, "$", sliderMin)
 							), 
 							
-							React.createElement("div", {className: "col-lg-6 col-md-6 text-right"}, 
+							React.createElement("div", {className: "col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right"}, 
 								React.createElement("label", null, "$", sliderMax)
 							)
 						)
