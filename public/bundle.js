@@ -22,9 +22,7 @@
 
 	//backbone collections
 	var Stops_collection 		= require('./backbone_collections/stops_collection');
-
 	var Travellers_collection 	= require('./backbone_collections/travellers_collection');
-
 	var Lodgings_collection 	= require('./backbone_collections/lodgings_collection');
 
 	//backbone models
@@ -62,7 +60,8 @@
 			this.startOrchestrator({
 				Models: {
 					search_model: Search_model,
-					trip_model: Trip_model
+					trip_model: Trip_model,
+					lodgings_meta_model: Lodgings_meta_model
 				},
 				Views: {
 					landing_view: Landing_view,
@@ -43818,10 +43817,20 @@ var ViewOrchestrator = Backbone.View.extend({
 		var tripId = tripModel.get("_id");
 		var tripView = this.views["trip_view"];
 		var stopModel = tripView.stops_collection.getStop(stopId);
+		var url = '/trips/' + tripId + '/stops/' + stopId;
+
+		this.loadModel(this.Models.lodgings_meta_model, 'lodgings_meta_model');
 
 		this.loadCollection(
 			this.Collections.lodgings_collection, 
-			"lodgings_collection"
+			'lodgings_collection',
+			[
+				[],
+				{
+					url: '/lodgings',
+					lodgings_meta_model: this.models.lodgings_meta_model
+				}
+			]
 		);
 
 		this.loadView(this.Views.stop_page_view, "stop_page_view", {
@@ -43831,12 +43840,16 @@ var ViewOrchestrator = Backbone.View.extend({
 			map_view: this.views["map_view"],
 			model: stopModel,
 			trip_model: tripModel,
-			lodgings_collection: this.collections["lodgings_collection"]
+			lodgings_collection: this.collections.lodgings_collection
 		});
+
+		this.views.stop_page_view.model.url = url;
 
 		this.views["stop_page_view"].trigger("ready");
 
-		this.router.navigate("/trips/" + tripId + "/stops/" + stopId);
+		this.collections.lodgings_collection.fetchDebounced();
+
+		this.router.navigate(url);
 		Backbone.trigger("stop_view:render");
 	}
 

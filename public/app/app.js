@@ -21,9 +21,7 @@
 
 	//backbone collections
 	var Stops_collection 		= require('./backbone_collections/stops_collection');
-
 	var Travellers_collection 	= require('./backbone_collections/travellers_collection');
-
 	var Lodgings_collection 	= require('./backbone_collections/lodgings_collection');
 
 	//backbone models
@@ -61,7 +59,8 @@
 			this.startOrchestrator({
 				Models: {
 					search_model: Search_model,
-					trip_model: Trip_model
+					trip_model: Trip_model,
+					lodgings_meta_model: Lodgings_meta_model
 				},
 				Views: {
 					landing_view: Landing_view,
