@@ -1,5 +1,7 @@
 var React 			= require('react');
 var LocationsMenu 	= require('./LocationsMenu');
+var moment 			= require('moment');
+require('moment-duration-format');
 
 var Stop = React.createClass({displayName: "Stop",
 	render: function() {
@@ -13,6 +15,8 @@ var Stop = React.createClass({displayName: "Stop",
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
 		var totals = ( data.totals || {} );
 		var canAddStop = this.props.canAddStop;
+		var checkout = data.checkout || "";
+		var checkin = data.checkin || "";
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
@@ -34,7 +38,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("p", null, data.distance.text)
 					)
 				), 
-				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id})
+				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id, checkin: checkin, checkout: checkout})
 			)
 		)
 	}
@@ -109,10 +113,15 @@ var Lodging = React.createClass({displayName: "Lodging",
 		var lodging = (this.props.lodging || {} );
 		var attributes = lodging.attr || {};
 		var heading = attributes.heading || "";
+		var checkout = this.props.checkout || "";
+		var checkin = this.props.checkin || "";
 		var photos = lodging.photos || [];
 		var mainPhoto = photos[0] || { medium: "", caption: ""};
 		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
 		var lodgingElm, bookingStatusElm, stopUrl;
+
+		if (checkout !== "") { checkout = moment(checkout).format("MMM Do"); }
+		if (checkin !== "") { checkin = moment(checkin).format("MMM Do"); }
 
 		if (!isHome) {
 			stopUrl = "/trips/" + this.props.tripId + "/stops/" + this.props.stopId + "";
@@ -174,9 +183,9 @@ var Lodging = React.createClass({displayName: "Lodging",
 						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
 							React.createElement("h4", {className: "text-ellip"}, heading), 
 							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
-							React.createElement("p", {className: "text-ellip"}, "March 13th"), 
+							React.createElement("p", {className: "text-ellip"}, checkin), 
 							React.createElement("p", {className: "en-dash"}, "–"), 
-							React.createElement("p", {className: "text-ellip"}, "March 31st")
+							React.createElement("p", {className: "text-ellip"}, checkout)
 						)
 					), 
 					bookingStatusElm
@@ -201,6 +210,7 @@ var TripView = React.createClass({displayName: "TripView",
 		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
+
 
 		return (
 			React.createElement("div", {className: "trip-page", "data-trip-id": tripId}, 

@@ -75,8 +75,8 @@ var ChosenLodging = React.createClass({
 		var attr = data.attr || {};
 		var photos = data.photos || [];
 		var activePhotoIndex = data.activePhotoIndex || 0;
-		var photoSource = (data.photos[activePhotoIndex]) ? data.photos[activePhotoIndex].medium : "";
-		var altTxt = (data.photos[0]) ? data.photos[0].caption : ""
+		var photoSource = (photos[activePhotoIndex]) ? photos[activePhotoIndex].medium : "";
+		var altTxt = (photos[0]) ? photos[0].caption : ""
 		var bookingStatus = data.bookingStatus || false;
 		var showStatusMenu = data.showStatusMenu || false;
 		var photoBtns = function() {
@@ -92,7 +92,10 @@ var ChosenLodging = React.createClass({
 			}
 		}();
 
-		if (_.isEmpty(data)) { return; }
+		if (_.isEmpty(data) || data.id === "default") { 
+			return (<span></span>); 
+		}
+
 		return (
 			<div className="lodging-chosen col-md-12 col-sm-12" data-id={data.id}>
 				<div className="col-md-6 col-sm-12">

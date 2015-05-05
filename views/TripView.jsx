@@ -1,5 +1,7 @@
 var React 			= require('react');
 var LocationsMenu 	= require('./LocationsMenu');
+var moment 			= require('moment');
+require('moment-duration-format');
 
 var Stop = React.createClass({
 	render: function() {
@@ -13,6 +15,8 @@ var Stop = React.createClass({
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
 		var totals = ( data.totals || {} );
 		var canAddStop = this.props.canAddStop;
+		var checkout = data.checkout || "";
+		var checkin = data.checkin || "";
 
 		return (
 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
@@ -34,7 +38,7 @@ var Stop = React.createClass({
 						<p>{data.distance.text}</p>
 					</div>
 				</div>
-				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id}/>
+				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id} checkin={checkin} checkout={checkout}/>
 			</li>
 		)
 	}
@@ -109,10 +113,15 @@ var Lodging = React.createClass({
 		var lodging = (this.props.lodging || {} );
 		var attributes = lodging.attr || {};
 		var heading = attributes.heading || "";
+		var checkout = this.props.checkout || "";
+		var checkin = this.props.checkin || "";
 		var photos = lodging.photos || [];
 		var mainPhoto = photos[0] || { medium: "", caption: ""};
 		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
 		var lodgingElm, bookingStatusElm, stopUrl;
+
+		if (checkout !== "") { checkout = moment(checkout).format("MMM Do"); }
+		if (checkin !== "") { checkin = moment(checkin).format("MMM Do"); }
 
 		if (!isHome) {
 			stopUrl = "/trips/" + this.props.tripId + "/stops/" + this.props.stopId + "";
@@ -174,9 +183,9 @@ var Lodging = React.createClass({
 						<div className="lodging-post-card-text col-sm-6 col-m-6 col-lg-6">
 							<h4 className="text-ellip">{heading}</h4>
 							<p className="text-ellip">$999.99</p>
-							<p className="text-ellip">March 13th</p>
+							<p className="text-ellip">{checkin}</p>
 							<p className="en-dash">&#8211;</p>
-							<p className="text-ellip">March 31st</p>
+							<p className="text-ellip">{checkout}</p>
 						</div>
 					</div>
 					{bookingStatusElm}
@@ -202,6 +211,7 @@ var TripView = React.createClass({
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
 
+
 		return (
 			<div className="trip-page" data-trip-id={tripId}>
 				<div className="side-bar panel">
@@ -210,7 +220,7 @@ var TripView = React.createClass({
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
-								return <Stop tripId={tripId} data={stop} index={index} locationProps={locationProps} stopProps={stopProps} canAddStop={canAddStop} key={index}/>;
+								return <Stop tripId={tripId} data={stop} index={index} locationProps={locationProps} stopProps={stopProps} canAddStop={canAddStop} key={index} />;
 							})}
 							</ol>
 						</div>

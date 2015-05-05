@@ -71,7 +71,10 @@ app.get('/trips/:id', function(req, res){
 			
 			doc = docs[0];
 			
-			_.extend(doc, { mapStyleClasses: "map trip-view" });
+			_.extend(doc, { 
+				mapStyleClasses: "map trip-view",
+				id: doc._id
+			});
 
 			res.format({
 				json: function() {

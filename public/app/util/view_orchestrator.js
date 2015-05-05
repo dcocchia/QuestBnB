@@ -1,4 +1,4 @@
-var Promise = require("bluebird");
+var Promise = require('bluebird');
 
 var ViewOrchestrator = Backbone.View.extend({
 
@@ -12,35 +12,35 @@ var ViewOrchestrator = Backbone.View.extend({
 	},
 
 	setMapListeners: function() {
-		var mapView = this.views["map_view"];
+		var mapView = this.views['map_view'];
 
 		Backbone.on(
-			"map:setCenter", 
+			'map:setCenter', 
 			_.bind(mapView.setCenter, mapView)
 		);
 
 		Backbone.on(
-			"map:setMarker", 
+			'map:setMarker', 
 			_.bind(this.map_api.makeMarker, mapView)
 		);
 
 		Backbone.on(
-			"map:clearMarkers", 
+			'map:clearMarkers', 
 			_.bind(this.map_api.clearMarkers, mapView)
 		);
 
 		Backbone.on(
-			"map:setZoom", 
+			'map:setZoom', 
 			_.bind(mapView.setZoom, mapView)
 		);
 	},
 
 	setViewListeners: function() {
-		Backbone.on("landing_view:submit", _.bind(function(data) {
+		Backbone.on('landing_view:submit', _.bind(function(data) {
 			this.goToTripView(data);
 		}, this));
 
-		Backbone.on("TripView:go_to_stop", _.bind(function(stopId) {
+		Backbone.on('TripView:go_to_stop', _.bind(function(stopId) {
 			this.goToStopView(stopId);
 		}, this));
 	},
@@ -61,7 +61,7 @@ var ViewOrchestrator = Backbone.View.extend({
 						stopNum: 1,
 						dayNum: 1,
 						lodging: {
-							id: "quest_home"
+							id: 'quest_home'
 						}
 					}
 				} else {
@@ -77,39 +77,39 @@ var ViewOrchestrator = Backbone.View.extend({
 				dayNum: 1
 			});
 
-			this.loadModel(this.Models.trip_model, "trip_model", {
-				title: "Your Next Adventure",
+			this.loadModel(this.Models.trip_model, 'trip_model', {
+				title: 'Your Next Adventure',
 				start: data.start,
 				end: data.end,
 				numStops: 2,
 				travellers: [
 					{
-						name: "You",
+						name: 'You',
 						img: {
-							src: "/app/img/default-icon.png"
+							src: '/app/img/default-icon.png'
 						}
 					}
 				],
 				stops: stops
 			});
 
-			this.loadModel(this.Models.search_model, "search_model", {
+			this.loadModel(this.Models.search_model, 'search_model', {
 				map_api: this.map_api
 			});
 
-			this.loadView(this.Views.trip_view, "trip_view", {
+			this.loadView(this.Views.trip_view, 'trip_view', {
 				$parentEl: this.$el, 
-				el: $(".trip-page"), 
+				el: $('.trip-page'), 
 				map_api: this.map_api,
-				map_view: this.views["map_view"],
-				model: this.models["trip_model"],
-				search_model: this.models["search_model"],
+				map_view: this.views['map_view'],
+				model: this.models['trip_model'],
+				search_model: this.models['search_model'],
 				stops_collection: this.Collections.stops_collection,
 				travellers_collection: this.Collections.travellers_collection
 			});
 
 			//TODO: validation in the model
-			this.models["trip_model"].save(null, {
+			this.models['trip_model'].save(null, {
 				success: function(data) {
 					resolve(data);
 				},
@@ -122,21 +122,26 @@ var ViewOrchestrator = Backbone.View.extend({
 		//1 second for animation, and unknown time for db query result
 		Promise.all([timeOutPromise, dbQueryPromise])
 			.then( _.bind(function(a, b){
-				var trip_model = this.models["trip_model"];
-				var tripId = this.models["trip_model"].get("_id");
+				var trip_model = this.models['trip_model'];
+				var tripId = this.models['trip_model'].get('_id');
 				trip_model.setUrl(tripId);
-				trip_model.trigger("ready");
-				this.router.navigate("/trips/" + tripId);
+				trip_model.trigger('ready');
+				this.router.navigate('/trips/' + tripId);
 				trip_model.saveLocalStorageReference();
-				Backbone.trigger("trip_view:render", true);
+				Backbone.trigger('trip_view:render', true);
 			}, this));
 	},
 
 	goToStopView: function(stopId) {
-		var tripModel = this.models["trip_model"];
-		var tripId = tripModel.get("_id");
-		var tripView = this.views["trip_view"];
-		var stopModel = tripView.stops_collection.getStop(stopId);
+		var tripModel = this.models['trip_model'];
+		var tripId = tripModel.get('_id');
+		var tripView = this.views['trip_view'];
+		var stopModelData = tripView.stops_collection.getStop(stopId).toJSON();
+		var stopModel = this.loadModel(
+			this.Models.stop_model, 
+			'lodgings_meta_model',
+			stopModelData
+		);
 		var url = '/trips/' + tripId + '/stops/' + stopId;
 
 		this.loadModel(this.Models.lodgings_meta_model, 'lodgings_meta_model');
@@ -153,11 +158,11 @@ var ViewOrchestrator = Backbone.View.extend({
 			]
 		);
 
-		this.loadView(this.Views.stop_page_view, "stop_page_view", {
+		this.loadView(this.Views.stop_page_view, 'stop_page_view', {
 			$parentEl: this.$el,
-			el: $(".stop-page"),
+			el: $('.stop-page'),
 			map_api: this.map_api,
-			map_view: this.views["map_view"],
+			map_view: this.views['map_view'],
 			model: stopModel,
 			trip_model: tripModel,
 			lodgings_collection: this.collections.lodgings_collection
@@ -165,12 +170,12 @@ var ViewOrchestrator = Backbone.View.extend({
 
 		this.views.stop_page_view.model.url = url;
 
-		this.views["stop_page_view"].trigger("ready");
+		this.views.stop_page_view.trigger('ready');
 
 		this.collections.lodgings_collection.fetchDebounced();
 
 		this.router.navigate(url);
-		Backbone.trigger("stop_view:render");
+		Backbone.trigger('stop_view:render');
 	}
 
 });

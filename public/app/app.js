@@ -60,7 +60,8 @@
 				Models: {
 					search_model: Search_model,
 					trip_model: Trip_model,
-					lodgings_meta_model: Lodgings_meta_model
+					lodgings_meta_model: Lodgings_meta_model,
+					stop_model: Stop_model
 				},
 				Views: {
 					landing_view: Landing_view,

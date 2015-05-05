@@ -61,7 +61,8 @@
 				Models: {
 					search_model: Search_model,
 					trip_model: Trip_model,
-					lodgings_meta_model: Lodgings_meta_model
+					lodgings_meta_model: Lodgings_meta_model,
+					stop_model: Stop_model
 				},
 				Views: {
 					landing_view: Landing_view,
@@ -41477,78 +41478,7 @@ var stop_model = Backbone.Model.extend({
 				'value': 0
 			}
 		},
-		'lodging': {
-		    'id': 'abc123',
-		    'latLng': [
-				0,
-		        0
-		    ],
-		    'itemStatus': 'published',
-		    'attr': {
-		        'roomType': {
-		            'text': 'Entire home/apt',
-		            'id': 0
-		        },
-		        'bathrooms': 1,
-		        'description': '',
-		        'instantBookable': false,
-		        'extraGuests': {
-		            'fee': 0,
-		            'after': 0
-		        },
-		        'bedrooms': 1,
-		        'occupancy': 2,
-		        'beds': 1,
-		        'isCalAvailable': true,
-		        'responseTime': '',
-		        'fees': [],
-		        'lastUpdatedAt': 0,
-		        'heading': '',
-		        'securityDeposit': 0,
-		        'checkOut': '12:00am',
-		        'checkIn': '12:00pm',
-		        'size': -1
-		    },
-		    'price': {
-		        'monthly': 0,
-		        'nightly': 0,
-		        'maxNight': 0,
-		        'weekend': 0,
-		        'minNight': 0,
-		        'weekly': 0
-		    },
-		    'photos': [],
-		    'location': {},
-		    'provider': {
-		        'domain': 'airbnb.com',
-		        'full': 'Airbnb',
-		        'cid': 'airbnb'
-		    },
-		    'amenities': [],
-		    'reviews': {
-		        'count': 0,
-		        'rating': 0,
-		        'entries': []
-		    },
-		    'priceRange': [
-		        {
-		            'nightly': 0,
-		            'start': 0,
-		            'end': 0,
-		            'maxNight': 0,
-		            'weekend': 0,
-		            'monthly': 0,
-		            'minNight': 0,
-		            'weekly': 0
-		        }
-		    ],
-		    'availability': [
-		        {
-		            'start': 0,
-		            'end': 0
-		        }
-		    ]
-		}
+		'lodging': {}
 	},
 
 	initialize: function(opts) {
@@ -43220,6 +43150,10 @@ var TripView = PageView.extend({
 			
 		}, this));
 
+		this.model.on('sync', _.bind(function() {
+			this.render(trip_template);
+		}, this));
+
 		this.model.on('change', _.bind(function() {
 			this.render(trip_template);
 			this.map_view.setMode('trip-view');
@@ -43289,7 +43223,8 @@ var TripView = PageView.extend({
 		opts || (opts = {});
 		this.model.set('travellers', this.travellers_collection.toJSON());
 		if (opts.sync) {
-			this.model.sync('update', this.model, {url: this.model.url});
+			this.model.save();
+			//this.model.sync('update', this.model, {url: this.model.url});
 		}
 	},
 
@@ -43347,6 +43282,8 @@ var TripView = PageView.extend({
 	onAddStopClick: function(e) {
 		var stopIndex = $(e.currentTarget).closest('.stop').attr('data-stop-index');
 
+		stopIndex = parseInt(stopIndex);
+
 		if (e.preventDefault) { e.preventDefault(); }
 
 		if (_.isNumber(stopIndex) ) {
@@ -43380,7 +43317,8 @@ var TripView = PageView.extend({
 		if (this.model.get('title') !== text) {
 			this.model.set('title', text);
 			this.model.saveLocalStorageReference();
-			this.model.sync('update', this.model, {url: this.model.url});
+			this.model.save();
+			//this.model.sync('update', this.model, {url: this.model.url});
 		}
 		
 	},
@@ -43435,7 +43373,8 @@ var TripView = PageView.extend({
 		this.setStopsCollectionInModel();
 		this.setModel(null, {silent: true});
 		this.render(trip_template);
-		this.model.sync('update', this.model, { url: this.model.url });
+		this.model.save();
+		//this.model.sync('update', this.model, { url: this.model.url });
 	},
 
 	setModelThrottle: _.throttle(function(modelAttr, val) {
@@ -43445,7 +43384,8 @@ var TripView = PageView.extend({
 	}, 100),
 
 	syncModelDebounced: _.debounce(function() {
-		this.model.sync('update', this.model, { url: this.model.url });
+		this.model.save();
+		//this.model.sync('update', this.model, { url: this.model.url });
 	}, 700),
 
 	setModel: function(opts, setOpts) {
@@ -43678,7 +43618,7 @@ Map.prototype = {
 
 module.exports = Map;
 },{"bluebird":2}],186:[function(require,module,exports){
-var Promise = require("bluebird");
+var Promise = require('bluebird');
 
 var ViewOrchestrator = Backbone.View.extend({
 
@@ -43692,35 +43632,35 @@ var ViewOrchestrator = Backbone.View.extend({
 	},
 
 	setMapListeners: function() {
-		var mapView = this.views["map_view"];
+		var mapView = this.views['map_view'];
 
 		Backbone.on(
-			"map:setCenter", 
+			'map:setCenter', 
 			_.bind(mapView.setCenter, mapView)
 		);
 
 		Backbone.on(
-			"map:setMarker", 
+			'map:setMarker', 
 			_.bind(this.map_api.makeMarker, mapView)
 		);
 
 		Backbone.on(
-			"map:clearMarkers", 
+			'map:clearMarkers', 
 			_.bind(this.map_api.clearMarkers, mapView)
 		);
 
 		Backbone.on(
-			"map:setZoom", 
+			'map:setZoom', 
 			_.bind(mapView.setZoom, mapView)
 		);
 	},
 
 	setViewListeners: function() {
-		Backbone.on("landing_view:submit", _.bind(function(data) {
+		Backbone.on('landing_view:submit', _.bind(function(data) {
 			this.goToTripView(data);
 		}, this));
 
-		Backbone.on("TripView:go_to_stop", _.bind(function(stopId) {
+		Backbone.on('TripView:go_to_stop', _.bind(function(stopId) {
 			this.goToStopView(stopId);
 		}, this));
 	},
@@ -43741,7 +43681,7 @@ var ViewOrchestrator = Backbone.View.extend({
 						stopNum: 1,
 						dayNum: 1,
 						lodging: {
-							id: "quest_home"
+							id: 'quest_home'
 						}
 					}
 				} else {
@@ -43757,39 +43697,39 @@ var ViewOrchestrator = Backbone.View.extend({
 				dayNum: 1
 			});
 
-			this.loadModel(this.Models.trip_model, "trip_model", {
-				title: "Your Next Adventure",
+			this.loadModel(this.Models.trip_model, 'trip_model', {
+				title: 'Your Next Adventure',
 				start: data.start,
 				end: data.end,
 				numStops: 2,
 				travellers: [
 					{
-						name: "You",
+						name: 'You',
 						img: {
-							src: "/app/img/default-icon.png"
+							src: '/app/img/default-icon.png'
 						}
 					}
 				],
 				stops: stops
 			});
 
-			this.loadModel(this.Models.search_model, "search_model", {
+			this.loadModel(this.Models.search_model, 'search_model', {
 				map_api: this.map_api
 			});
 
-			this.loadView(this.Views.trip_view, "trip_view", {
+			this.loadView(this.Views.trip_view, 'trip_view', {
 				$parentEl: this.$el, 
-				el: $(".trip-page"), 
+				el: $('.trip-page'), 
 				map_api: this.map_api,
-				map_view: this.views["map_view"],
-				model: this.models["trip_model"],
-				search_model: this.models["search_model"],
+				map_view: this.views['map_view'],
+				model: this.models['trip_model'],
+				search_model: this.models['search_model'],
 				stops_collection: this.Collections.stops_collection,
 				travellers_collection: this.Collections.travellers_collection
 			});
 
 			//TODO: validation in the model
-			this.models["trip_model"].save(null, {
+			this.models['trip_model'].save(null, {
 				success: function(data) {
 					resolve(data);
 				},
@@ -43802,21 +43742,26 @@ var ViewOrchestrator = Backbone.View.extend({
 		//1 second for animation, and unknown time for db query result
 		Promise.all([timeOutPromise, dbQueryPromise])
 			.then( _.bind(function(a, b){
-				var trip_model = this.models["trip_model"];
-				var tripId = this.models["trip_model"].get("_id");
+				var trip_model = this.models['trip_model'];
+				var tripId = this.models['trip_model'].get('_id');
 				trip_model.setUrl(tripId);
-				trip_model.trigger("ready");
-				this.router.navigate("/trips/" + tripId);
+				trip_model.trigger('ready');
+				this.router.navigate('/trips/' + tripId);
 				trip_model.saveLocalStorageReference();
-				Backbone.trigger("trip_view:render", true);
+				Backbone.trigger('trip_view:render', true);
 			}, this));
 	},
 
 	goToStopView: function(stopId) {
-		var tripModel = this.models["trip_model"];
-		var tripId = tripModel.get("_id");
-		var tripView = this.views["trip_view"];
-		var stopModel = tripView.stops_collection.getStop(stopId);
+		var tripModel = this.models['trip_model'];
+		var tripId = tripModel.get('_id');
+		var tripView = this.views['trip_view'];
+		var stopModelData = tripView.stops_collection.getStop(stopId).toJSON();
+		var stopModel = this.loadModel(
+			this.Models.stop_model, 
+			'lodgings_meta_model',
+			stopModelData
+		);
 		var url = '/trips/' + tripId + '/stops/' + stopId;
 
 		this.loadModel(this.Models.lodgings_meta_model, 'lodgings_meta_model');
@@ -43833,11 +43778,11 @@ var ViewOrchestrator = Backbone.View.extend({
 			]
 		);
 
-		this.loadView(this.Views.stop_page_view, "stop_page_view", {
+		this.loadView(this.Views.stop_page_view, 'stop_page_view', {
 			$parentEl: this.$el,
-			el: $(".stop-page"),
+			el: $('.stop-page'),
 			map_api: this.map_api,
-			map_view: this.views["map_view"],
+			map_view: this.views['map_view'],
 			model: stopModel,
 			trip_model: tripModel,
 			lodgings_collection: this.collections.lodgings_collection
@@ -43845,12 +43790,12 @@ var ViewOrchestrator = Backbone.View.extend({
 
 		this.views.stop_page_view.model.url = url;
 
-		this.views["stop_page_view"].trigger("ready");
+		this.views.stop_page_view.trigger('ready');
 
 		this.collections.lodgings_collection.fetchDebounced();
 
 		this.router.navigate(url);
-		Backbone.trigger("stop_view:render");
+		Backbone.trigger('stop_view:render');
 	}
 
 });
@@ -43934,8 +43879,8 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 		var attr = data.attr || {};
 		var photos = data.photos || [];
 		var activePhotoIndex = data.activePhotoIndex || 0;
-		var photoSource = (data.photos[activePhotoIndex]) ? data.photos[activePhotoIndex].medium : "";
-		var altTxt = (data.photos[0]) ? data.photos[0].caption : ""
+		var photoSource = (photos[activePhotoIndex]) ? photos[activePhotoIndex].medium : "";
+		var altTxt = (photos[0]) ? photos[0].caption : ""
 		var bookingStatus = data.bookingStatus || false;
 		var showStatusMenu = data.showStatusMenu || false;
 		var photoBtns = function() {
@@ -43951,7 +43896,10 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 			}
 		}();
 
-		if (_.isEmpty(data)) { return; }
+		if (_.isEmpty(data) || data.id === "default") { 
+			return (React.createElement("span", null)); 
+		}
+
 		return (
 			React.createElement("div", {className: "lodging-chosen col-md-12 col-sm-12", "data-id": data.id}, 
 				React.createElement("div", {className: "col-md-6 col-sm-12"}, 
@@ -44512,6 +44460,8 @@ module.exports = StopView;
 },{"./ChosenLodging":187,"./SearchQuery":192,"./SearchResults":193,"lodash":4,"react":162}],196:[function(require,module,exports){
 var React 			= require('react');
 var LocationsMenu 	= require('./LocationsMenu');
+var moment 			= require('moment');
+require('moment-duration-format');
 
 var Stop = React.createClass({displayName: "Stop",
 	render: function() {
@@ -44525,6 +44475,8 @@ var Stop = React.createClass({displayName: "Stop",
 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
 		var totals = ( data.totals || {} );
 		var canAddStop = this.props.canAddStop;
+		var checkout = data.checkout || "";
+		var checkin = data.checkin || "";
 
 		return (
 			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
@@ -44546,7 +44498,7 @@ var Stop = React.createClass({displayName: "Stop",
 						React.createElement("p", null, data.distance.text)
 					)
 				), 
-				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id})
+				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id, checkin: checkin, checkout: checkout})
 			)
 		)
 	}
@@ -44621,10 +44573,15 @@ var Lodging = React.createClass({displayName: "Lodging",
 		var lodging = (this.props.lodging || {} );
 		var attributes = lodging.attr || {};
 		var heading = attributes.heading || "";
+		var checkout = this.props.checkout || "";
+		var checkin = this.props.checkin || "";
 		var photos = lodging.photos || [];
 		var mainPhoto = photos[0] || { medium: "", caption: ""};
 		var isHome = (lodging && lodging.id === "quest_home") ? true : false;
 		var lodgingElm, bookingStatusElm, stopUrl;
+
+		if (checkout !== "") { checkout = moment(checkout).format("MMM Do"); }
+		if (checkin !== "") { checkin = moment(checkin).format("MMM Do"); }
 
 		if (!isHome) {
 			stopUrl = "/trips/" + this.props.tripId + "/stops/" + this.props.stopId + "";
@@ -44686,9 +44643,9 @@ var Lodging = React.createClass({displayName: "Lodging",
 						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
 							React.createElement("h4", {className: "text-ellip"}, heading), 
 							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
-							React.createElement("p", {className: "text-ellip"}, "March 13th"), 
+							React.createElement("p", {className: "text-ellip"}, checkin), 
 							React.createElement("p", {className: "en-dash"}, "–"), 
-							React.createElement("p", {className: "text-ellip"}, "March 31st")
+							React.createElement("p", {className: "text-ellip"}, checkout)
 						)
 					), 
 					bookingStatusElm
@@ -44713,6 +44670,7 @@ var TripView = React.createClass({displayName: "TripView",
 		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
+
 
 		return (
 			React.createElement("div", {className: "trip-page", "data-trip-id": tripId}, 
@@ -44756,7 +44714,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":190,"react":162}],197:[function(require,module,exports){
+},{"./LocationsMenu":190,"moment":6,"moment-duration-format":5,"react":162}],197:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

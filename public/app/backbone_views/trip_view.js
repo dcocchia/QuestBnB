@@ -78,6 +78,10 @@ var TripView = PageView.extend({
 			
 		}, this));
 
+		this.model.on('sync', _.bind(function() {
+			this.render(trip_template);
+		}, this));
+
 		this.model.on('change', _.bind(function() {
 			this.render(trip_template);
 			this.map_view.setMode('trip-view');
@@ -147,7 +151,8 @@ var TripView = PageView.extend({
 		opts || (opts = {});
 		this.model.set('travellers', this.travellers_collection.toJSON());
 		if (opts.sync) {
-			this.model.sync('update', this.model, {url: this.model.url});
+			this.model.save();
+			//this.model.sync('update', this.model, {url: this.model.url});
 		}
 	},
 
@@ -205,6 +210,8 @@ var TripView = PageView.extend({
 	onAddStopClick: function(e) {
 		var stopIndex = $(e.currentTarget).closest('.stop').attr('data-stop-index');
 
+		stopIndex = parseInt(stopIndex);
+
 		if (e.preventDefault) { e.preventDefault(); }
 
 		if (_.isNumber(stopIndex) ) {
@@ -238,7 +245,8 @@ var TripView = PageView.extend({
 		if (this.model.get('title') !== text) {
 			this.model.set('title', text);
 			this.model.saveLocalStorageReference();
-			this.model.sync('update', this.model, {url: this.model.url});
+			this.model.save();
+			//this.model.sync('update', this.model, {url: this.model.url});
 		}
 		
 	},
@@ -293,7 +301,8 @@ var TripView = PageView.extend({
 		this.setStopsCollectionInModel();
 		this.setModel(null, {silent: true});
 		this.render(trip_template);
-		this.model.sync('update', this.model, { url: this.model.url });
+		this.model.save();
+		//this.model.sync('update', this.model, { url: this.model.url });
 	},
 
 	setModelThrottle: _.throttle(function(modelAttr, val) {
@@ -303,7 +312,8 @@ var TripView = PageView.extend({
 	}, 100),
 
 	syncModelDebounced: _.debounce(function() {
-		this.model.sync('update', this.model, { url: this.model.url });
+		this.model.save();
+		//this.model.sync('update', this.model, { url: this.model.url });
 	}, 700),
 
 	setModel: function(opts, setOpts) {
