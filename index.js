@@ -56,6 +56,7 @@ app.post('/trips', function(req, res){
 		if (err) {
 			res.status(500).send({"error": error});
 		} else {
+			insertedDoc[0].id = insertedDoc[0]._id.toJSON();
 			res.send(insertedDoc[0]);
 		}
 	});
@@ -72,8 +73,7 @@ app.get('/trips/:id', function(req, res){
 			doc = docs[0];
 			
 			_.extend(doc, { 
-				mapStyleClasses: "map trip-view",
-				id: doc._id
+				mapStyleClasses: "map trip-view"
 			});
 
 			res.format({
@@ -133,6 +133,7 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 	var tripId = req.params.id;
 	var stopId = req.params.stopId;
 	var stopDoc;
+	var thisStopId;
 
 	trips.findAsync({_id: ObjectId(tripId)}).then(function(docs) {
 		if (docs && docs.length > 0) {
@@ -140,7 +141,13 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 			doc = docs[0];
 
 			stopDoc = _.find(doc.stops, function(stop) {
-				return (stop._id === stopId);
+				if (stop._id instanceof mongojs.ObjectId) {
+					thisStopId = stop._id.toJSON();
+				} else {
+					thisStopId = stop._id;
+				}
+
+				return (thisStopId === stopId);
 			});
 
 			_.extend(stopDoc, {
