@@ -41914,12 +41914,17 @@ var LandingView = PageView.extend({
 		this.map_api.getPlaceDetails({placeId: placeId}, function(place, status) {
 			if (status === google.maps.places.PlacesServiceStatus.OK ) {
 				Backbone.trigger('map:clearMarkers');
+				
 				Backbone.trigger('map:setCenter', {
-					lat: place.geometry.location.k + offset_y, long: place.geometry.location.D + offset_x
+					lat: place.geometry.location.lat() + offset_y, 
+					long: place.geometry.location.lng() + offset_x
 				});
+				
 				Backbone.trigger('map:setMarker', {
-					location: place.geometry.location
+					lat: place.geometry.location.lat(),
+					lng: place.geometry.location.lng()
 				});
+				
 				Backbone.trigger('map:setZoom', 8);
 			}
 		});
