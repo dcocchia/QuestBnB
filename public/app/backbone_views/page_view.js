@@ -2,13 +2,13 @@ var renderer = require('../../../renderer/client_renderer');
 var PageView = Backbone.View.extend({
 
 	render: function(template, data) {
-		var modelData = (this.model) ? this.model.attributes : {};
+		var modelData = (this.model) ? this.model.toJSON() : {};
 
-		data || (data = {});
+		if (!data) { data = {}; }
 
-		_.extend(data, modelData);
+		_.extend(modelData, data);
 
-		renderer.render(template, data, this.elms.$parentEl[0]);
+		renderer.render(template, modelData, this.elms.$parentEl[0]);
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
 

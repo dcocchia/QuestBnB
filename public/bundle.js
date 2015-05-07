@@ -42510,7 +42510,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 		var renderModel = {
 			isServer: false,
-			isLoading: lodgingsMetaData.isLoading,
+			isLoading: !!lodgingsMetaData.isLoading,
 			lodgingData: {
 				result: collectionData,
 				count: lodgingsMetaData.count,
@@ -42600,13 +42600,13 @@ var renderer = require('../../../renderer/client_renderer');
 var PageView = Backbone.View.extend({
 
 	render: function(template, data) {
-		var modelData = (this.model) ? this.model.attributes : {};
+		var modelData = (this.model) ? this.model.toJSON() : {};
 
-		data || (data = {});
+		if (!data) { data = {}; }
 
-		_.extend(data, modelData);
+		_.extend(modelData, data);
 
-		renderer.render(template, data, this.elms.$parentEl[0]);
+		renderer.render(template, modelData, this.elms.$parentEl[0]);
 
 		this.setElement(this.elms.$parentEl.children(this.$el.selector));
 
@@ -43203,15 +43203,13 @@ var TripView = PageView.extend({
 		$dateWrapper.find('.date.start').datepicker({
 			minDate: 0,
 			onSelect: _.bind( function(resp) {
-				//re calc stuff
-				//then save to model
+				this.setStartDate(resp);
 			}, this)
 		});
 		$dateWrapper.find('.date.end').datepicker({
 			minDate: 0,
 			onSelect: _.bind( function(resp) {
-				//re calc stuff
-				//then save to model
+				this.setEndDate(resp);
 			}, this)
 		});
 	},
@@ -43219,6 +43217,50 @@ var TripView = PageView.extend({
 	bindDatePickersDebounced: _.debounce(function() { 
 		this.bindDatePickers();
 	}, 500),
+
+	setStartDate: function(date) {
+		var newStart;
+		var endDate = this.model.get('end');
+
+		this.model.set('start', date);
+		this.syncModelDebounced();
+		
+		newStart = moment(this.model.get('start'));
+		
+		if (newStart.isAfter(endDate)) {
+			this.clearEndDate();
+		}
+	},
+
+	setEndDate: function(date) {
+		var newEnd;
+		var startDate = this.model.get('start');
+
+		this.model.set('end', date);
+		this.syncModelDebounced();
+		
+		newEnd = moment(this.model.get('end'));
+
+		if (newEnd.isBefore(startDate)) {
+			this.clearStartDate();
+		}
+	},
+
+	clearStartDate: function() {
+		var $dateInput = this.$('.trip-dates-wrapper').find('.date.start');
+		this.model.set('start', undefined);
+		_.delay( function() {
+			$dateInput.focus().datepicker( "setDate", null );
+		}, 250);
+	},
+
+	clearEndDate: function() {
+		var $dateInput = this.$('.trip-dates-wrapper').find('.date.end');
+		this.model.set('end', undefined);
+		_.delay( function() {
+			$dateInput.focus().datepicker( "setDate", null );
+		}, 250);
+	},
 
 	setStopsCollectionInModel: function() {
 		this.model.set('stops', this.stops_collection.toJSON(), {silent: true});
@@ -43229,7 +43271,6 @@ var TripView = PageView.extend({
 		this.model.set('travellers', this.travellers_collection.toJSON());
 		if (opts.sync) {
 			this.model.save();
-			//this.model.sync('update', this.model, {url: this.model.url});
 		}
 	},
 
@@ -43323,7 +43364,6 @@ var TripView = PageView.extend({
 			this.model.set('title', text);
 			this.model.saveLocalStorageReference();
 			this.model.save();
-			//this.model.sync('update', this.model, {url: this.model.url});
 		}
 		
 	},
@@ -43379,7 +43419,6 @@ var TripView = PageView.extend({
 		this.setModel(null, {silent: true});
 		this.render(trip_template);
 		this.model.save();
-		//this.model.sync('update', this.model, { url: this.model.url });
 	},
 
 	setModelThrottle: _.throttle(function(modelAttr, val) {
@@ -43390,7 +43429,6 @@ var TripView = PageView.extend({
 
 	syncModelDebounced: _.debounce(function() {
 		this.model.save();
-		//this.model.sync('update', this.model, { url: this.model.url });
 	}, 700),
 
 	setModel: function(opts, setOpts) {
@@ -44642,10 +44680,10 @@ var Lodging = React.createClass({displayName: "Lodging",
 			lodgingElm = (
 				React.createElement("div", {className: "lodging-wrapper"}, 
 					React.createElement("div", {className: "lodging-post-card"}, 
-						React.createElement("div", {className: "lodging-img-wrapper col-sm-6 col-m-6 col-lg-6"}, 
+						React.createElement("div", {className: "lodging-img-wrapper col-sm-5 col-m-5 col-lg-5"}, 
 							React.createElement("img", {src: mainPhoto.medium, alt: mainPhoto.caption, className: "absolute-center"})
 						), 
-						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
+						React.createElement("div", {className: "lodging-post-card-text col-sm-7 col-m-7 col-lg-7"}, 
 							React.createElement("h4", {className: "text-ellip"}, heading), 
 							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
 							React.createElement("p", {className: "text-ellip"}, checkin), 

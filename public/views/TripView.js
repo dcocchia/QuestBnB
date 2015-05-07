@@ -177,10 +177,10 @@ var Lodging = React.createClass({displayName: "Lodging",
 			lodgingElm = (
 				React.createElement("div", {className: "lodging-wrapper"}, 
 					React.createElement("div", {className: "lodging-post-card"}, 
-						React.createElement("div", {className: "lodging-img-wrapper col-sm-6 col-m-6 col-lg-6"}, 
+						React.createElement("div", {className: "lodging-img-wrapper col-sm-5 col-m-5 col-lg-5"}, 
 							React.createElement("img", {src: mainPhoto.medium, alt: mainPhoto.caption, className: "absolute-center"})
 						), 
-						React.createElement("div", {className: "lodging-post-card-text col-sm-6 col-m-6 col-lg-6"}, 
+						React.createElement("div", {className: "lodging-post-card-text col-sm-7 col-m-7 col-lg-7"}, 
 							React.createElement("h4", {className: "text-ellip"}, heading), 
 							React.createElement("p", {className: "text-ellip"}, "$999.99"), 
 							React.createElement("p", {className: "text-ellip"}, checkin), 

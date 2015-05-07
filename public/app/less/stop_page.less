@@ -26,7 +26,33 @@
 		padding-top: 15px;
 		padding-bottom: 15px;
 		border-top: 0;
-		border-bottom: 1px solid #dce0e0;
+		position: relative;
+
+		&+.filters-section {
+			&:before {
+				content: "";
+				position: absolute;
+				top: -1px;
+				height: 1px;
+				left: 20px;
+				right: 20px;
+				border-top: 1px solid @panel-border-grey;
+				border-color: rgba(220,224,224,0.5);
+			}
+		}
+
+		&:last-child {
+			&:after {
+				content: "";
+				position: absolute;
+				bottom: 1px;
+				height: 1px;
+				left: 20px;
+				right: 20px;
+				border-bottom: 1px solid @panel-border-grey;
+				border-color: rgba(220,224,224,0.5);
+			}
+		}
 
 		label {
 			display: block;
@@ -53,6 +79,8 @@
 			}
 
 			.result-body {
+				padding: 0 15px;
+
 				h3 {
 					font-size: 22px;
 					text-align: center

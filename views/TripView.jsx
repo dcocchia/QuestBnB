@@ -177,10 +177,10 @@ var Lodging = React.createClass({
 			lodgingElm = (
 				<div className="lodging-wrapper">
 					<div className="lodging-post-card">
-						<div className="lodging-img-wrapper col-sm-6 col-m-6 col-lg-6">
+						<div className="lodging-img-wrapper col-sm-5 col-m-5 col-lg-5">
 							<img src={mainPhoto.medium} alt={mainPhoto.caption} className="absolute-center"/>
 						</div>
-						<div className="lodging-post-card-text col-sm-6 col-m-6 col-lg-6">
+						<div className="lodging-post-card-text col-sm-7 col-m-7 col-lg-7">
 							<h4 className="text-ellip">{heading}</h4>
 							<p className="text-ellip">$999.99</p>
 							<p className="text-ellip">{checkin}</p>

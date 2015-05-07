@@ -150,7 +150,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 
 		var renderModel = {
 			isServer: false,
-			isLoading: lodgingsMetaData.isLoading,
+			isLoading: !!lodgingsMetaData.isLoading,
 			lodgingData: {
 				result: collectionData,
 				count: lodgingsMetaData.count,
