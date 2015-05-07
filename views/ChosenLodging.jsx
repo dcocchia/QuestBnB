@@ -3,38 +3,86 @@ var React = require('react');
 var Stars = require('./Stars');
 
 var Status = React.createClass({
+	buildStatus: function(opts) {
+		var defaults = {
+			statusClass: "pending",
+			renderLinks: false,
+			text: "Pending host approval",
+			tripId: "",
+			stopId: ""
+		}
+
+		if (!opts) { opts = {}; }
+
+		_.defaults(opts, defaults);
+
+		if (opts.renderLinks) {
+			return (
+				<div className={"lodging-booking-status " + opts.statusClass } role="button">
+					<a href={"/trips/" + opts.tripId + "/stops/" + opts.stopId}>{opts.text} &gt;</a>
+				</div>
+			)
+		} else {
+			return (
+				<div className={"chosen lodging-booking-status " + opts.statusClass}>
+					{opts.text}
+				</div>
+			)
+		}
+	},
+
 	render: function() {
 		var bookingStatusElm;
 		var bookingStatus = this.props.bookingStatus;
+		var renderStatusLinks = this.props.renderStatusLinks;
+		var tripId = this.props.tripId;
+		var stopId = this.props.stopId;
 
 		switch(bookingStatus) {
 				case "pending":
-					bookingStatusElm = (
-						<div className="chosen lodging-booking-status pending">
-							Pending host approval
-						</div>
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "pending",
+						renderLinks: renderStatusLinks,
+						text: "Pending host approval",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				case "approved":
-					bookingStatusElm = (
-						<div className="chosen lodging-booking-status approved">
-							Approved
-						</div>
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "approved",
+						renderLinks: renderStatusLinks,
+						text: "Approved",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				case "declined":
-					bookingStatusElm = (
-						<div className="chosen lodging-booking-status declined">
-							Declined
-						</div>
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "declined",
+						renderLinks: renderStatusLinks,
+						text: "Declined",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				case "expired":
-					bookingStatusElm = (
-						<div className="chosen lodging-booking-status declined">
-							Request Expired
-						</div>
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "declined",
+						renderLinks: renderStatusLinks,
+						text: "Request Expired",
+						tripId: tripId,
+						stopId: stopId
+					});
+					break;
+				case "no_status":
+					bookingStatusElm = this.buildStatus({
+						statusClass: "",
+						renderLinks: renderStatusLinks,
+						text: "Find a place",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				default: 
 					bookingStatusElm = (
@@ -75,10 +123,15 @@ var ChosenLodging = React.createClass({
 		var attr = data.attr || {};
 		var photos = data.photos || [];
 		var activePhotoIndex = data.activePhotoIndex || 0;
-		var photoSource = (photos[activePhotoIndex]) ? photos[activePhotoIndex].medium : "";
+		var photoSize = this.props.photoSize || 'medium';
+		var renderStatusLinks = this.props.renderStatusLinks || false;
+		var tripId = this.props.tripId;
+		var stopId = this.props.stopId;
+		var photoSource = (photos[activePhotoIndex]) ? photos[activePhotoIndex][photoSize] : "";
 		var altTxt = (photos[0]) ? photos[0].caption : ""
 		var bookingStatus = data.bookingStatus || false;
 		var showStatusMenu = data.showStatusMenu || false;
+		var isHome = (data.id === "quest_home") ? true : false;
 		var photoBtns = function() {
 			if (photos.length > 1) {
 				return (
@@ -94,6 +147,18 @@ var ChosenLodging = React.createClass({
 
 		if (_.isEmpty(data) || data.id === "default") { 
 			return (<span></span>); 
+		}
+
+		if (isHome) {
+			return (
+				<div className="lodging-chosen home col-md-12 col-sm-12" data-id={data.id}>
+					<div className="col-md-12 col-sm-12">
+						<div className="result-img img-wrapper">
+							<img className="center" src="/app/img/map-pin-home-icon-medium.png"  alt="home"/>
+						</div>
+					</div>
+				</div>
+			)
 		}
 
 		return (
@@ -116,7 +181,7 @@ var ChosenLodging = React.createClass({
 						</div>
 					</div>
 					<p>{attr.shortDesc}</p>
-					<Status bookingStatus={bookingStatus} />
+					<Status bookingStatus={bookingStatus} renderStatusLinks={renderStatusLinks} tripId={tripId} stopId={stopId}/>
 					<div className={(!showStatusMenu) ? "booking-satus-menu hidden" : "booking-satus-menu"} aria-hidden={!!showStatusMenu}>
 						<StatusMenu />
 					</div>

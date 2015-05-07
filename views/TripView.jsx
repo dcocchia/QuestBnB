@@ -202,6 +202,19 @@ var Lodging = React.createClass({
 	}
 }); 
 
+var StopHead = React.createClass({
+	render: function() {
+		var data = this.props.data || {};
+		var distance = data.distance || {};
+		return (
+			<div className="stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12">
+				<h2><span className="stop-num">{data.stopNum}</span> {data.location}</h2>
+				<h4>{distance.text}</h4>
+			</div>
+		)
+	}
+});
+
 var TripView = React.createClass({
 	render: function() {
 		var tripId = this.props._id;
@@ -221,7 +234,12 @@ var TripView = React.createClass({
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
-								return <ChosenLodging key={index} data={stop.lodging}/>;
+								return (
+									<li className="stop">
+										<StopHead data={stop} />
+										<ChosenLodging key={index} data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true}/>
+									</li>
+								)
 							})}
 							</ol>
 						</div>

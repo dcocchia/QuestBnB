@@ -3,38 +3,86 @@ var React = require('react');
 var Stars = require('./Stars');
 
 var Status = React.createClass({displayName: "Status",
+	buildStatus: function(opts) {
+		var defaults = {
+			statusClass: "pending",
+			renderLinks: false,
+			text: "Pending host approval",
+			tripId: "",
+			stopId: ""
+		}
+
+		if (!opts) { opts = {}; }
+
+		_.defaults(opts, defaults);
+
+		if (opts.renderLinks) {
+			return (
+				React.createElement("div", {className: "lodging-booking-status " + opts.statusClass, role: "button"}, 
+					React.createElement("a", {href: "/trips/" + opts.tripId + "/stops/" + opts.stopId}, opts.text, " >")
+				)
+			)
+		} else {
+			return (
+				React.createElement("div", {className: "chosen lodging-booking-status " + opts.statusClass}, 
+					opts.text
+				)
+			)
+		}
+	},
+
 	render: function() {
 		var bookingStatusElm;
 		var bookingStatus = this.props.bookingStatus;
+		var renderStatusLinks = this.props.renderStatusLinks;
+		var tripId = this.props.tripId;
+		var stopId = this.props.stopId;
 
 		switch(bookingStatus) {
 				case "pending":
-					bookingStatusElm = (
-						React.createElement("div", {className: "chosen lodging-booking-status pending"}, 
-							"Pending host approval"
-						)
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "pending",
+						renderLinks: renderStatusLinks,
+						text: "Pending host approval",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				case "approved":
-					bookingStatusElm = (
-						React.createElement("div", {className: "chosen lodging-booking-status approved"}, 
-							"Approved"
-						)
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "approved",
+						renderLinks: renderStatusLinks,
+						text: "Approved",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				case "declined":
-					bookingStatusElm = (
-						React.createElement("div", {className: "chosen lodging-booking-status declined"}, 
-							"Declined"
-						)
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "declined",
+						renderLinks: renderStatusLinks,
+						text: "Declined",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				case "expired":
-					bookingStatusElm = (
-						React.createElement("div", {className: "chosen lodging-booking-status declined"}, 
-							"Request Expired"
-						)
-					);
+					bookingStatusElm = this.buildStatus({
+						statusClass: "declined",
+						renderLinks: renderStatusLinks,
+						text: "Request Expired",
+						tripId: tripId,
+						stopId: stopId
+					});
+					break;
+				case "no_status":
+					bookingStatusElm = this.buildStatus({
+						statusClass: "",
+						renderLinks: renderStatusLinks,
+						text: "Find a place",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 				default: 
 					bookingStatusElm = (
@@ -75,10 +123,15 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 		var attr = data.attr || {};
 		var photos = data.photos || [];
 		var activePhotoIndex = data.activePhotoIndex || 0;
-		var photoSource = (photos[activePhotoIndex]) ? photos[activePhotoIndex].medium : "";
+		var photoSize = this.props.photoSize || 'medium';
+		var renderStatusLinks = this.props.renderStatusLinks || false;
+		var tripId = this.props.tripId;
+		var stopId = this.props.stopId;
+		var photoSource = (photos[activePhotoIndex]) ? photos[activePhotoIndex][photoSize] : "";
 		var altTxt = (photos[0]) ? photos[0].caption : ""
 		var bookingStatus = data.bookingStatus || false;
 		var showStatusMenu = data.showStatusMenu || false;
+		var isHome = (data.id === "quest_home") ? true : false;
 		var photoBtns = function() {
 			if (photos.length > 1) {
 				return (
@@ -94,6 +147,18 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 
 		if (_.isEmpty(data) || data.id === "default") { 
 			return (React.createElement("span", null)); 
+		}
+
+		if (isHome) {
+			return (
+				React.createElement("div", {className: "lodging-chosen home col-md-12 col-sm-12", "data-id": data.id}, 
+					React.createElement("div", {className: "col-md-12 col-sm-12"}, 
+						React.createElement("div", {className: "result-img img-wrapper"}, 
+							React.createElement("img", {className: "center", src: "/app/img/map-pin-home-icon-medium.png", alt: "home"})
+						)
+					)
+				)
+			)
 		}
 
 		return (
@@ -116,7 +181,7 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 						)
 					), 
 					React.createElement("p", null, attr.shortDesc), 
-					React.createElement(Status, {bookingStatus: bookingStatus}), 
+					React.createElement(Status, {bookingStatus: bookingStatus, renderStatusLinks: renderStatusLinks, tripId: tripId, stopId: stopId}), 
 					React.createElement("div", {className: (!showStatusMenu) ? "booking-satus-menu hidden" : "booking-satus-menu", "aria-hidden": !!showStatusMenu}, 
 						React.createElement(StatusMenu, null)
 					)

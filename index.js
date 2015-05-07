@@ -91,7 +91,12 @@ app.get('/trips/:id', function(req, res){
 		}
 		
 	}).catch(function(e) {
-		res.status(500).send({"error": e});
+		res.status(500).send({
+			"error": {
+				"message: ": e.message, 
+				"stack trace: ": e.stack
+			}
+		});
 	});
 	
 });
@@ -124,7 +129,12 @@ app.put('/trips/:id', function(req, res) {
 		}
 		
 	}).catch(function(e) {
-		res.status(500).send({"error": e});
+		res.status(500).send({
+			"error": {
+				"message: ": e.message, 
+				"stack trace: ": e.stack
+			}
+		});
 	});
 });
 
@@ -176,7 +186,12 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 		}
 		
 	}).catch(function(e) {
-		res.status(500).send({"error": e});
+		res.status(500).send({
+			"error": {
+				"message: ": e.message, 
+				"stack trace: ": e.stack
+			}
+		});
 	});
 });
 
@@ -214,14 +229,24 @@ app.put('/trips/:id/stops/:stopId', function(req, res) {
 				}).then(function(updatedDocs) {
 					res.send(updatedDocs[0].stops[stopIndex]);
 				}).catch(function(e) {
-					res.status(500).send({"error": e});
+					res.status(500).send({
+						"error": {
+							"message: ": e.message, 
+							"stack trace: ": e.stack
+						}
+					});
 				});
 
 			} else {
 				res.status(404).send({"error": e});
 			}
 		}).catch(function(e) {
-			res.status(500).send({"error": e});
+			res.status(500).send({
+				"error": {
+					"message: ": e.message, 
+					"stack trace: ": e.stack
+				}
+			});
 		});
 });
 

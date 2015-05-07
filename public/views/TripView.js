@@ -202,6 +202,19 @@ var Lodging = React.createClass({displayName: "Lodging",
 	}
 }); 
 
+var StopHead = React.createClass({displayName: "StopHead",
+	render: function() {
+		var data = this.props.data || {};
+		var distance = data.distance || {};
+		return (
+			React.createElement("div", {className: "stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12"}, 
+				React.createElement("h2", null, React.createElement("span", {className: "stop-num"}, data.stopNum), " ", data.location), 
+				React.createElement("h4", null, distance.text)
+			)
+		)
+	}
+});
+
 var TripView = React.createClass({displayName: "TripView",
 	render: function() {
 		var tripId = this.props._id;
@@ -221,7 +234,12 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
-								return React.createElement(ChosenLodging, {key: index, data: stop.lodging});
+								return (
+									React.createElement("li", {className: "stop"}, 
+										React.createElement(StopHead, {data: stop}), 
+										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true})
+									)
+								)
 							})
 							)
 						), 
