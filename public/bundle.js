@@ -44503,49 +44503,50 @@ module.exports = StopView;
 },{"./ChosenLodging":187,"./SearchQuery":192,"./SearchResults":193,"lodash":4,"react":162}],196:[function(require,module,exports){
 var React 			= require('react');
 var LocationsMenu 	= require('./LocationsMenu');
+var ChosenLodging = require('./ChosenLodging');
 var moment 			= require('moment');
 require('moment-duration-format');
 
-var Stop = React.createClass({displayName: "Stop",
-	render: function() {
-		var data = this.props.data;
-		var isNew = data.isNew;
-		var index = this.props.index;
-		var locationProps = ( this.props.locationProps || {} );
-		var queryPredictions = ( locationProps.queryPredictions || [] ); 
-		var stopProps = ( this.props.stopProps || {} );
-		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
-		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
-		var totals = ( data.totals || {} );
-		var canAddStop = this.props.canAddStop;
-		var checkout = data.checkout || "";
-		var checkin = data.checkin || "";
+// var Stop = React.createClass({
+// 	render: function() {
+// 		var data = this.props.data;
+// 		var isNew = data.isNew;
+// 		var index = this.props.index;
+// 		var locationProps = ( this.props.locationProps || {} );
+// 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+// 		var stopProps = ( this.props.stopProps || {} );
+// 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
+// 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
+// 		var totals = ( data.totals || {} );
+// 		var canAddStop = this.props.canAddStop;
+// 		var checkout = data.checkout || "";
+// 		var checkin = data.checkin || "";
 
-		return (
-			React.createElement("li", {className: isNew ? "stop new left-full-width" : "stop left-full-width", "data-stop-id": data._id, "data-stop-index": index, key: data._id}, 
-				React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 
-				React.createElement("div", {className: "stop-num-wrapper left-full-height"}, 
-					React.createElement("div", {className: "stop-num center"}, data.stopNum), 
-					React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide", "aria-label": "add stop"}, "+")
-				), 
-				React.createElement("div", {className: "stop-info left-full-height col-lg-6 col-md-6 col-sm-5"}, 
-					React.createElement("div", {className: "stop-place-info left-full-height"}, 
-						React.createElement("div", {className: "stop-location-title-wrapper"}, 
-							React.createElement("h3", {className: "stop-location-title text-ellip", contentEditable: "true"}, data.location), 
-							React.createElement("span", {className: "clear"}), 
-							React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
-								React.createElement(LocationsMenu, {predictions: queryPredictions})
-							)
-						), 
-						React.createElement("p", null, "Day ", data.dayNum), 
-						React.createElement("p", null, data.distance.text)
-					)
-				), 
-				React.createElement(Lodging, {lodging: data.lodging, tripId: this.props.tripId, stopId: data._id, checkin: checkin, checkout: checkout})
-			)
-		)
-	}
-});
+// 		return (
+// 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
+// 				<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
+// 				<div className="stop-num-wrapper left-full-height">
+// 					<div className="stop-num center">{data.stopNum}</div>
+// 					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
+// 				</div>
+// 				<div className="stop-info left-full-height col-lg-6 col-md-6 col-sm-5">
+// 					<div className="stop-place-info left-full-height">
+// 						<div className="stop-location-title-wrapper">
+// 							<h3 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h3>
+// 							<span className="clear"></span>
+// 							<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
+// 								<LocationsMenu predictions={queryPredictions} />
+// 							</div>
+// 						</div>
+// 						<p>Day {data.dayNum}</p>
+// 						<p>{data.distance.text}</p>
+// 					</div>
+// 				</div>
+// 				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id} checkin={checkin} checkout={checkout}/>
+// 			</li>
+// 		)
+// 	}
+// });
 
 var Drawer = React.createClass({displayName: "Drawer",
 	render: function() {
@@ -44723,7 +44724,7 @@ var TripView = React.createClass({displayName: "TripView",
 						React.createElement("div", {className: "stops left-full-width"}, 
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
-								return React.createElement(Stop, {tripId: tripId, data: stop, index: index, locationProps: locationProps, stopProps: stopProps, canAddStop: canAddStop, key: index});
+								return React.createElement(ChosenLodging, {key: index, data: stop.lodging});
 							})
 							)
 						), 
@@ -44757,7 +44758,7 @@ var TripView = React.createClass({displayName: "TripView",
 });
 
 module.exports = TripView;
-},{"./LocationsMenu":190,"moment":6,"moment-duration-format":5,"react":162}],197:[function(require,module,exports){
+},{"./ChosenLodging":187,"./LocationsMenu":190,"moment":6,"moment-duration-format":5,"react":162}],197:[function(require,module,exports){
 var React = require('react');
 
 function Renderer() {}

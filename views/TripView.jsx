@@ -1,48 +1,49 @@
 var React 			= require('react');
 var LocationsMenu 	= require('./LocationsMenu');
+var ChosenLodging = require('./ChosenLodging');
 var moment 			= require('moment');
 require('moment-duration-format');
 
-var Stop = React.createClass({
-	render: function() {
-		var data = this.props.data;
-		var isNew = data.isNew;
-		var index = this.props.index;
-		var locationProps = ( this.props.locationProps || {} );
-		var queryPredictions = ( locationProps.queryPredictions || [] ); 
-		var stopProps = ( this.props.stopProps || {} );
-		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
-		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
-		var totals = ( data.totals || {} );
-		var canAddStop = this.props.canAddStop;
-		var checkout = data.checkout || "";
-		var checkin = data.checkin || "";
+// var Stop = React.createClass({
+// 	render: function() {
+// 		var data = this.props.data;
+// 		var isNew = data.isNew;
+// 		var index = this.props.index;
+// 		var locationProps = ( this.props.locationProps || {} );
+// 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+// 		var stopProps = ( this.props.stopProps || {} );
+// 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
+// 		var distance = (data.distance && data.distance.text || (data.distance = { text: "0 mi" }));
+// 		var totals = ( data.totals || {} );
+// 		var canAddStop = this.props.canAddStop;
+// 		var checkout = data.checkout || "";
+// 		var checkin = data.checkin || "";
 
-		return (
-			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
-				<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
-				<div className="stop-num-wrapper left-full-height">
-					<div className="stop-num center">{data.stopNum}</div>
-					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
-				</div>
-				<div className="stop-info left-full-height col-lg-6 col-md-6 col-sm-5">
-					<div className="stop-place-info left-full-height">
-						<div className="stop-location-title-wrapper">
-							<h3 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h3>
-							<span className="clear"></span>
-							<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
-								<LocationsMenu predictions={queryPredictions} />
-							</div>
-						</div>
-						<p>Day {data.dayNum}</p>
-						<p>{data.distance.text}</p>
-					</div>
-				</div>
-				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id} checkin={checkin} checkout={checkout}/>
-			</li>
-		)
-	}
-});
+// 		return (
+// 			<li className={isNew ? "stop new left-full-width" : "stop left-full-width" } data-stop-id={data._id} data-stop-index={index} key={data._id}>
+// 				<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
+// 				<div className="stop-num-wrapper left-full-height">
+// 					<div className="stop-num center">{data.stopNum}</div>
+// 					<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"} aria-label="add stop">&#43;</button>
+// 				</div>
+// 				<div className="stop-info left-full-height col-lg-6 col-md-6 col-sm-5">
+// 					<div className="stop-place-info left-full-height">
+// 						<div className="stop-location-title-wrapper">
+// 							<h3 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h3>
+// 							<span className="clear"></span>
+// 							<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
+// 								<LocationsMenu predictions={queryPredictions} />
+// 							</div>
+// 						</div>
+// 						<p>Day {data.dayNum}</p>
+// 						<p>{data.distance.text}</p>
+// 					</div>
+// 				</div>
+// 				<Lodging lodging={data.lodging} tripId={this.props.tripId} stopId={data._id} checkin={checkin} checkout={checkout}/>
+// 			</li>
+// 		)
+// 	}
+// });
 
 var Drawer = React.createClass({
 	render: function() {
@@ -220,7 +221,7 @@ var TripView = React.createClass({
 						<div className="stops left-full-width">
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
-								return <Stop tripId={tripId} data={stop} index={index} locationProps={locationProps} stopProps={stopProps} canAddStop={canAddStop} key={index} />;
+								return <ChosenLodging key={index} data={stop.lodging}/>;
 							})}
 							</ol>
 						</div>
