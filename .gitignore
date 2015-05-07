@@ -1,8 +1,11 @@
 npm-debug.log
 node_modules
 config.json
+config
+./config
 *.sublime-project
 *.sublime-workspace
 .idea/*
+.idea
 
 .DS_Store

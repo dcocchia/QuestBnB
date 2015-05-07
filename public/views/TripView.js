@@ -206,9 +206,20 @@ var StopHead = React.createClass({displayName: "StopHead",
 	render: function() {
 		var data = this.props.data || {};
 		var distance = data.distance || {};
+		var locationProps = ( this.props.locationProps || {} );
+		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+		var stopProps = ( this.props.stopProps || {} );
+		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		return (
 			React.createElement("div", {className: "stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12"}, 
-				React.createElement("h2", null, React.createElement("span", {className: "stop-num"}, data.stopNum), " ", data.location), 
+				React.createElement("span", {className: "stop-num"}, data.stopNum), 
+				React.createElement("div", {className: "stop-location-title-wrapper"}, 
+					React.createElement("h2", {className: "stop-location-title text-ellip", contentEditable: "true"}, data.location), 
+					React.createElement("span", {className: "clear"}), 
+					React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
+						React.createElement(LocationsMenu, {predictions: queryPredictions})
+					)
+				), 
 				React.createElement("h4", null, distance.text)
 			)
 		)
@@ -235,8 +246,9 @@ var TripView = React.createClass({displayName: "TripView",
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
 								return (
-									React.createElement("li", {className: "stop"}, 
-										React.createElement(StopHead, {data: stop}), 
+									React.createElement("li", {className: "stop clear-fix", "data-stop-id": stop._id, "data-stop-index": index}, 
+										React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 
+										React.createElement(StopHead, {data: stop, stopProps: stopProps, locationProps: locationProps, key: stop._id}), 
 										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true})
 									)
 								)

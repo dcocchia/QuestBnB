@@ -206,9 +206,20 @@ var StopHead = React.createClass({
 	render: function() {
 		var data = this.props.data || {};
 		var distance = data.distance || {};
+		var locationProps = ( this.props.locationProps || {} );
+		var queryPredictions = ( locationProps.queryPredictions || [] ); 
+		var stopProps = ( this.props.stopProps || {} );
+		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		return (
 			<div className="stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12">
-				<h2><span className="stop-num">{data.stopNum}</span> {data.location}</h2>
+				<span className="stop-num">{data.stopNum}</span>
+				<div className="stop-location-title-wrapper">
+					<h2 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h2>
+					<span className="clear"></span>
+					<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
+						<LocationsMenu predictions={queryPredictions} />
+					</div>
+				</div>
 				<h4>{distance.text}</h4>
 			</div>
 		)
@@ -235,8 +246,9 @@ var TripView = React.createClass({
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
 								return (
-									<li className="stop">
-										<StopHead data={stop} />
+									<li className="stop clear-fix" data-stop-id={stop._id} data-stop-index={index}>
+										<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
+										<StopHead data={stop} stopProps={stopProps} locationProps={locationProps} key={stop._id}/>
 										<ChosenLodging key={index} data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true}/>
 									</li>
 								)
