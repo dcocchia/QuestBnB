@@ -72,7 +72,7 @@ var TripBlurb = React.createClass({displayName: "TripBlurb",
 		var drawer = (this.props.editable) ? React.createElement(Drawer, {data: this.props.data}) : undefined;
 		return (
 			React.createElement("div", {className: (this.props.editable) ? "trip-blurb editable" : "trip-blurb"}, 
-				React.createElement("h3", null, this.props.text), 
+				React.createElement("h3", null, React.createElement("i", {className: this.props.icon}), " ", this.props.text), 
 				drawer
 			)
 		)
@@ -206,21 +206,42 @@ var StopHead = React.createClass({displayName: "StopHead",
 	render: function() {
 		var data = this.props.data || {};
 		var distance = data.distance || {};
+		var duration = data.duration || {};
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
+		var checkin = data.checkin;
+		var checkout = data.checkout;
+		var checkElm = React.createElement("span", null);
+
+		if (checkin || checkout) {
+			checkElm = (
+				React.createElement("div", {className: "lodging-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12"}, 
+					React.createElement("label", null, "Lodging"), 
+					React.createElement("h4", null, React.createElement("i", {className: "fa fa-home"}), " ", data.checkin, " – ", data.checkout)
+				)
+			)
+		}
+
 		return (
 			React.createElement("div", {className: "stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12"}, 
-				React.createElement("span", {className: "stop-num"}, data.stopNum), 
-				React.createElement("div", {className: "stop-location-title-wrapper"}, 
+				React.createElement("div", {className: "stop-num-wrapper col-xs-1 col-sm-1 col-md-2 col-lg-1"}, 
+					React.createElement("span", {className: "stop-num"}, data.stopNum)
+				), 
+				React.createElement("div", {className: "stop-location-title-wrapper col-xs-11 col-sm-11 col-md-10 col-lg-11"}, 
 					React.createElement("h2", {className: "stop-location-title text-ellip", contentEditable: "true"}, data.location), 
 					React.createElement("span", {className: "clear"}), 
 					React.createElement("div", {className: hasPredictions ? "locations-menu" : "locations-menu hide", id: "locations-menu", "aria-expanded": hasPredictions.toString(), "aria-role": "listbox"}, 
 						React.createElement(LocationsMenu, {predictions: queryPredictions})
 					)
 				), 
-				React.createElement("h4", null, distance.text)
+				React.createElement("div", {className: "distance-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12"}, 
+					React.createElement("label", null, "Distance"), 
+					React.createElement("h4", null, React.createElement("i", {className: "fa fa-car"}), " ", distance.text), 
+					React.createElement("h4", null, React.createElement("i", {className: "fa fa-clock-o"}), " ", duration.text)
+				), 
+				checkElm
 			)
 		)
 	}
@@ -246,20 +267,24 @@ var TripView = React.createClass({displayName: "TripView",
 							React.createElement("ol", {className: "left-full-width"}, 
 							stops.map(function(stop, index) {
 								return (
-									React.createElement("li", {className: "stop clear-fix", "data-stop-id": stop._id, "data-stop-index": index}, 
+									React.createElement("li", {className: stop.isNew ? "stop clear-fix new" : "stop clear-fix", "data-stop-id": stop._id, "data-stop-index": index}, 
 										React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 
 										React.createElement(StopHead, {data: stop, stopProps: stopProps, locationProps: locationProps, key: stop._id}), 
-										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true})
+										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true}), 
+										React.createElement("div", {className: "add-stop-btn-wrapper"}, 
+											React.createElement("p", {className: (canAddStop) ? "absolute-center" : "absolute-center hide"}, "+"), 
+											React.createElement("button", {className: (canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}, "Add Stop +")
+										)
 									)
 								)
 							})
 							)
 						), 
 						React.createElement("div", {className: "trip-blurbs left-full-width"}, 
-							React.createElement(TripBlurb, {text: this.props.tripDuration, editable: false}), 
-							React.createElement(TripBlurb, {text: this.props.tripDistance  + " miles", editable: false}), 
-							React.createElement(TripBlurb, {text: this.props.numStops + " destinations", editable: false}), 
-							React.createElement(TripBlurb, {text: "$" + this.props.cost, editable: true, data: this.props})
+							React.createElement(TripBlurb, {icon: "fa fa-clock-o", text: this.props.tripDuration, editable: false}), 
+							React.createElement(TripBlurb, {icon: "fa fa-car", text: this.props.tripDistance  + " miles", editable: false}), 
+							React.createElement(TripBlurb, {icon: "fa fa-map-marker", text: this.props.numStops + " destinations", editable: false}), 
+							React.createElement(TripBlurb, {icon: "fa fa-money", text: "$" + this.props.cost, editable: true, data: this.props})
 						)
 					)
 				), 

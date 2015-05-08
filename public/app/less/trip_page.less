@@ -2,15 +2,16 @@
 .trip-page {
 
 	.title {
+		background-color: #fff;
+		border-bottom: 1px solid @panel-border-grey;
 		&:hover,
 		&:focus,
 		&:active {
-			background-color: #fff;
+			background-color: @panel-border-light-grey;
 		}
 	}
 
 	.stops {
-		margin-bottom: 20px;
 		ol {
 			padding: 0;
 			margin: 0;
@@ -22,7 +23,7 @@
 	}
 
 	.stop {
-		border-bottom: 1px solid @panel-border-grey;
+		
 		background-color: #fff;
 		position: relative;
 
@@ -33,7 +34,7 @@
 		}
 
 		&.new {
-
+			overflow: hidden;
 			-moz-animation-name: openStop;
 			-moz-animation-iteration-count: 1;
 			-moz-animation-timing-function: ease-in;
@@ -52,6 +53,7 @@
 		}
 
 		&.removing {
+			overflow: hidden;
 			-moz-animation-name: closeStop;
 			-moz-animation-iteration-count: 1;
 			-moz-animation-timing-function: ease-in;
@@ -119,18 +121,24 @@
 			h2,
 			h4 {
 				font-weight: normal;
-				margin: 12.5px 0;	
 			}
 
 			h2 {
 				font-size: 26px;
 				line-height: 26px;
+				margin: 12.5px 0;
 			}
 
 			h4 {
 				font-size: 16px;
 				color: #aaa;
 				line-height: 1.1;
+				margin: 0 0 5px 0;
+			}
+
+			.stop-num-wrapper {
+				margin: 12.5px 0;
+				padding: 0;
 			}
 
 			.stop-num {
@@ -140,15 +148,37 @@
 				font-size: 30px;
 				width: 40px;
 				height: 40px;
-				display: inline-block;
+				display: block;
 				text-align: center;
 				line-height: 40px;
-				border: 1px solid #dce0e0;
+			}
+
+			.clear {
+				top: 25px;
+				right: 25px;
+			}
+
+			.fa {
+				color: #565a5c;
+			}
+
+			.distance-info-wrapper,
+			.lodging-info-wrapper {
+				margin-bottom: 10px;
+			}
+
+			.distance-info-wrapper {
+				padding-left: 0px;
+			}
+
+			.lodging-info-wrapper {
+				padding-left: 10px;
 			}
 		}
 
 		.lodging-chosen {
 			padding: 0px 0 15px 0px;
+			float: left;
 
 			.result-img {
 				img {
@@ -165,9 +195,43 @@
 				}
 			}
 		}
-	}
 
-	
+		.add-stop-btn-wrapper {
+			height: 30px;
+			background-color: @panel-border-light-grey;
+			float: left;
+			width: 100%;
+			border: 0;
+			position: relative;
+			text-align: center;
+
+			&:hover {
+				.add-stop-btn {
+					display: block;
+				}
+			}
+
+			p {
+				line-height: 2em;
+				color: @light-red;
+				font-weight: bold;
+			}
+
+			.add-stop-btn {
+				border: 1px solid @panel-border-grey;
+				width: 100%;
+				background-color: #fff;
+				padding: 0;
+				height: 100%;
+				text-align: center;
+				color: @light-red;
+				display: none;
+				border-left: 0;
+				border-right: 0;
+				font-size: 16px;
+			}
+		}
+	}
 
 	.trip-blurbs {
 		background-color: #fff;
@@ -184,6 +248,11 @@
 			margin: 0;
 			z-index: 2;
 			position: relative;
+		}
+
+		.fa {
+			width: 20px;
+			text-align: center;
 		}
 	}
 
@@ -435,8 +504,8 @@
 	}
 
 	.locations-menu {
-		width: 500px;
-		top: 43px;
+		width: 100%;
+		top: 55px;
 		z-index: 10;
 		border-top: 1px solid #ccc;
 	}
@@ -462,6 +531,24 @@
 			animation-iteration-count: 1;
 			animation-timing-function: ease-in;
 			animation-duration: 1s;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.stop {
+			.stop-head {
+				h2 {
+					font-size: 22px;
+					line-height: 22px;
+				}
+
+				.stop-num {
+					width: 30px;
+					height: 30px;
+					line-height: 30px;
+					font-size: 22px;
+				}
+			}
 		}
 	}
 }

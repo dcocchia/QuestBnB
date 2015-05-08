@@ -72,7 +72,7 @@ var TripBlurb = React.createClass({
 		var drawer = (this.props.editable) ? <Drawer data={this.props.data}/> : undefined;
 		return (
 			<div className={(this.props.editable) ? "trip-blurb editable" : "trip-blurb"}>
-				<h3>{this.props.text}</h3>
+				<h3><i className={this.props.icon}></i> {this.props.text}</h3>
 				{drawer}
 			</div>
 		)
@@ -206,21 +206,42 @@ var StopHead = React.createClass({
 	render: function() {
 		var data = this.props.data || {};
 		var distance = data.distance || {};
+		var duration = data.duration || {};
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
+		var checkin = data.checkin;
+		var checkout = data.checkout;
+		var checkElm = <span></span>;
+
+		if (checkin || checkout) {
+			checkElm = (
+				<div className="lodging-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12">
+					<label>Lodging</label>
+					<h4><i className="fa fa-home"></i> {data.checkin} &ndash; {data.checkout}</h4>
+				</div>
+			)
+		}
+
 		return (
 			<div className="stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12">
-				<span className="stop-num">{data.stopNum}</span>
-				<div className="stop-location-title-wrapper">
+				<div className="stop-num-wrapper col-xs-1 col-sm-1 col-md-2 col-lg-1">
+					<span className="stop-num">{data.stopNum}</span>
+				</div>
+				<div className="stop-location-title-wrapper col-xs-11 col-sm-11 col-md-10 col-lg-11">
 					<h2 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h2>
 					<span className="clear"></span>
 					<div className={hasPredictions ? "locations-menu" : "locations-menu hide"} id="locations-menu" aria-expanded={hasPredictions.toString()} aria-role="listbox">
 						<LocationsMenu predictions={queryPredictions} />
 					</div>
 				</div>
-				<h4>{distance.text}</h4>
+				<div className='distance-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12'>
+					<label>Distance</label>
+					<h4><i className="fa fa-car"></i> {distance.text}</h4>
+					<h4><i className="fa fa-clock-o"></i> {duration.text}</h4>
+				</div>
+				{checkElm}
 			</div>
 		)
 	}
@@ -246,20 +267,24 @@ var TripView = React.createClass({
 							<ol className="left-full-width">
 							{stops.map(function(stop, index) {
 								return (
-									<li className="stop clear-fix" data-stop-id={stop._id} data-stop-index={index}>
+									<li className={stop.isNew ? "stop clear-fix new" : "stop clear-fix" } data-stop-id={stop._id} data-stop-index={index}>
 										<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
 										<StopHead data={stop} stopProps={stopProps} locationProps={locationProps} key={stop._id}/>
 										<ChosenLodging key={index} data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true}/>
+										<div className="add-stop-btn-wrapper">
+											<p className={(canAddStop) ? "absolute-center" : "absolute-center hide"}>&#43;</p>
+											<button className={(canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}>Add Stop &#43;</button>
+										</div>
 									</li>
 								)
 							})}
 							</ol>
 						</div>
 						<div className="trip-blurbs left-full-width">
-							<TripBlurb text={this.props.tripDuration} editable={false}/>
-							<TripBlurb text={this.props.tripDistance  + " miles"} editable={false}/>
-							<TripBlurb text={this.props.numStops + " destinations"} editable={false}/>
-							<TripBlurb text={"$" + this.props.cost} editable={true} data={this.props}/>
+							<TripBlurb icon={"fa fa-clock-o"} text={this.props.tripDuration} editable={false}/>
+							<TripBlurb icon={"fa fa-car"} text={this.props.tripDistance  + " miles"} editable={false}/>
+							<TripBlurb icon={"fa fa-map-marker"} text={this.props.numStops + " destinations"} editable={false}/>
+							<TripBlurb icon={"fa fa-money"} text={"$" + this.props.cost} editable={true} data={this.props}/>
 						</div>
 					</div>
 				</div>

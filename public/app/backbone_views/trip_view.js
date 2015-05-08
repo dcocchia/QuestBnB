@@ -106,6 +106,11 @@ var TripView = PageView.extend({
 			this.bindDatePickersDebounced();
 		}, this));
 
+		Backbone.on('StopView:doRender', _.bind(function() {
+			this.setStopsCollectionInModel();
+			this.render(trip_template);
+		}, this));
+
 		Backbone.on('removeStop', _.bind(function(stopId) {
 			var view = _.find(this.stop_views, function(view, index) {
 				return view.stopId === stopId;
@@ -161,7 +166,7 @@ var TripView = PageView.extend({
 
 		this.model.set('end', date);
 		this.syncModelDebounced();
-		
+
 		newEnd = moment(this.model.get('end'));
 
 		if (newEnd.isBefore(startDate)) {
@@ -249,11 +254,13 @@ var TripView = PageView.extend({
 	},
 
 	onAddStopClick: function(e) {
-		var stopIndex = $(e.currentTarget).closest('.stop').attr('data-stop-index');
+		var stopIndex = $(e.currentTarget)
+						.closest('.stop')
+						.attr('data-stop-index');
 
 		stopIndex = parseInt(stopIndex);
 
-		if (e.preventDefault) { e.preventDefault(); }
+		e.preventDefault();
 
 		if (_.isNumber(stopIndex) ) {
 			this.stops_collection.addStop(stopIndex + 1, {

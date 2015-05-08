@@ -6,7 +6,9 @@ var StopView = Backbone.View.extend({
 		'click .location-item'			: 'onLocationItemClick',
 		'click .clear'					: 'onClearClick',
 		'click .remove'					: 'onRemoveClick',
-		'click .lodging-booking-status' : 'onLodgingStatusClick'
+		'click .lodging-booking-status' : 'onLodgingStatusClick',
+		'click .next-photo'				: 'onNextPhoto',
+		'click .prev-photo'				: 'onPrevPhoto'
 	},
 
 	initialize: function(opts) {
@@ -36,6 +38,36 @@ var StopView = Backbone.View.extend({
 			this.search_model.getQueryPredictions(options);
 		}, this), 500);
 		
+	},
+
+	onNextPhoto: function(e) {
+		e.preventDefault();
+		var lodging = this.model.get('lodging');
+		var photos = lodging.photos || [];
+		var photosLen = photos.length;
+		var currentActiveIndex = lodging.activePhotoIndex || 0;
+		var newActiveIndex = 
+			((currentActiveIndex + 1) >= photosLen) 
+			? 0 
+			: currentActiveIndex + 1;
+
+		lodging.activePhotoIndex = newActiveIndex;
+		Backbone.trigger('StopView:doRender');
+	},
+
+	onPrevPhoto: function(e) {
+		e.preventDefault();
+		var lodging = this.model.get('lodging');
+		var photos = lodging.photos || [];
+		var photosLen = photos.length;
+		var currentActiveIndex = lodging.activePhotoIndex || 0;
+		var newActiveIndex = 
+			(currentActiveIndex === 0) 
+			? photosLen - 1 
+			: currentActiveIndex - 1;
+			
+		lodging.activePhotoIndex = newActiveIndex;
+		Backbone.trigger('StopView:doRender');
 	},
 
 	onEditKeyDown: function(e) {
@@ -214,9 +246,6 @@ var StopView = Backbone.View.extend({
 		this.undelegateEvents();
 
 		this.$el.removeData().unbind(); 
-
-		this.remove();  
-		Backbone.View.prototype.remove.call(this);
 	}
 });
 
