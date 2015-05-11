@@ -85,9 +85,13 @@ var Status = React.createClass({
 					});
 					break;
 				default: 
-					bookingStatusElm = (
-						<span></span>
-					)
+					bookingStatusElm = this.buildStatus({
+						statusClass: "",
+						renderLinks: renderStatusLinks,
+						text: "Find a place",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 			}
 		return bookingStatusElm;
@@ -132,6 +136,8 @@ var ChosenLodging = React.createClass({
 		var bookingStatus = data.bookingStatus || false;
 		var showStatusMenu = data.showStatusMenu || false;
 		var isHome = (data.id === "quest_home") ? true : false;
+		var noLodging = (_.isEmpty(data) || data.id === "default") ? true : false;
+		var isTripView = this.props.isTripView || false;
 		var photoBtns = function() {
 			if (photos.length > 1) {
 				return (
@@ -145,9 +151,23 @@ var ChosenLodging = React.createClass({
 			}
 		}();
 
-		if (_.isEmpty(data) || data.id === "default") { 
-			return (<span></span>); 
+		if (noLodging && isTripView && !_.isEmpty(this.props.location)) { 
+			return (
+				<div className="lodging-chosen no-lodging col-md-12 col-sm-12" data-id={data.id}>
+					<div className="col-md-6 col-sm-12">
+						<div className="result-img img-wrapper">
+							<i className="fa fa-home"></i>
+						</div>
+					</div>
+					<div className="result-body col-md-6 col-sm-12">
+						<h3>Need a place to stay in {this.props.location}?</h3>
+						<Status bookingStatus={bookingStatus} renderStatusLinks={renderStatusLinks} tripId={tripId} stopId={stopId}/>
+					</div>
+				</div>
+			)
 		}
+
+		if ((noLodging && !isTripView) || ( noLodging  && _.isEmpty(this.props.location))) { return <span></span>; }
 
 		if (isHome) {
 			return (

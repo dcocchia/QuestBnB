@@ -85,9 +85,13 @@ var Status = React.createClass({displayName: "Status",
 					});
 					break;
 				default: 
-					bookingStatusElm = (
-						React.createElement("span", null)
-					)
+					bookingStatusElm = this.buildStatus({
+						statusClass: "",
+						renderLinks: renderStatusLinks,
+						text: "Find a place",
+						tripId: tripId,
+						stopId: stopId
+					});
 					break;
 			}
 		return bookingStatusElm;
@@ -132,6 +136,8 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 		var bookingStatus = data.bookingStatus || false;
 		var showStatusMenu = data.showStatusMenu || false;
 		var isHome = (data.id === "quest_home") ? true : false;
+		var noLodging = (_.isEmpty(data) || data.id === "default") ? true : false;
+		var isTripView = this.props.isTripView || false;
 		var photoBtns = function() {
 			if (photos.length > 1) {
 				return (
@@ -145,9 +151,23 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 			}
 		}();
 
-		if (_.isEmpty(data) || data.id === "default") { 
-			return (React.createElement("span", null)); 
+		if (noLodging && isTripView && !_.isEmpty(this.props.location)) { 
+			return (
+				React.createElement("div", {className: "lodging-chosen no-lodging col-md-12 col-sm-12", "data-id": data.id}, 
+					React.createElement("div", {className: "col-md-6 col-sm-12"}, 
+						React.createElement("div", {className: "result-img img-wrapper"}, 
+							React.createElement("i", {className: "fa fa-home"})
+						)
+					), 
+					React.createElement("div", {className: "result-body col-md-6 col-sm-12"}, 
+						React.createElement("h3", null, "Need a place to stay in ", this.props.location, "?"), 
+						React.createElement(Status, {bookingStatus: bookingStatus, renderStatusLinks: renderStatusLinks, tripId: tripId, stopId: stopId})
+					)
+				)
+			)
 		}
+
+		if ((noLodging && !isTripView) || ( noLodging  && _.isEmpty(this.props.location))) { return React.createElement("span", null); }
 
 		if (isHome) {
 			return (

@@ -315,7 +315,7 @@ app.get('/lodgings', function(req, res) {
 var addObjIds = function(items) {
 	_.each(items, function(item) {
 		if ( !item._id || !mongojs.ObjectId.isValid(item._id) ) {
-			item._id = mongojs.ObjectId();
+			item._id = mongojs.ObjectId().toJSON();
 		}
 	});
 }
