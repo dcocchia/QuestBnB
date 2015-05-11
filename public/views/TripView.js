@@ -175,24 +175,39 @@ var StopHead = React.createClass({displayName: "StopHead",
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var checkin = data.checkin;
 		var checkout = data.checkout;
-		var checkElm = React.createElement("span", null);
-		var infoWrapper = React.createElement("span", null);
+		var lodgingInfoWrapper = React.createElement("span", null);
+		var distanceInfoWrapper = React.createElement("span", null);
+		var costInfoWrapper = React.createElement("span", null);
 
-		if (checkin || checkout) {
-			checkElm = (
-				React.createElement("div", {className: "lodging-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12"}, 
-					React.createElement("label", null, "Lodging"), 
-					React.createElement("h4", null, React.createElement("i", {className: "fa fa-home"}), " ", data.checkin, " – ", data.checkout)
+		//distance info
+		if (!isHome && !_.isEmpty(data.location)) {
+			distanceInfoWrapper = (
+				React.createElement("div", {className: "distance-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
+					React.createElement("label", null, "Distance"), 
+					React.createElement("h4", {title: "leg distance"}, React.createElement("i", {className: "fa fa-car"}), " ", distance.text), 
+					React.createElement("h4", {title: "leg duration"}, React.createElement("i", {className: "fa fa-clock-o"}), " ", duration.text)
 				)
 			)
 		}
 
-		if (!isHome && !_.isEmpty(data.location)) {
-			infoWrapper = (
-				React.createElement("div", {className: "distance-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12"}, 
-					React.createElement("label", null, "Distance"), 
-					React.createElement("h4", null, React.createElement("i", {className: "fa fa-car"}), " ", distance.text), 
-					React.createElement("h4", null, React.createElement("i", {className: "fa fa-clock-o"}), " ", duration.text)
+		//lodging info
+		if (checkin || checkout) {
+			lodgingInfoWrapper = (
+				React.createElement("div", {className: "lodging-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
+					React.createElement("label", null, "Lodging"), 
+					React.createElement("h4", {title: "checkin/checkout times"}, React.createElement("i", {className: "fa fa-home"}), " ", data.checkin, " – ", data.checkout)
+				)
+			)
+		}
+
+		//cost info
+		if (!_.isEmpty(lodging) && (checkout && checkout)) {
+			costInfoWrapper = (
+				React.createElement("div", {className: "cost-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
+					React.createElement("label", null, "Cost"), 
+					React.createElement("h4", {title: "driving cost"}, React.createElement("i", {className: "fa fa-tachometer"}), " N/A"), 
+					React.createElement("h4", {title: "lodging cost"}, React.createElement("i", {className: "fa fa-home"}), " N/A"), 
+					React.createElement("h4", {title: "total cost"}, React.createElement("i", {className: "fa fa-money"}), " N/A")
 				)
 			)
 		}
@@ -209,8 +224,9 @@ var StopHead = React.createClass({displayName: "StopHead",
 						React.createElement(LocationsMenu, {predictions: queryPredictions})
 					)
 				), 
-				infoWrapper, 
-				checkElm
+				distanceInfoWrapper, 
+				lodgingInfoWrapper, 
+				costInfoWrapper
 			)
 		)
 	}

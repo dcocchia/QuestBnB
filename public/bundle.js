@@ -44209,10 +44209,9 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 							), 
 							React.createElement("p", {className: "explain-txt"}, React.createElement("strong", null, "Things to be aware of")), 
 							React.createElement("ul", null, 
-								React.createElement("li", null, "While I hope you enjoy the site it is not meant to be used publicly. Because of this, there is no way to actually book AirBnB rooms through the site."), 
+								React.createElement("li", null, "While I hope you enjoy the site, it is not meant to be used publicly. Because of this, ", React.createElement("strong", null, "there is no way to actually book AirBnB rooms through the site"), ". You can manually change the booking status, but not booking actually occurs with AirBnB."), 
 								React.createElement("li", null, "Listings for AirBnB lodgings are supplied by ", React.createElement("a", {href: "https://www.mashape.com/zilyo/zilyo", target: "_blank"}, "Zilyo’s open API")), 
 								React.createElement("li", null, "Zilyo has ", React.createElement("a", {href: "https://www.mashape.com/zilyo/zilyo/support/8#", target: "_blank"}, "announced they are shutting down"), ", so their API could dissapear at any time. :("), 
-								React.createElement("li", null, "The Zilyo API no longer supports price range parameters, so the lodgings search pages price range settings are mostly for show."), 
 								React.createElement("li", null, "And lastly, this site and its creator are not affiliated, associated, authorized, endorsed by, or in any way officially connected with AirBnB or any of its subsidiaries or its affiliates. The official AirBnB web site is available at ", React.createElement("a", {href: "https://www.airbnb.com", target: "_blank"}, "www.airbnb.com"), ".")
 							)
 						)
@@ -44799,24 +44798,39 @@ var StopHead = React.createClass({displayName: "StopHead",
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var checkin = data.checkin;
 		var checkout = data.checkout;
-		var checkElm = React.createElement("span", null);
-		var infoWrapper = React.createElement("span", null);
+		var lodgingInfoWrapper = React.createElement("span", null);
+		var distanceInfoWrapper = React.createElement("span", null);
+		var costInfoWrapper = React.createElement("span", null);
 
-		if (checkin || checkout) {
-			checkElm = (
-				React.createElement("div", {className: "lodging-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12"}, 
-					React.createElement("label", null, "Lodging"), 
-					React.createElement("h4", null, React.createElement("i", {className: "fa fa-home"}), " ", data.checkin, " – ", data.checkout)
+		//distance info
+		if (!isHome && !_.isEmpty(data.location)) {
+			distanceInfoWrapper = (
+				React.createElement("div", {className: "distance-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
+					React.createElement("label", null, "Distance"), 
+					React.createElement("h4", {title: "leg distance"}, React.createElement("i", {className: "fa fa-car"}), " ", distance.text), 
+					React.createElement("h4", {title: "leg duration"}, React.createElement("i", {className: "fa fa-clock-o"}), " ", duration.text)
 				)
 			)
 		}
 
-		if (!isHome && !_.isEmpty(data.location)) {
-			infoWrapper = (
-				React.createElement("div", {className: "distance-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12"}, 
-					React.createElement("label", null, "Distance"), 
-					React.createElement("h4", null, React.createElement("i", {className: "fa fa-car"}), " ", distance.text), 
-					React.createElement("h4", null, React.createElement("i", {className: "fa fa-clock-o"}), " ", duration.text)
+		//lodging info
+		if (checkin || checkout) {
+			lodgingInfoWrapper = (
+				React.createElement("div", {className: "lodging-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
+					React.createElement("label", null, "Lodging"), 
+					React.createElement("h4", {title: "checkin/checkout times"}, React.createElement("i", {className: "fa fa-home"}), " ", data.checkin, " – ", data.checkout)
+				)
+			)
+		}
+
+		//cost info
+		if (!_.isEmpty(lodging) && (checkout && checkout)) {
+			costInfoWrapper = (
+				React.createElement("div", {className: "cost-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
+					React.createElement("label", null, "Cost"), 
+					React.createElement("h4", {title: "driving cost"}, React.createElement("i", {className: "fa fa-tachometer"}), " N/A"), 
+					React.createElement("h4", {title: "lodging cost"}, React.createElement("i", {className: "fa fa-home"}), " N/A"), 
+					React.createElement("h4", {title: "total cost"}, React.createElement("i", {className: "fa fa-money"}), " N/A")
 				)
 			)
 		}
@@ -44833,8 +44847,9 @@ var StopHead = React.createClass({displayName: "StopHead",
 						React.createElement(LocationsMenu, {predictions: queryPredictions})
 					)
 				), 
-				infoWrapper, 
-				checkElm
+				distanceInfoWrapper, 
+				lodgingInfoWrapper, 
+				costInfoWrapper
 			)
 		)
 	}

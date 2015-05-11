@@ -175,24 +175,39 @@ var StopHead = React.createClass({
 		var hasPredictions = queryPredictions.length > 0 && stopProps._id === data._id;
 		var checkin = data.checkin;
 		var checkout = data.checkout;
-		var checkElm = <span></span>;
-		var infoWrapper = <span></span>;
+		var lodgingInfoWrapper = <span></span>;
+		var distanceInfoWrapper = <span></span>;
+		var costInfoWrapper = <span></span>;
 
-		if (checkin || checkout) {
-			checkElm = (
-				<div className="lodging-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12">
-					<label>Lodging</label>
-					<h4><i className="fa fa-home"></i> {data.checkin} &ndash; {data.checkout}</h4>
+		//distance info
+		if (!isHome && !_.isEmpty(data.location)) {
+			distanceInfoWrapper = (
+				<div className='distance-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12'>
+					<label>Distance</label>
+					<h4 title="leg distance"><i className="fa fa-car"></i> {distance.text}</h4>
+					<h4 title="leg duration"><i className="fa fa-clock-o"></i> {duration.text}</h4>
 				</div>
 			)
 		}
 
-		if (!isHome && !_.isEmpty(data.location)) {
-			infoWrapper = (
-				<div className='distance-info-wrapper col-lg-6 col-md-6 col-sm-6 col-xs-12'>
-					<label>Distance</label>
-					<h4><i className="fa fa-car"></i> {distance.text}</h4>
-					<h4><i className="fa fa-clock-o"></i> {duration.text}</h4>
+		//lodging info
+		if (checkin || checkout) {
+			lodgingInfoWrapper = (
+				<div className="lodging-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12">
+					<label>Lodging</label>
+					<h4 title="checkin/checkout times"><i className="fa fa-home"></i> {data.checkin} &ndash; {data.checkout}</h4>
+				</div>
+			)
+		}
+
+		//cost info
+		if (!_.isEmpty(lodging) && (checkout && checkout)) {
+			costInfoWrapper = (
+				<div className='cost-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12'>
+					<label>Cost</label>
+					<h4 title="driving cost"><i className="fa fa-tachometer"></i> N/A</h4>
+					<h4 title="lodging cost"><i className="fa fa-home"></i> N/A</h4>
+					<h4 title="total cost"><i className="fa fa-money"></i> N/A</h4>
 				</div>
 			)
 		}
@@ -209,8 +224,9 @@ var StopHead = React.createClass({
 						<LocationsMenu predictions={queryPredictions} />
 					</div>
 				</div>
-				{infoWrapper}
-				{checkElm}
+				{distanceInfoWrapper}
+				{lodgingInfoWrapper}
+				{costInfoWrapper}
 			</div>
 		)
 	}
