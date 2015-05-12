@@ -15,6 +15,7 @@ require("moment-duration-format");
 var appSrc = "../public/app/";
 var stops_collection = require(appSrc + "backbone_collections/stops_collection");
 var stop_model = require(appSrc +  "backbone_models/stop_model");
+var trip_model = require(appSrc + "backbone_models/trip_model");
 var StopView = require(appSrc +  "backbone_views/stop_view");
 
 //create a sandbox for sinon spies and fake timers
@@ -401,6 +402,9 @@ describe('stops_collection', function(){
 				text: '0',
 				value: 0
 			},
+			cost:  {
+				totalTripCost: 0
+			},
 			totals: {
 				distance: {
 					text: '0 mi',
@@ -409,6 +413,9 @@ describe('stops_collection', function(){
 				duration: {
 					text: '0',
 					value: 0
+				},
+				cost:  {
+					totalTripCost: 0
 				}
 			}
 		}
@@ -524,6 +531,7 @@ describe('stops_collection', function(){
 
 		it('should set the distance for each stop model', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -552,7 +560,7 @@ describe('stops_collection', function(){
 			expect(stop2.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
 			expect(stop3.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
 
-			stops.mergeMapData(mockMappingResult);
+			stops.mergeMapData(mockMappingResult, tripModel);
 
 			expect(stop1.get("distance")).to.be.deep.equal({ text: "0 mi", value: 0});
 			expect(stop2.get("distance")).to.be.deep.equal({ text: "913 mi", value: 1468986});
@@ -561,6 +569,7 @@ describe('stops_collection', function(){
 
 		it('should set the duration for each stop model', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -589,7 +598,7 @@ describe('stops_collection', function(){
 			expect(stop2.get("duration")).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop3.get("duration")).to.be.deep.equal({ text: "0", value: 0});
 
-			stops.mergeMapData(mockMappingResult);
+			stops.mergeMapData(mockMappingResult, tripModel);
 			
 			expect(stop1.get("duration")).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop2.get("duration")).to.be.deep.equal({ text: "12 hours 45 mins", value: 45889});
@@ -598,6 +607,7 @@ describe('stops_collection', function(){
 
 		it('should set the total distance for each stop model', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -626,7 +636,7 @@ describe('stops_collection', function(){
 			expect(stop2.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
 			expect(stop3.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
 
-			stops.mergeMapData(mockMappingResult);
+			stops.mergeMapData(mockMappingResult, tripModel);
 			
 			expect(stop1.get("totals").distance).to.be.deep.equal({ text: "0 mi", value: 0});
 			expect(stop2.get("totals").distance).to.be.deep.equal({ text: "913 mi", value: 913});
@@ -635,6 +645,7 @@ describe('stops_collection', function(){
 
 		it('should set the total duration for each stop model', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -663,7 +674,7 @@ describe('stops_collection', function(){
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 
-			stops.mergeMapData(mockMappingResult);
+			stops.mergeMapData(mockMappingResult, tripModel);
 			
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "12 hours 44 mins", value: 45889});
@@ -672,6 +683,7 @@ describe('stops_collection', function(){
 
 		it('should do nothing if legs length does not match models.length - 1', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -707,7 +719,7 @@ describe('stops_collection', function(){
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 
-			stops.mergeMapData(mockMappingResult);
+			stops.mergeMapData(mockMappingResult, tripModel);
 			
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
@@ -717,6 +729,7 @@ describe('stops_collection', function(){
 
 		it('should run without error even with no result argument', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -745,7 +758,7 @@ describe('stops_collection', function(){
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 
-			stops.mergeMapData();
+			stops.mergeMapData(null, tripModel);
 			
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
@@ -754,6 +767,7 @@ describe('stops_collection', function(){
 
 		it('should run without error even with no routes', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([
@@ -782,7 +796,7 @@ describe('stops_collection', function(){
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 
-			stops.mergeMapData({});
+			stops.mergeMapData({}, tripModel);
 			
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
@@ -791,14 +805,16 @@ describe('stops_collection', function(){
 
 		it('should run without error even with bad map data', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 
-			stops.mergeMapData(mockMappingResult);
+			stops.mergeMapData(mockMappingResult, tripModel);
 			
 			expect(stops.models.length).to.equal(0);
 		});
 
 		it('should run without error even with a bad model', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3, stop4;
 
 			stops.add([
@@ -835,7 +851,7 @@ describe('stops_collection', function(){
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
 
-			stops.mergeMapData(mockMappingResultBad);
+			stops.mergeMapData(mockMappingResultBad, tripModel);
 			
 			expect(stops.models.length).to.be.equal(4);
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
@@ -847,6 +863,7 @@ describe('stops_collection', function(){
 
 		it('should run without error even with all empty models and not using collection.add()', function() {
 			var stops = new stops_collection();
+			var tripModel = new trip_model();
 			var stop1, stop2, stop3;
 			
 			stops.add([{}]);
@@ -858,14 +875,10 @@ describe('stops_collection', function(){
 			stop3 = stops.models[2];
 
 			expect(stop1.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
-			//expect(stop2.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
-			//expect(stop3).to.be.deep.equal({});
 
-			stops.mergeMapData(mockMappingResultEmpy);
+			stops.mergeMapData(mockMappingResultEmpy, tripModel);
 			
 			expect(stop1.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
-			//expect(stop2.get("totals")).to.be.deep.equal(lastStopDefaults.totals);
-			//expect(stop3).to.be.deep.equal({});
 		});
 
 	});

@@ -65,9 +65,16 @@ var stops_colletion = Backbone.Collection.extend({
 		Backbone.trigger('removeStop', stopId);
 	},
 
-	mergeMapData: function(result) {
+	mergeMapData: function(result, trip_model) {
 		var METERCONVERT = 1609.344;
 		var DURATIONFORMAT = 'y [years] d [days] h [hours] m [mins]';
+		var SECONDSINDAY = 86400;
+		var gasPrice = trip_model.get('gasPrice');
+		var mpg = trip_model.get('mpg');
+		var thisStop;
+		var lodgingPrice, totalTripCost, totalCost, travelCost, lodgingCost;
+		var totalTravelCost, totalLodgingCost;
+		var stayLength;
 		var lastStop, totalDistance, totalDuration, legs, thisLeg;
 		var legDistance, lastStopDistance;
 		var legDuration, lastStopDuration;
@@ -122,13 +129,57 @@ var stops_colletion = Backbone.Collection.extend({
 					}
 				}();
 
+				thisStop = stop.attributes;
+				lodgingPrice = function() {
+					if (thisStop.lodging && thisStop.lodging.price) {
+						return thisStop.lodging.price.nightly;
+					} else {
+						return 0;
+					}
+				}();
+
+				stayLength = function() {
+					var checkin;
+					var checkout;
+
+					if (thisStop.checkinUTC && thisStop.checkoutUTC) {
+						checkin = moment(stop.attributes.checkinUTC);
+						checkout = moment(stop.attributes.checkoutUTC);
+
+						return Math.abs(checkin.diff(checkout, 'days'));
+					}
+
+					return 0;
+					
+				}();
+
+				if (!lastStop.totals.cost) {lastStop.totals.cost = {}; }
+
+				//distance values
 				legDistance = thisLeg.distance.value / METERCONVERT;
 				lastStopDistance = lastStop.totals.distance.value;
 				totalDistance = Math.round(lastStopDistance + legDistance);
 
+				//duration values
 				legDuration = thisLeg.duration.value;
 				lastStopDuration = lastStop.totals.duration.value;
-				totalDuration =  lastStopDuration + legDuration;
+				totalDuration = (lastStopDuration + legDuration) + 
+								(stayLength * SECONDSINDAY);
+
+				//cost values
+				travelCost = ((legDistance / mpg) * gasPrice).toFixed(2);
+				lodgingCost = lodgingPrice * stayLength;
+				totalCost = (parseFloat(travelCost) + lodgingCost).toFixed(2);
+
+				//total cost values
+				totalTripCost = parseFloat(totalCost) + 
+					(lastStop.totals.cost.totalTripCost || 0);
+
+				totalTravelCost = parseFloat(travelCost) + 
+					(lastStop.totals.cost.totalTravelCost || 0);
+
+				totalLodgingCost = parseFloat(lodgingCost) + 
+					(lastStop.totals.cost.totalLodgingCost || 0);
 				
 				stop.set('geo', {
 					lat: thisLeg.end_location.lat(),
@@ -145,6 +196,12 @@ var stops_colletion = Backbone.Collection.extend({
 					value: thisLeg.duration.value
 				}, {silent: true});
 
+				stop.set('cost', {
+					travelCost: travelCost,
+					lodgingCost: lodgingCost,
+					totalCost: totalCost
+				}, {silent: true});
+
 				//NOTE: backbone does not do deep/nested models
 				//Since I'm setting the models above silently, 
 				//I'm ok with directly affecting attributes here
@@ -157,8 +214,16 @@ var stops_colletion = Backbone.Collection.extend({
 						value: totalDuration,
 						text: moment.duration(totalDuration, 'seconds')
 								.format(DURATIONFORMAT)
+					},
+					cost: {
+						totalTripCost: totalTripCost,
+						totalTravelCost: totalTravelCost,
+						totalLodgingCost: totalLodgingCost
 					}
 				};
+
+				
+
 			} else {
 				thisLeg = legs[0];
 				thisLeg = function() {

@@ -41208,9 +41208,16 @@ var stops_colletion = Backbone.Collection.extend({
 		Backbone.trigger('removeStop', stopId);
 	},
 
-	mergeMapData: function(result) {
+	mergeMapData: function(result, trip_model) {
 		var METERCONVERT = 1609.344;
 		var DURATIONFORMAT = 'y [years] d [days] h [hours] m [mins]';
+		var SECONDSINDAY = 86400;
+		var gasPrice = trip_model.get('gasPrice');
+		var mpg = trip_model.get('mpg');
+		var thisStop;
+		var lodgingPrice, totalTripCost, totalCost, travelCost;
+		var totalTravelCost, totalLodgingCost;
+		var stayLength;
 		var lastStop, totalDistance, totalDuration, legs, thisLeg;
 		var legDistance, lastStopDistance;
 		var legDuration, lastStopDuration;
@@ -41265,13 +41272,57 @@ var stops_colletion = Backbone.Collection.extend({
 					}
 				}();
 
+				thisStop = stop.attributes;
+				lodgingPrice = function() {
+					if (thisStop.lodging && thisStop.lodging.price) {
+						return thisStop.lodging.price.nightly;
+					} else {
+						return 0;
+					}
+				}();
+
+				stayLength = function() {
+					var checkin;
+					var checkout;
+
+					if (thisStop.checkinUTC && thisStop.checkoutUTC) {
+						checkin = moment(stop.attributes.checkinUTC);
+						checkout = moment(stop.attributes.checkoutUTC);
+
+						return Math.abs(checkin.diff(checkout, 'days'));
+					}
+
+					return 0;
+					
+				}();
+
+				if (!lastStop.totals.cost) {lastStop.totals.cost = {}; }
+
+				//distance values
 				legDistance = thisLeg.distance.value / METERCONVERT;
 				lastStopDistance = lastStop.totals.distance.value;
 				totalDistance = Math.round(lastStopDistance + legDistance);
 
+				//duration values
 				legDuration = thisLeg.duration.value;
 				lastStopDuration = lastStop.totals.duration.value;
-				totalDuration =  lastStopDuration + legDuration;
+				totalDuration = (lastStopDuration + legDuration) + 
+								(stayLength * SECONDSINDAY);
+
+				//cost values
+				travelCost = ((legDistance / mpg) * gasPrice).toFixed(2);
+				lodgingCost = lodgingPrice * stayLength;
+				totalCost = (parseFloat(travelCost) + lodgingCost).toFixed(2);
+
+				//total cost values
+				totalTripCost = parseFloat(totalCost) + 
+					(lastStop.totals.cost.totalTripCost || 0);
+					
+				totalTravelCost = parseFloat(travelCost) + 
+					(lastStop.totals.cost.totalTravelCost || 0);
+
+				totalLodgingCost = parseFloat(lodgingCost) + 
+					(lastStop.totals.cost.totalLodgingCost || 0);
 				
 				stop.set('geo', {
 					lat: thisLeg.end_location.lat(),
@@ -41288,6 +41339,12 @@ var stops_colletion = Backbone.Collection.extend({
 					value: thisLeg.duration.value
 				}, {silent: true});
 
+				stop.set('cost', {
+					travelCost: travelCost,
+					lodgingCost: lodgingCost,
+					totalCost: totalCost
+				}, {silent: true});
+
 				//NOTE: backbone does not do deep/nested models
 				//Since I'm setting the models above silently, 
 				//I'm ok with directly affecting attributes here
@@ -41300,8 +41357,16 @@ var stops_colletion = Backbone.Collection.extend({
 						value: totalDuration,
 						text: moment.duration(totalDuration, 'seconds')
 								.format(DURATIONFORMAT)
+					},
+					cost: {
+						totalTripCost: totalTripCost,
+						totalTravelCost: totalTravelCost,
+						totalLodgingCost: totalLodgingCost
 					}
 				};
+
+				
+
 			} else {
 				thisLeg = legs[0];
 				thisLeg = function() {
@@ -41468,6 +41533,11 @@ var stop_model = Backbone.Model.extend({
 			'text': '0',
 			'value': 0
 		},
+		'cost': {
+			'travelCost': 0,
+			'lodgingCost': 0,
+			'totalCost': 0
+		},
 		'totals': {
 			'distance': {
 				'text': '0 mi',
@@ -41476,7 +41546,11 @@ var stop_model = Backbone.Model.extend({
 			'duration': {
 				'text': '0',
 				'value': 0
+			},
+			'cost':  {
+				'totalTripCost': 0
 			}
+			
 		},
 		'lodging': {}
 	},
@@ -41977,13 +42051,15 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		'click .result-request-stay-btn': 'onRequestToBook',
-		'click .chosen'					: 'onClickBookingStatus',
-		'click .set-chosen'				: 'onSetLodingStatus',
-		'click .next-photo'				: 'onNextPhoto',
-		'click .prev-photo'				: 'onPrevPhoto',
-		'mouseenter'					: 'onMouseEnter',
-		'mouseleave'					: 'onMouseLeave'
+		'click .result-request-stay-btn'		: 'onRequestToBook',
+		'mouseleave .result-request-stay-btn'	: 'destroyToolTip',
+		'click .chosen'							: 'onClickBookingStatus',
+		'click .set-chosen'						: 'onSetLodingStatus',
+		'click .next-photo'						: 'onNextPhoto',
+		'click .prev-photo'						: 'onPrevPhoto',
+		'mouseenter'							: 'onMouseEnter',
+		'mouseleave'							: 'onMouseLeave',
+
 	},
 
 	initialize: function(opts) {
@@ -42008,7 +42084,19 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	onRequestToBook: function(e) {
+		var checkin = this.stop_model.get('checkin');
+		var checkout = this.stop_model.get('checkout');
+		
 		e.preventDefault();
+
+		if (!checkin || !checkout) {
+			this.showToolTip( $(e.currentTarget), {
+				trigger: 'click',
+				title: 'Please select check-in and check-out times before requesting to book.',
+				placement: 'bottom'
+			});
+			return;
+		}
 
 		this.model.set('bookingStatus', 'pending');
 		this.syncStopModel();
@@ -42087,6 +42175,21 @@ var lodging_result_view = Backbone.View.extend({
 		this.syncStopModel();
 	},
 
+	showToolTip: function($elm, opts) {
+		$elm.tooltip(opts);
+		$elm.tooltip('show');
+	},
+
+	hideToolTip: function($elm) {
+		$elm.tooltip('hide');
+	},
+
+	destroyToolTip: function(e) {
+		if (!e) { return; }
+
+		$(e.currentTarget).tooltip('destroy');
+	},
+
 	destroy: function() {
 		this.undelegateEvents();
 		this.$el.removeData().unbind();
@@ -42113,6 +42216,7 @@ var lodgings_search_query_view = Backbone.View.extend({
 		this.map_api 				= opts.map_api;
 		this.lodgings_collection 	= opts.lodgings_collection;
 		this.lodgings_meta_model	= opts.lodgings_meta_model;
+		this.trip_model				= opts.trip_model;
 		this.parentView				= opts.parentView;
 		this.stop_model				= opts.stop_model;
 		
@@ -42177,7 +42281,9 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		this.stop_model.set({
 			checkin: moment(start).format('MM/DD/YYYY'),
-			checkout: moment(end).format('MM/DD/YYYY') 
+			checkout: moment(end).format('MM/DD/YYYY'),
+			checkinUTC: start,
+			checkoutUTC: end
 		});
 
 		Backbone.trigger('StopView:showSpinner');
@@ -42374,6 +42480,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgings_collection	= opts.lodgings_collection;
 		this.lodgings_meta_model	= opts.lodgings_meta_model;
 		this.stop_model				= opts.stop_model;
+		this.trip_model				= opts.trip_model;
 		this.parentView				= opts.parentView;
 		this.map_api				= opts.map_api;
 		this.lodgingViews 			= [];
@@ -42507,6 +42614,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 	render: function() {
 		var collectionData = this.lodgings_collection.toJSON();
 		var lodgingsMetaData = this.lodgings_meta_model.toJSON();
+		var tripTitle = this.trip_model.get('title');
 
 		var renderModel = {
 			isServer: false,
@@ -42518,6 +42626,8 @@ var lodgings_search_results_view = Backbone.View.extend({
 				page: lodgingsMetaData.page
 			}
 		}
+
+		if (tripTitle) { renderModel.tripTitle = tripTitle; }
 
 		Backbone.trigger('stop_view:search:render', renderModel);
 	},
@@ -42752,7 +42862,8 @@ var stop_page_view = PageView.extend({
 				stop_model: this.model,
 				map_api: this.map_api,
 				lodgings_collection: this.lodgings_collection,
-				lodgings_meta_model: this.lodgings_meta_model
+				lodgings_meta_model: this.lodgings_meta_model,
+				trip_model: this.trip_model
 			}); 
 		}
 
@@ -42764,6 +42875,7 @@ var stop_page_view = PageView.extend({
 				lodgings_meta_model: this.lodgings_meta_model,
 				stop_model: this.model,
 				map_api: this.map_api,
+				trip_model: this.trip_model
 			}); 
 		}
 	}
@@ -43450,7 +43562,7 @@ var TripView = PageView.extend({
 	},
 
 	setViewNewMapStop: function(result) {
-		this.stops_collection.mergeMapData(result);
+		this.stops_collection.mergeMapData(result, this.model);
 		this.setStopsCollectionInModel();
 		this.setModel(null, {silent: true});
 		this.render(trip_template);
@@ -43472,9 +43584,10 @@ var TripView = PageView.extend({
 		var lastTotal = this.stops_collection.last().get('totals');
 		var distance = lastTotal.distance.value;
 		var duration = lastTotal.duration.text;
+		var lodgingCost = lastTotal.cost.totalLodgingCost;
 		var mpg = this.model.get('mpg');
 		var gasPrice = this.model.get('gasPrice'); 
-		var cost = ((distance / mpg) * gasPrice).toFixed(2);
+		var cost = (((distance / mpg) * gasPrice) + lodgingCost).toFixed(2);
 
 		var defaults = {
 			tripDistance: distance,
@@ -44791,6 +44904,7 @@ var StopHead = React.createClass({displayName: "StopHead",
 		var lodging = data.lodging || {};
 		var distance = data.distance || {};
 		var duration = data.duration || {};
+		var cost = data.cost || {};
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
@@ -44828,9 +44942,9 @@ var StopHead = React.createClass({displayName: "StopHead",
 			costInfoWrapper = (
 				React.createElement("div", {className: "cost-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
 					React.createElement("label", null, "Cost"), 
-					React.createElement("h4", {title: "driving cost"}, React.createElement("i", {className: "fa fa-tachometer"}), " N/A"), 
-					React.createElement("h4", {title: "lodging cost"}, React.createElement("i", {className: "fa fa-home"}), " N/A"), 
-					React.createElement("h4", {title: "total cost"}, React.createElement("i", {className: "fa fa-money"}), " N/A")
+					React.createElement("h4", {title: "driving cost"}, React.createElement("i", {className: "fa fa-tachometer"}), " $", cost.travelCost), 
+					React.createElement("h4", {title: "lodging cost"}, React.createElement("i", {className: "fa fa-home"}), " $", cost.lodgingCost), 
+					React.createElement("h4", {title: "total cost"}, React.createElement("i", {className: "fa fa-money"}), " $", cost.totalCost)
 				)
 			)
 		}
@@ -44884,7 +44998,7 @@ var TripView = React.createClass({displayName: "TripView",
 										React.createElement(StopHead, {data: stop, stopProps: stopProps, locationProps: locationProps, key: stop._id}), 
 										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true, location: stop.location, isTripView: true}), 
 										React.createElement("div", {className: "add-stop-btn-wrapper"}, 
-											React.createElement("p", {className: (canAddStop) ? "absolute-center" : "absolute-center hide"}, "+"), 
+											React.createElement("i", {className: (canAddStop) ? "fa fa-plus-square-o" : "fa fa-plus-square-o hide"}), 
 											React.createElement("button", {className: (canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}, "Add Stop +")
 										)
 									)

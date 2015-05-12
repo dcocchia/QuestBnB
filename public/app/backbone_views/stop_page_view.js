@@ -134,7 +134,8 @@ var stop_page_view = PageView.extend({
 				stop_model: this.model,
 				map_api: this.map_api,
 				lodgings_collection: this.lodgings_collection,
-				lodgings_meta_model: this.lodgings_meta_model
+				lodgings_meta_model: this.lodgings_meta_model,
+				trip_model: this.trip_model
 			}); 
 		}
 
@@ -146,6 +147,7 @@ var stop_page_view = PageView.extend({
 				lodgings_meta_model: this.lodgings_meta_model,
 				stop_model: this.model,
 				map_api: this.map_api,
+				trip_model: this.trip_model
 			}); 
 		}
 	}

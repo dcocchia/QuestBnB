@@ -168,6 +168,7 @@ var StopHead = React.createClass({
 		var lodging = data.lodging || {};
 		var distance = data.distance || {};
 		var duration = data.duration || {};
+		var cost = data.cost || {};
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
@@ -205,9 +206,9 @@ var StopHead = React.createClass({
 			costInfoWrapper = (
 				<div className='cost-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12'>
 					<label>Cost</label>
-					<h4 title="driving cost"><i className="fa fa-tachometer"></i> N/A</h4>
-					<h4 title="lodging cost"><i className="fa fa-home"></i> N/A</h4>
-					<h4 title="total cost"><i className="fa fa-money"></i> N/A</h4>
+					<h4 title="driving cost"><i className="fa fa-tachometer"></i> ${cost.travelCost}</h4>
+					<h4 title="lodging cost"><i className="fa fa-home"></i> ${cost.lodgingCost}</h4>
+					<h4 title="total cost"><i className="fa fa-money"></i> ${cost.totalCost}</h4>
 				</div>
 			)
 		}
@@ -261,7 +262,7 @@ var TripView = React.createClass({
 										<StopHead data={stop} stopProps={stopProps} locationProps={locationProps} key={stop._id}/>
 										<ChosenLodging key={index} data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true} location={stop.location} isTripView={true} />
 										<div className="add-stop-btn-wrapper">
-											<p className={(canAddStop) ? "absolute-center" : "absolute-center hide"}>&#43;</p>
+											<i className={(canAddStop) ? "fa fa-plus-square-o" : "fa fa-plus-square-o hide"}></i>
 											<button className={(canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}>Add Stop &#43;</button>
 										</div>
 									</li>

@@ -344,7 +344,7 @@ var TripView = PageView.extend({
 	},
 
 	setViewNewMapStop: function(result) {
-		this.stops_collection.mergeMapData(result);
+		this.stops_collection.mergeMapData(result, this.model);
 		this.setStopsCollectionInModel();
 		this.setModel(null, {silent: true});
 		this.render(trip_template);
@@ -366,9 +366,10 @@ var TripView = PageView.extend({
 		var lastTotal = this.stops_collection.last().get('totals');
 		var distance = lastTotal.distance.value;
 		var duration = lastTotal.duration.text;
+		var lodgingCost = lastTotal.cost.totalLodgingCost;
 		var mpg = this.model.get('mpg');
 		var gasPrice = this.model.get('gasPrice'); 
-		var cost = ((distance / mpg) * gasPrice).toFixed(2);
+		var cost = (((distance / mpg) * gasPrice) + lodgingCost).toFixed(2);
 
 		var defaults = {
 			tripDistance: distance,

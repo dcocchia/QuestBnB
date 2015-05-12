@@ -11,6 +11,11 @@ var stop_model = Backbone.Model.extend({
 			'text': '0',
 			'value': 0
 		},
+		'cost': {
+			'travelCost': 0,
+			'lodgingCost': 0,
+			'totalCost': 0
+		},
 		'totals': {
 			'distance': {
 				'text': '0 mi',
@@ -19,6 +24,9 @@ var stop_model = Backbone.Model.extend({
 			'duration': {
 				'text': '0',
 				'value': 0
+			},
+			'cost':  {
+				'totalTripCost': 0
 			}
 		},
 		'lodging': {}

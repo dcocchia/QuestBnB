@@ -32,7 +32,6 @@ var viewsPath = "./views/"
 var landingView = React.createFactory(require(viewsPath + 'LandingView.jsx'));
 var tripView = React.createFactory(require(viewsPath + 'TripView.jsx'));
 var stopView = React.createFactory(require(viewsPath + 'StopView.jsx'));
-var overviewView = React.createFactory(require(viewsPath + 'overviewView.jsx'));
 
 this.renderer = new Renderer();
 
@@ -160,7 +159,10 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 				return (thisStopId === stopId);
 			});
 
+			console.log(stopDoc.stopNum);
+
 			_.extend(stopDoc, {
+				title: doc.title + " &#8211; Stop " + stopDoc.stopNum.index,
 				tripTitle: doc.title,
 				tripStart: doc.start,
 				tripEnd: doc.end,

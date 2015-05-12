@@ -16,6 +16,7 @@ var lodgings_search_query_view = Backbone.View.extend({
 		this.map_api 				= opts.map_api;
 		this.lodgings_collection 	= opts.lodgings_collection;
 		this.lodgings_meta_model	= opts.lodgings_meta_model;
+		this.trip_model				= opts.trip_model;
 		this.parentView				= opts.parentView;
 		this.stop_model				= opts.stop_model;
 		
@@ -80,7 +81,9 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		this.stop_model.set({
 			checkin: moment(start).format('MM/DD/YYYY'),
-			checkout: moment(end).format('MM/DD/YYYY') 
+			checkout: moment(end).format('MM/DD/YYYY'),
+			checkinUTC: start,
+			checkoutUTC: end
 		});
 
 		Backbone.trigger('StopView:showSpinner');

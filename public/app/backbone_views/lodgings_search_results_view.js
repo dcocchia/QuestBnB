@@ -14,6 +14,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		this.lodgings_collection	= opts.lodgings_collection;
 		this.lodgings_meta_model	= opts.lodgings_meta_model;
 		this.stop_model				= opts.stop_model;
+		this.trip_model				= opts.trip_model;
 		this.parentView				= opts.parentView;
 		this.map_api				= opts.map_api;
 		this.lodgingViews 			= [];
@@ -147,6 +148,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 	render: function() {
 		var collectionData = this.lodgings_collection.toJSON();
 		var lodgingsMetaData = this.lodgings_meta_model.toJSON();
+		var tripTitle = this.trip_model.get('title');
 
 		var renderModel = {
 			isServer: false,
@@ -158,6 +160,8 @@ var lodgings_search_results_view = Backbone.View.extend({
 				page: lodgingsMetaData.page
 			}
 		}
+
+		if (tripTitle) { renderModel.tripTitle = tripTitle; }
 
 		Backbone.trigger('stop_view:search:render', renderModel);
 	},

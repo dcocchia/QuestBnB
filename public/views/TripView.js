@@ -168,6 +168,7 @@ var StopHead = React.createClass({displayName: "StopHead",
 		var lodging = data.lodging || {};
 		var distance = data.distance || {};
 		var duration = data.duration || {};
+		var cost = data.cost || {};
 		var locationProps = ( this.props.locationProps || {} );
 		var queryPredictions = ( locationProps.queryPredictions || [] ); 
 		var stopProps = ( this.props.stopProps || {} );
@@ -205,9 +206,9 @@ var StopHead = React.createClass({displayName: "StopHead",
 			costInfoWrapper = (
 				React.createElement("div", {className: "cost-info-wrapper col-lg-4 col-md-4 col-sm-4 col-xs-12"}, 
 					React.createElement("label", null, "Cost"), 
-					React.createElement("h4", {title: "driving cost"}, React.createElement("i", {className: "fa fa-tachometer"}), " N/A"), 
-					React.createElement("h4", {title: "lodging cost"}, React.createElement("i", {className: "fa fa-home"}), " N/A"), 
-					React.createElement("h4", {title: "total cost"}, React.createElement("i", {className: "fa fa-money"}), " N/A")
+					React.createElement("h4", {title: "driving cost"}, React.createElement("i", {className: "fa fa-tachometer"}), " $", cost.travelCost), 
+					React.createElement("h4", {title: "lodging cost"}, React.createElement("i", {className: "fa fa-home"}), " $", cost.lodgingCost), 
+					React.createElement("h4", {title: "total cost"}, React.createElement("i", {className: "fa fa-money"}), " $", cost.totalCost)
 				)
 			)
 		}
@@ -261,7 +262,7 @@ var TripView = React.createClass({displayName: "TripView",
 										React.createElement(StopHead, {data: stop, stopProps: stopProps, locationProps: locationProps, key: stop._id}), 
 										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true, location: stop.location, isTripView: true}), 
 										React.createElement("div", {className: "add-stop-btn-wrapper"}, 
-											React.createElement("p", {className: (canAddStop) ? "absolute-center" : "absolute-center hide"}, "+"), 
+											React.createElement("i", {className: (canAddStop) ? "fa fa-plus-square-o" : "fa fa-plus-square-o hide"}), 
 											React.createElement("button", {className: (canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}, "Add Stop +")
 										)
 									)

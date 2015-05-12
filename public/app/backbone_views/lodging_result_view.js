@@ -5,13 +5,15 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	events: {
-		'click .result-request-stay-btn': 'onRequestToBook',
-		'click .chosen'					: 'onClickBookingStatus',
-		'click .set-chosen'				: 'onSetLodingStatus',
-		'click .next-photo'				: 'onNextPhoto',
-		'click .prev-photo'				: 'onPrevPhoto',
-		'mouseenter'					: 'onMouseEnter',
-		'mouseleave'					: 'onMouseLeave'
+		'click .result-request-stay-btn'		: 'onRequestToBook',
+		'mouseleave .result-request-stay-btn'	: 'destroyToolTip',
+		'click .chosen'							: 'onClickBookingStatus',
+		'click .set-chosen'						: 'onSetLodingStatus',
+		'click .next-photo'						: 'onNextPhoto',
+		'click .prev-photo'						: 'onPrevPhoto',
+		'mouseenter'							: 'onMouseEnter',
+		'mouseleave'							: 'onMouseLeave',
+
 	},
 
 	initialize: function(opts) {
@@ -36,7 +38,19 @@ var lodging_result_view = Backbone.View.extend({
 	},
 
 	onRequestToBook: function(e) {
+		var checkin = this.stop_model.get('checkin');
+		var checkout = this.stop_model.get('checkout');
+		
 		e.preventDefault();
+
+		if (!checkin || !checkout) {
+			this.showToolTip( $(e.currentTarget), {
+				trigger: 'click',
+				title: 'Please select check-in and check-out times before requesting to book.',
+				placement: 'bottom'
+			});
+			return;
+		}
 
 		this.model.set('bookingStatus', 'pending');
 		this.syncStopModel();
@@ -113,6 +127,21 @@ var lodging_result_view = Backbone.View.extend({
 		});
 
 		this.syncStopModel();
+	},
+
+	showToolTip: function($elm, opts) {
+		$elm.tooltip(opts);
+		$elm.tooltip('show');
+	},
+
+	hideToolTip: function($elm) {
+		$elm.tooltip('hide');
+	},
+
+	destroyToolTip: function(e) {
+		if (!e) { return; }
+
+		$(e.currentTarget).tooltip('destroy');
 	},
 
 	destroy: function() {
