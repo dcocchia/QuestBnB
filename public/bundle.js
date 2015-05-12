@@ -41215,7 +41215,7 @@ var stops_colletion = Backbone.Collection.extend({
 		var gasPrice = trip_model.get('gasPrice');
 		var mpg = trip_model.get('mpg');
 		var thisStop;
-		var lodgingPrice, totalTripCost, totalCost, travelCost;
+		var lodgingPrice, totalTripCost, totalCost, travelCost, lodgingCost;
 		var totalTravelCost, totalLodgingCost;
 		var stayLength;
 		var lastStop, totalDistance, totalDuration, legs, thisLeg;
@@ -41317,7 +41317,7 @@ var stops_colletion = Backbone.Collection.extend({
 				//total cost values
 				totalTripCost = parseFloat(totalCost) + 
 					(lastStop.totals.cost.totalTripCost || 0);
-					
+
 				totalTravelCost = parseFloat(travelCost) + 
 					(lastStop.totals.cost.totalTravelCost || 0);
 
@@ -41550,7 +41550,6 @@ var stop_model = Backbone.Model.extend({
 			'cost':  {
 				'totalTripCost': 0
 			}
-			
 		},
 		'lodging': {}
 	},
@@ -42893,7 +42892,8 @@ var StopView = Backbone.View.extend({
 		'click .remove'					: 'onRemoveClick',
 		'click .lodging-booking-status' : 'onLodgingStatusClick',
 		'click .next-photo'				: 'onNextPhoto',
-		'click .prev-photo'				: 'onPrevPhoto'
+		'click .prev-photo'				: 'onPrevPhoto',
+		'click .remove-tip .btn'		: 'onRemoveTipClick'
 	},
 
 	initialize: function(opts) {
@@ -43108,23 +43108,74 @@ var StopView = Backbone.View.extend({
 	},
 
 	onRemoveClick: function(e) {
-		var $target = $(e.currentTarget),
-			stopId = $target.closest('.stop').attr('data-stop-id');
+		var $target = $(e.currentTarget);
+		var lodging = this.model.get('lodging');
 
-		if (e.preventDefault) { e.preventDefault(); }
+		e.preventDefault();
 
+		if (!_.isEmpty(lodging)) {
+			this.showToolTip( $target, {
+				trigger: 'click',
+				title: '<div class="remove-tip">' + 
+					'<p>Removing this stop will cancel your request to book' + 
+					'this lodging. Are you sure?</p>' + 
+					'<button class="btn btn-primary" ' + 
+					'data-action="yes">Yes</button>' + 
+					'<button class="btn btn-primary" ' + 
+					'data-action="no">No</button></div>',
+				placement: 'left',
+				html: true
+			});
+			return;
+		}
+
+		this.destroyToolTip($target);
+		this.removeStop();
+	},
+
+	removeStop: function() {
+		var stopId = this.$el.attr('data-stop-id');
 		this.$el.addClass('removing');
 
 		//wait for animation
 		_.delay(_.bind(function() {
 			this.model.remove(stopId);	
 		}, this), 500);
-		
+	},
+
+	onRemoveTipClick: function(e) {
+		var $target = $(e.currentTarget);
+		var action = $target.attr('data-action');
+		var $removeBtn = $target.closest('.tooltip').siblings('.remove');
+		e.preventDefault();
+
+		this.destroyToolTip($removeBtn);
+
+		if (action === 'yes') {
+			this.removeStop();
+			return;
+		}
 	},
 
 	onLodgingStatusClick: function(e) {
 		e.preventDefault();
 		Backbone.trigger('TripView:go_to_stop', this.stopId);
+	},
+
+	showToolTip: function($elm, opts) {
+		this.destroyToolTip($elm);
+		$elm.tooltip(opts);
+		$elm.attr('data-original-title', opts.title);
+		$elm.tooltip('show');
+		this.setElement(this.$el.selector);
+	},
+
+	hideToolTip: function($elm) {
+		$elm.tooltip('hide');
+	},
+
+	destroyToolTip: function($elm) {
+		$elm.tooltip('destroy');
 	},
 
 	destroy: function() {
@@ -43882,13 +43933,18 @@ var ViewOrchestrator = Backbone.View.extend({
 			}();
 
 			var stops = [];
+			var travellers = parseInt(data.travellers);
+
 			if (homeStop) { stops.push(homeStop); }
+
+			//add start/home location as first stop
 			stops.push({
 				location: data.location,
 				stopNum: stops.length + 1,
 				dayNum: 1
 			});
 
+			//load default trip model with start/end dates and first stop
 			this.loadModel(this.Models.trip_model, 'trip_model', {
 				title: 'Your Next Adventure',
 				start: data.start,
@@ -43904,6 +43960,15 @@ var ViewOrchestrator = Backbone.View.extend({
 				],
 				stops: stops
 			});
+
+			//add blank/default travellers based on number set on landing page
+			for (var i = 0; i < travellers; i++) {
+				this.models.trip_model.attributes.travellers.push({
+					img: {
+						src: '/app/img/default-icon.png'
+					}
+				});
+			}
 
 			this.loadModel(this.Models.search_model, 'search_model', {
 				map_api: this.map_api

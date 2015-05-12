@@ -159,8 +159,6 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 				return (thisStopId === stopId);
 			});
 
-			console.log(stopDoc.stopNum);
-
 			_.extend(stopDoc, {
 				title: doc.title + " &#8211; Stop " + stopDoc.stopNum.index,
 				tripTitle: doc.title,

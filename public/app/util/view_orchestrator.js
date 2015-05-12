@@ -70,13 +70,18 @@ var ViewOrchestrator = Backbone.View.extend({
 			}();
 
 			var stops = [];
+			var travellers = parseInt(data.travellers);
+
 			if (homeStop) { stops.push(homeStop); }
+
+			//add start/home location as first stop
 			stops.push({
 				location: data.location,
 				stopNum: stops.length + 1,
 				dayNum: 1
 			});
 
+			//load default trip model with start/end dates and first stop
 			this.loadModel(this.Models.trip_model, 'trip_model', {
 				title: 'Your Next Adventure',
 				start: data.start,
@@ -92,6 +97,15 @@ var ViewOrchestrator = Backbone.View.extend({
 				],
 				stops: stops
 			});
+
+			//add blank/default travellers based on number set on landing page
+			for (var i = 0; i < travellers; i++) {
+				this.models.trip_model.attributes.travellers.push({
+					img: {
+						src: '/app/img/default-icon.png'
+					}
+				});
+			}
 
 			this.loadModel(this.Models.search_model, 'search_model', {
 				map_api: this.map_api
