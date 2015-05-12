@@ -38,6 +38,15 @@ var stop_model = Backbone.Model.extend({
 		if (opts.url) { this.url = opts.url; }
 	},
 
+	startRemove: function(stopId) {
+		this.set('isRemoving', true);
+
+		//wait for animation
+		_.delay(_.bind(function() {
+			this.remove(stopId);	
+		}, this), 400);
+	},
+
 	remove: function(stopId) {
 		//collection deals with overhead
 		this.trigger('removeStop', stopId);

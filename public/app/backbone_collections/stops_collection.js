@@ -153,8 +153,6 @@ var stops_colletion = Backbone.Collection.extend({
 					
 				}();
 
-				if (!lastStop.totals.cost) {lastStop.totals.cost = {}; }
-
 				//distance values
 				legDistance = thisLeg.distance.value / METERCONVERT;
 				lastStopDistance = lastStop.totals.distance.value;
@@ -181,6 +179,7 @@ var stops_colletion = Backbone.Collection.extend({
 				totalLodgingCost = parseFloat(lodgingCost) + 
 					(lastStop.totals.cost.totalLodgingCost || 0);
 				
+				//set the stop model with newly calucated values
 				stop.set('geo', {
 					lat: thisLeg.end_location.lat(),
 					lng: thisLeg.end_location.lng()
@@ -221,8 +220,6 @@ var stops_colletion = Backbone.Collection.extend({
 						totalLodgingCost: totalLodgingCost
 					}
 				};
-
-				
 
 			} else {
 				thisLeg = legs[0];

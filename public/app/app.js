@@ -85,9 +85,11 @@
 				this.loadView(Landing_view, 'landing_view', { 
 					$parentEl: this.$el,
 					el: $('.landing-page'), 
-					map_api: this.map_api, 
+					map_api: this.map_api,
+					map_view: this.views.map_view,
 					model: this.models.search_model
 				});
+				Backbone.trigger('landing_view:render');
 			}, this));
 
 			this.router.on('route:trip', _.bind( function(tripId) { 

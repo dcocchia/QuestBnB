@@ -3,6 +3,7 @@ var PageView = require('./page_view');
 var landing_template = require('../../views/LandingView');
 var locationsMenu = require('../../views/LocationsMenu');
 var renderer = require('../../../renderer/client_renderer');
+var moment = require('moment');
 
 var LandingView = PageView.extend({
 	_findElms: function($parentEl) {
@@ -32,8 +33,9 @@ var LandingView = PageView.extend({
 
 	initialize: function(opts) {
 		opts || (opts = {});
-
-		this._findElms(opts.$parentEl);
+		this.$parentEl = opts.$parentEl;
+		
+		this._findElms(this.$parentEl);
 
 		//hack for autofocus React bug: https://github.com/facebook/react/issues/3066
 		this.elms.$locationInput.focus();
@@ -41,11 +43,17 @@ var LandingView = PageView.extend({
 		this.bindDatePickers();
 
 		this.map_api = opts.map_api;
+		this.map_view = opts.map_view;
 
 		this.model.on('change', _.bind(this.renderSearchResults, this));
 
 		Backbone.on('landing_view:render', _.bind(function() {
+			this.map_view.setMode();
+			this.map_api.clearMarkers();
+			this.map_api.clearDirections();
 			this.render(landing_template);
+			this._findElms(this.$parentEl);
+			this.bindDatePickers();
 		}, this));
 
 		this.sendQuery = _.debounce( _.bind( function(options) {
@@ -110,16 +118,54 @@ var LandingView = PageView.extend({
 		this.elms.$startCalendar.datepicker({ 
 			onSelect: _.bind( function(resp) {
 				var that = this;
+				//delay for letting first calendar close
+				//before opening the next one
 				_.delay( function() {
-					that.elms.$endCalendar.focus();
+					that.setStartDate(resp);
 				}, 250);
 			}, this)
 		});
 		this.elms.$endCalendar.datepicker({ 
 			onSelect: _.bind( function(resp) {
-				this.elms.$travellers.focus();
+				this.setEndDate(resp);
 			}, this)
 		});
+	},
+	
+	setStartDate: function(date) {
+		var newStart = moment(this.elms.$startCalendar.datepicker('getDate'));
+		var endDate = this.elms.$endCalendar.datepicker('getDate');
+
+		if (newStart.isAfter(endDate)) {
+			this.clearEndDate();
+			return;
+		}
+
+		this.elms.$endCalendar.focus();
+	},
+
+	setEndDate: function(date) {
+		var newEnd = moment(this.elms.$endCalendar.datepicker('getDate'));
+		var startDate = this.elms.$startCalendar.datepicker('getDate');
+
+		if (newEnd.isBefore(startDate)) {
+			this.clearStartDate();
+			return;
+		}
+
+		this.elms.$travellers.focus();
+	},
+
+	clearStartDate: function() {
+		_.delay( _.bind(function() {
+			this.elms.$startCalendar.focus().datepicker( "setDate", null );
+		}, this), 250);
+	},
+
+	clearEndDate: function() {
+		_.delay( _.bind(function() {
+			this.elms.$endCalendar.focus().datepicker( "setDate", null );
+		}, this), 250);
 	},
 
 	onLocationKeydown: function(e) {
@@ -144,15 +190,23 @@ var LandingView = PageView.extend({
 
 		switch(e.keyCode) {
 			case 40:
+				//up arrow
 				this.showLocationMenu();
 				this.focusNextLocationItem();
 				break;
 			case 38:
+				//down arrow
 				this.showLocationMenu();
 				this.focusPrevLocationItem();
 				break;
 			case 13: 
+				//enter key
 				this.onLocationKeydown(e);
+				break;
+			case 27: 
+				//escape key
+				$(e.currentTarget).blur();
+				this.model.clear();
 				break;
 			default: 
 				this.locationSearch(e);

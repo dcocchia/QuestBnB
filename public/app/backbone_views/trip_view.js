@@ -340,7 +340,8 @@ var TripView = PageView.extend({
 		this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
 		.then(_.bind(function(result) {
 			this.setViewNewMapStop(result);
-		}, this));
+		}, this))
+		.catch(function(err) {});
 	},
 
 	setViewNewMapStop: function(result) {

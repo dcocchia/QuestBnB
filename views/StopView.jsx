@@ -12,6 +12,7 @@ var StopView = React.createClass({
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
+		var tripId = this.props.tripId || "";
 		var modelData;
 		var lodgingDataModel;
 		var bootStrapDataElm;
@@ -39,7 +40,12 @@ var StopView = React.createClass({
 			<div className="stop-page">
 				<div className="side-bar panel">
 					<div className="bleed-width-20">
-						<h1 className="title left-full-width" role="textbox">{this.props.tripTitle} &#8211; Stop {this.props.stopNum}</h1>
+						<div className="back-btn-wrapper col-lg-2 col-md-2 col-sm-12 col-xs-12">
+							<a href={"/trips/" + tripId} className="btn btn-back">Back</a>
+						</div>
+						<div className="title-wrapper col-lg-10 col-md-10 col-sm-12 col-xs-12">
+							<h1 className="title" role="textbox">{this.props.tripTitle} &#8211; Stop {this.props.stopNum}</h1>
+						</div>
 						<div className="search-query-wrapper">
 							<SearchQuery checkin={this.props.checkin} checkout={this.props.checkout} locationProps={this.props.locationProps} location={this.props.location}/>
 						</div>

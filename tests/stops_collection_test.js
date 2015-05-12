@@ -681,6 +681,75 @@ describe('stops_collection', function(){
 			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "1 days 6 hours 54 mins", value: 111258});
 		});
 
+		it('should calculate the cost of each stop', function() {
+			var stops = new stops_collection();
+			var tripModel = new trip_model();
+			var stop1, stop2, stop3;
+			
+			stops.add([
+				{
+					isNew: false, 
+					stopNum: {index: 1},
+					_id: 1 ,
+					lodging: {
+						price: {
+							nightly: 0
+						}
+					}
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 2},
+					_id: 2,
+					checkin: "06/24/2015",
+					checkinUTC: 1435122000000,
+					checkout: "06/25/2015",
+					checkoutUTC: 1435208400000,
+					lodging: {
+						price: {
+							nightly: 10
+						}
+					}
+				},
+				{
+					isNew: false, 
+					stopNum: {index: 3},
+					_id: 3,
+					checkin: "06/24/2015",
+					checkinUTC: 1435122000000,
+					checkout: "06/25/2015",
+					checkoutUTC: 1435208400000,
+					lodging: {
+						price: {
+							nightly: 10
+						}
+					}
+				}
+			]);
+
+			stop1 = stops.models[0];
+			stop2 = stops.models[1];
+			stop3 = stops.models[2];
+
+			expect(stop1.get("totals").cost).to.be.deep.equal({ totalTripCost: 0  });
+			expect(stop2.get("totals").cost).to.be.deep.equal({ totalTripCost: 0 });
+			expect(stop3.get("totals").cost).to.be.deep.equal({ totalTripCost: 0 });
+
+			stops.mergeMapData(mockMappingResult, tripModel);
+
+			expect(stop1.get("totals").cost).to.be.deep.equal({ totalTripCost: 0  });
+			expect(stop2.get("totals").cost).to.be.deep.equal({ 
+				"totalLodgingCost": 10,
+				"totalTravelCost": 127.79,
+				"totalTripCost": 137.79 
+			});
+			expect(stop3.get("totals").cost).to.be.deep.equal({ 
+				"totalLodgingCost": 20,
+				"totalTravelCost": 303.07,
+				"totalTripCost": 323.07 
+			});
+		});
+
 		it('should do nothing if legs length does not match models.length - 1', function() {
 			var stops = new stops_collection();
 			var tripModel = new trip_model();

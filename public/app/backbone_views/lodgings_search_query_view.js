@@ -118,13 +118,21 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		switch(e.keyCode) {
 			case 40:
+				//up arrow
 				this.focusNextLocationItem(target, e);
 				break;
 			case 38:
+				//down arrow
 				this.focusPrevLocationItem(target, e);
 				break;
 			case 13: 
+				//enter key
 				this.onLocationKeydown(e);
+				break;
+			case 27: 
+				//escape key
+				$(target).blur();
+				this.search_model.clear();
 				break;
 			default: 
 				this.locationSearch(e);

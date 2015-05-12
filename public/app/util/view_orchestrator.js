@@ -115,15 +115,17 @@ var ViewOrchestrator = Backbone.View.extend({
 				$parentEl: this.$el, 
 				el: $('.trip-page'), 
 				map_api: this.map_api,
-				map_view: this.views['map_view'],
-				model: this.models['trip_model'],
-				search_model: this.models['search_model'],
+				map_view: this.views.map_view,
+				model: this.models.trip_model,
+				search_model: this.models.search_model,
 				stops_collection: this.Collections.stops_collection,
 				travellers_collection: this.Collections.travellers_collection
 			});
 
-			//TODO: validation in the model
-			this.models['trip_model'].save(null, {
+			//set url before calling save
+			this.models.trip_model.setUrl(this.models.trip_model.get('_id'));
+
+			this.models.trip_model.save(null, {
 				success: function(data) {
 					resolve(data);
 				},
@@ -136,8 +138,8 @@ var ViewOrchestrator = Backbone.View.extend({
 		//1 second for animation, and unknown time for db query result
 		Promise.all([timeOutPromise, dbQueryPromise])
 			.then( _.bind(function(a, b){
-				var trip_model = this.models['trip_model'];
-				var tripId = this.models['trip_model'].get('_id');
+				var trip_model = this.models.trip_model;
+				var tripId = this.models.trip_model.get('_id');
 				trip_model.setUrl(tripId);
 				trip_model.trigger('ready');
 				this.router.navigate('/trips/' + tripId);
@@ -147,9 +149,9 @@ var ViewOrchestrator = Backbone.View.extend({
 	},
 
 	goToStopView: function(stopId) {
-		var tripModel = this.models['trip_model'];
+		var tripModel = this.models.trip_model;
 		var tripId = tripModel.get('_id');
-		var tripView = this.views['trip_view'];
+		var tripView = this.views.trip_view;
 		var stopModelData = tripView.stops_collection.getStop(stopId).toJSON();
 		var stopModel = this.loadModel(
 			this.Models.stop_model, 
@@ -176,13 +178,14 @@ var ViewOrchestrator = Backbone.View.extend({
 			$parentEl: this.$el,
 			el: $('.stop-page'),
 			map_api: this.map_api,
-			map_view: this.views['map_view'],
+			map_view: this.views.map_view,
 			model: stopModel,
 			trip_model: tripModel,
 			lodgings_collection: this.collections.lodgings_collection
 		});
 
 		this.views.stop_page_view.model.url = url;
+		this.views.stop_page_view.model.set('tripId', tripId, {silent: true});
 
 		this.views.stop_page_view.trigger('ready');
 

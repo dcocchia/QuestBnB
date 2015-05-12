@@ -86,9 +86,11 @@
 				this.loadView(Landing_view, 'landing_view', { 
 					$parentEl: this.$el,
 					el: $('.landing-page'), 
-					map_api: this.map_api, 
+					map_api: this.map_api,
+					map_view: this.views.map_view,
 					model: this.models.search_model
 				});
+				Backbone.trigger('landing_view:render');
 			}, this));
 
 			this.router.on('route:trip', _.bind( function(tripId) { 
@@ -41324,6 +41326,7 @@ var stops_colletion = Backbone.Collection.extend({
 				totalLodgingCost = parseFloat(lodgingCost) + 
 					(lastStop.totals.cost.totalLodgingCost || 0);
 				
+				//set the stop model with newly calucated values
 				stop.set('geo', {
 					lat: thisLeg.end_location.lat(),
 					lng: thisLeg.end_location.lng()
@@ -41364,8 +41367,6 @@ var stops_colletion = Backbone.Collection.extend({
 						totalLodgingCost: totalLodgingCost
 					}
 				};
-
-				
 
 			} else {
 				thisLeg = legs[0];
@@ -41560,6 +41561,15 @@ var stop_model = Backbone.Model.extend({
 		if (opts.url) { this.url = opts.url; }
 	},
 
+	startRemove: function(stopId) {
+		this.set('isRemoving', true);
+
+		//wait for animation
+		_.delay(_.bind(function() {
+			this.remove(stopId);	
+		}, this), 400);
+	},
+
 	remove: function(stopId) {
 		//collection deals with overhead
 		this.trigger('removeStop', stopId);
@@ -41740,6 +41750,7 @@ var PageView = require('./page_view');
 var landing_template = require('../../views/LandingView');
 var locationsMenu = require('../../views/LocationsMenu');
 var renderer = require('../../../renderer/client_renderer');
+var moment = require('moment');
 
 var LandingView = PageView.extend({
 	_findElms: function($parentEl) {
@@ -41769,8 +41780,9 @@ var LandingView = PageView.extend({
 
 	initialize: function(opts) {
 		opts || (opts = {});
-
-		this._findElms(opts.$parentEl);
+		this.$parentEl = opts.$parentEl;
+		
+		this._findElms(this.$parentEl);
 
 		//hack for autofocus React bug: https://github.com/facebook/react/issues/3066
 		this.elms.$locationInput.focus();
@@ -41778,11 +41790,17 @@ var LandingView = PageView.extend({
 		this.bindDatePickers();
 
 		this.map_api = opts.map_api;
+		this.map_view = opts.map_view;
 
 		this.model.on('change', _.bind(this.renderSearchResults, this));
 
 		Backbone.on('landing_view:render', _.bind(function() {
+			this.map_view.setMode();
+			this.map_api.clearMarkers();
+			this.map_api.clearDirections();
 			this.render(landing_template);
+			this._findElms(this.$parentEl);
+			this.bindDatePickers();
 		}, this));
 
 		this.sendQuery = _.debounce( _.bind( function(options) {
@@ -41847,16 +41865,54 @@ var LandingView = PageView.extend({
 		this.elms.$startCalendar.datepicker({ 
 			onSelect: _.bind( function(resp) {
 				var that = this;
+				//delay for letting first calendar close
+				//before opening the next one
 				_.delay( function() {
-					that.elms.$endCalendar.focus();
+					that.setStartDate(resp);
 				}, 250);
 			}, this)
 		});
 		this.elms.$endCalendar.datepicker({ 
 			onSelect: _.bind( function(resp) {
-				this.elms.$travellers.focus();
+				this.setEndDate(resp);
 			}, this)
 		});
+	},
+	
+	setStartDate: function(date) {
+		var newStart = moment(this.elms.$startCalendar.datepicker('getDate'));
+		var endDate = this.elms.$endCalendar.datepicker('getDate');
+
+		if (newStart.isAfter(endDate)) {
+			this.clearEndDate();
+			return;
+		}
+
+		this.elms.$endCalendar.focus();
+	},
+
+	setEndDate: function(date) {
+		var newEnd = moment(this.elms.$endCalendar.datepicker('getDate'));
+		var startDate = this.elms.$startCalendar.datepicker('getDate');
+
+		if (newEnd.isBefore(startDate)) {
+			this.clearStartDate();
+			return;
+		}
+
+		this.elms.$travellers.focus();
+	},
+
+	clearStartDate: function() {
+		_.delay( _.bind(function() {
+			this.elms.$startCalendar.focus().datepicker( "setDate", null );
+		}, this), 250);
+	},
+
+	clearEndDate: function() {
+		_.delay( _.bind(function() {
+			this.elms.$endCalendar.focus().datepicker( "setDate", null );
+		}, this), 250);
 	},
 
 	onLocationKeydown: function(e) {
@@ -41881,15 +41937,23 @@ var LandingView = PageView.extend({
 
 		switch(e.keyCode) {
 			case 40:
+				//up arrow
 				this.showLocationMenu();
 				this.focusNextLocationItem();
 				break;
 			case 38:
+				//down arrow
 				this.showLocationMenu();
 				this.focusPrevLocationItem();
 				break;
 			case 13: 
+				//enter key
 				this.onLocationKeydown(e);
+				break;
+			case 27: 
+				//escape key
+				$(e.currentTarget).blur();
+				this.model.clear();
 				break;
 			default: 
 				this.locationSearch(e);
@@ -42042,7 +42106,7 @@ var LandingView = PageView.extend({
 
 module.exports = LandingView;
 
-},{"../../../renderer/client_renderer":197,"../../views/LandingView":189,"../../views/LocationsMenu":190,"./page_view":180,"bluebird":2}],176:[function(require,module,exports){
+},{"../../../renderer/client_renderer":197,"../../views/LandingView":189,"../../views/LocationsMenu":190,"./page_view":180,"bluebird":2,"moment":6}],176:[function(require,module,exports){
 var lodging_result_view = Backbone.View.extend({
 
 	_setEL: function() {
@@ -42317,13 +42381,21 @@ var lodgings_search_query_view = Backbone.View.extend({
 
 		switch(e.keyCode) {
 			case 40:
+				//up arrow
 				this.focusNextLocationItem(target, e);
 				break;
 			case 38:
+				//down arrow
 				this.focusPrevLocationItem(target, e);
 				break;
 			case 13: 
+				//enter key
 				this.onLocationKeydown(e);
+				break;
+			case 27: 
+				//escape key
+				$(target).blur();
+				this.search_model.clear();
 				break;
 			default: 
 				this.locationSearch(e);
@@ -42614,6 +42686,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		var collectionData = this.lodgings_collection.toJSON();
 		var lodgingsMetaData = this.lodgings_meta_model.toJSON();
 		var tripTitle = this.trip_model.get('title');
+		var tripId = this.trip_model.get('_id');
 
 		var renderModel = {
 			isServer: false,
@@ -42627,6 +42700,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}
 
 		if (tripTitle) { renderModel.tripTitle = tripTitle; }
+		if (tripId) { renderModel.tripId = tripId; }
 
 		Backbone.trigger('stop_view:search:render', renderModel);
 	},
@@ -42804,7 +42878,8 @@ var stop_page_view = PageView.extend({
 
 		Backbone.on('stop_view:render', _.bind(function() {
 			this.render(stop_template, {
-				tripTitle: this.trip_model.get('title')
+				tripTitle: this.trip_model.get('title'),
+				tripId: this.trip_model.get('_id')
 			});
 			this.map_view.setMode('stop-view');
 		}, this));
@@ -42960,13 +43035,21 @@ var StopView = Backbone.View.extend({
 
 		switch(e.keyCode) {
 			case 40:
+				//up arrow
 				this.focusNextLocationItem(target, e);
 				break;
 			case 38:
+				//down arrow
 				this.focusPrevLocationItem(target, e);
 				break;
 			case 13: 
+				//enter key
 				this.onLocationKeydown(e);
+				break;
+			case 27: 
+				//escape key
+				$(target).blur();
+				this.search_model.clear();
 				break;
 			default: 
 				this.locationSearch(e);
@@ -43135,12 +43218,7 @@ var StopView = Backbone.View.extend({
 
 	removeStop: function() {
 		var stopId = this.$el.attr('data-stop-id');
-		this.$el.addClass('removing');
-
-		//wait for animation
-		_.delay(_.bind(function() {
-			this.model.remove(stopId);	
-		}, this), 500);
+		this.model.startRemove(stopId);
 	},
 
 	onRemoveTipClick: function(e) {
@@ -43609,7 +43687,8 @@ var TripView = PageView.extend({
 		this.map_api.renderDirectionsFromStopsCollection(this.stops_collection)
 		.then(_.bind(function(result) {
 			this.setViewNewMapStop(result);
-		}, this));
+		}, this))
+		.catch(function(err) {});
 	},
 
 	setViewNewMapStop: function(result) {
@@ -43719,6 +43798,10 @@ Map.prototype = {
 		});
 
 		this.markers = [];
+	},
+
+	clearDirections: function() {
+		this.directionsDisplay.setMap(null);
 	},
 
 	generateMarkerIcon: function(opts) {
@@ -43978,15 +44061,17 @@ var ViewOrchestrator = Backbone.View.extend({
 				$parentEl: this.$el, 
 				el: $('.trip-page'), 
 				map_api: this.map_api,
-				map_view: this.views['map_view'],
-				model: this.models['trip_model'],
-				search_model: this.models['search_model'],
+				map_view: this.views.map_view,
+				model: this.models.trip_model,
+				search_model: this.models.search_model,
 				stops_collection: this.Collections.stops_collection,
 				travellers_collection: this.Collections.travellers_collection
 			});
 
-			//TODO: validation in the model
-			this.models['trip_model'].save(null, {
+			//set url before calling save
+			this.models.trip_model.setUrl(this.models.trip_model.get('_id'));
+
+			this.models.trip_model.save(null, {
 				success: function(data) {
 					resolve(data);
 				},
@@ -43999,8 +44084,8 @@ var ViewOrchestrator = Backbone.View.extend({
 		//1 second for animation, and unknown time for db query result
 		Promise.all([timeOutPromise, dbQueryPromise])
 			.then( _.bind(function(a, b){
-				var trip_model = this.models['trip_model'];
-				var tripId = this.models['trip_model'].get('_id');
+				var trip_model = this.models.trip_model;
+				var tripId = this.models.trip_model.get('_id');
 				trip_model.setUrl(tripId);
 				trip_model.trigger('ready');
 				this.router.navigate('/trips/' + tripId);
@@ -44010,9 +44095,9 @@ var ViewOrchestrator = Backbone.View.extend({
 	},
 
 	goToStopView: function(stopId) {
-		var tripModel = this.models['trip_model'];
+		var tripModel = this.models.trip_model;
 		var tripId = tripModel.get('_id');
-		var tripView = this.views['trip_view'];
+		var tripView = this.views.trip_view;
 		var stopModelData = tripView.stops_collection.getStop(stopId).toJSON();
 		var stopModel = this.loadModel(
 			this.Models.stop_model, 
@@ -44039,13 +44124,14 @@ var ViewOrchestrator = Backbone.View.extend({
 			$parentEl: this.$el,
 			el: $('.stop-page'),
 			map_api: this.map_api,
-			map_view: this.views['map_view'],
+			map_view: this.views.map_view,
 			model: stopModel,
 			trip_model: tripModel,
 			lodgings_collection: this.collections.lodgings_collection
 		});
 
 		this.views.stop_page_view.model.url = url;
+		this.views.stop_page_view.model.set('tripId', tripId, {silent: true});
 
 		this.views.stop_page_view.trigger('ready');
 
@@ -44752,6 +44838,7 @@ var StopView = React.createClass({displayName: "StopView",
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
+		var tripId = this.props.tripId || "";
 		var modelData;
 		var lodgingDataModel;
 		var bootStrapDataElm;
@@ -44779,7 +44866,12 @@ var StopView = React.createClass({displayName: "StopView",
 			React.createElement("div", {className: "stop-page"}, 
 				React.createElement("div", {className: "side-bar panel"}, 
 					React.createElement("div", {className: "bleed-width-20"}, 
-						React.createElement("h1", {className: "title left-full-width", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum), 
+						React.createElement("div", {className: "back-btn-wrapper col-lg-2 col-md-2 col-sm-12 col-xs-12"}, 
+							React.createElement("a", {href: "/trips/" + tripId, className: "btn btn-back"}, "Back")
+						), 
+						React.createElement("div", {className: "title-wrapper col-lg-10 col-md-10 col-sm-12 col-xs-12"}, 
+							React.createElement("h1", {className: "title", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum)
+						), 
 						React.createElement("div", {className: "search-query-wrapper"}, 
 							React.createElement(SearchQuery, {checkin: this.props.checkin, checkout: this.props.checkout, locationProps: this.props.locationProps, location: this.props.location})
 						), 
@@ -45057,6 +45149,7 @@ var TripView = React.createClass({displayName: "TripView",
 								if (stop.isNew) { stopClasses += " new"; }
 								if (_.isEmpty(stop.location)) { stopClasses += " no-location"; }
 								if (stop.lodging && stop.lodging.id === "quest_home") { stopClasses += " home"; }
+								if (stop.isRemoving) { stopClasses += " removing"; }
 								return (
 									React.createElement("li", {className: stopClasses, "data-stop-id": stop._id, "data-stop-index": index}, 
 										React.createElement("div", {className: "remove", role: "button", "aria-label": "remove stop", title: "Remove stop"}), 

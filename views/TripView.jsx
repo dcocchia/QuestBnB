@@ -256,6 +256,7 @@ var TripView = React.createClass({
 								if (stop.isNew) { stopClasses += " new"; }
 								if (_.isEmpty(stop.location)) { stopClasses += " no-location"; }
 								if (stop.lodging && stop.lodging.id === "quest_home") { stopClasses += " home"; }
+								if (stop.isRemoving) { stopClasses += " removing"; }
 								return (
 									<li className={stopClasses} data-stop-id={stop._id} data-stop-index={index}>
 										<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>

@@ -63,6 +63,10 @@ Map.prototype = {
 		this.markers = [];
 	},
 
+	clearDirections: function() {
+		this.directionsDisplay.setMap(null);
+	},
+
 	generateMarkerIcon: function(opts) {
 		var iconUrl = "";
 		var baseUrl = "http://mt.google.com/vt/icon";

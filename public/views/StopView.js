@@ -12,6 +12,7 @@ var StopView = React.createClass({displayName: "StopView",
 		var lodgingData = this.props.lodgingData || {};
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
+		var tripId = this.props.tripId || "";
 		var modelData;
 		var lodgingDataModel;
 		var bootStrapDataElm;
@@ -39,7 +40,12 @@ var StopView = React.createClass({displayName: "StopView",
 			React.createElement("div", {className: "stop-page"}, 
 				React.createElement("div", {className: "side-bar panel"}, 
 					React.createElement("div", {className: "bleed-width-20"}, 
-						React.createElement("h1", {className: "title left-full-width", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum), 
+						React.createElement("div", {className: "back-btn-wrapper col-lg-2 col-md-2 col-sm-12 col-xs-12"}, 
+							React.createElement("a", {href: "/trips/" + tripId, className: "btn btn-back"}, "Back")
+						), 
+						React.createElement("div", {className: "title-wrapper col-lg-10 col-md-10 col-sm-12 col-xs-12"}, 
+							React.createElement("h1", {className: "title", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum)
+						), 
 						React.createElement("div", {className: "search-query-wrapper"}, 
 							React.createElement(SearchQuery, {checkin: this.props.checkin, checkout: this.props.checkout, locationProps: this.props.locationProps, location: this.props.location})
 						), 

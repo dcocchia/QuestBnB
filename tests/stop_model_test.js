@@ -93,4 +93,25 @@ describe('stop_model', function(){
 
 		});
 	});
+
+	describe('startRemove', function(){
+		it('should set isRemoving to true', function(){
+			var stop = new stop_model();
+			
+			expect(stop.get('isRemoving')).to.be.undefined;
+			stop.startRemove();
+			expect(stop.get('isRemoving')).to.be.true;
+		});
+
+		it('should call remove 400ms after being called', function(){
+			var stop = new stop_model();
+			var spy = sinon.spy(stop, "remove");
+
+			expect(spy).not.to.have.been.called;
+			stop.startRemove();
+			this.clock.tick(450);
+			expect(spy).to.have.been.called;
+
+		});
+	});
 });

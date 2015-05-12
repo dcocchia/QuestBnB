@@ -149,6 +149,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		var collectionData = this.lodgings_collection.toJSON();
 		var lodgingsMetaData = this.lodgings_meta_model.toJSON();
 		var tripTitle = this.trip_model.get('title');
+		var tripId = this.trip_model.get('_id');
 
 		var renderModel = {
 			isServer: false,
@@ -162,6 +163,7 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}
 
 		if (tripTitle) { renderModel.tripTitle = tripTitle; }
+		if (tripId) { renderModel.tripId = tripId; }
 
 		Backbone.trigger('stop_view:search:render', renderModel);
 	},

@@ -77,7 +77,8 @@ var stop_page_view = PageView.extend({
 
 		Backbone.on('stop_view:render', _.bind(function() {
 			this.render(stop_template, {
-				tripTitle: this.trip_model.get('title')
+				tripTitle: this.trip_model.get('title'),
+				tripId: this.trip_model.get('_id')
 			});
 			this.map_view.setMode('stop-view');
 		}, this));

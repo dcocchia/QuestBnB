@@ -159,11 +159,16 @@ app.get('/trips/:id/stops/:stopId', function(req, res) {
 				return (thisStopId === stopId);
 			});
 
+			if (!stopDoc) {
+				res.status(404).send("<p>This stop could not be found.</p>");
+			}
+
 			_.extend(stopDoc, {
 				title: doc.title + " &#8211; Stop " + stopDoc.stopNum.index,
 				tripTitle: doc.title,
 				tripStart: doc.start,
 				tripEnd: doc.end,
+				tripId: tripId,
 				mapStyleClasses: "map stop-view",
 				isServer: true
 			});

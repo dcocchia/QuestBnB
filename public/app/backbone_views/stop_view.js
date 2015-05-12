@@ -76,13 +76,21 @@ var StopView = Backbone.View.extend({
 
 		switch(e.keyCode) {
 			case 40:
+				//up arrow
 				this.focusNextLocationItem(target, e);
 				break;
 			case 38:
+				//down arrow
 				this.focusPrevLocationItem(target, e);
 				break;
 			case 13: 
+				//enter key
 				this.onLocationKeydown(e);
+				break;
+			case 27: 
+				//escape key
+				$(target).blur();
+				this.search_model.clear();
 				break;
 			default: 
 				this.locationSearch(e);
@@ -251,12 +259,7 @@ var StopView = Backbone.View.extend({
 
 	removeStop: function() {
 		var stopId = this.$el.attr('data-stop-id');
-		this.$el.addClass('removing');
-
-		//wait for animation
-		_.delay(_.bind(function() {
-			this.model.remove(stopId);	
-		}, this), 500);
+		this.model.startRemove(stopId);
 	},
 
 	onRemoveTipClick: function(e) {
