@@ -41298,8 +41298,6 @@ var stops_colletion = Backbone.Collection.extend({
 					
 				}();
 
-				if (!lastStop.totals.cost) {lastStop.totals.cost = {}; }
-
 				//distance values
 				legDistance = thisLeg.distance.value / METERCONVERT;
 				lastStopDistance = lastStop.totals.distance.value;
@@ -44015,6 +44013,7 @@ var ViewOrchestrator = Backbone.View.extend({
 				}
 			}();
 
+			var thisUrl;
 			var stops = [];
 			var travellers = parseInt(data.travellers);
 
@@ -44069,8 +44068,9 @@ var ViewOrchestrator = Backbone.View.extend({
 			});
 
 			//set url before calling save
-			this.models.trip_model.setUrl(this.models.trip_model.get('_id'));
-
+			thisUrl = this.models.trip_model.get('_id');
+			if (thisUrl) { this.models.trip_model.setUrl(thisUrl); }
+			
 			this.models.trip_model.save(null, {
 				success: function(data) {
 					resolve(data);

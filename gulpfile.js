@@ -47,7 +47,14 @@ gulp.task('test', function (cb) {
 });
 
 gulp.task('lint', function() {
-  return gulp.src(['./public/app/backbone_collections/*.js', './public/app/backbone_models/*.js', './public/app/app.js'])
+  return gulp.src([
+      './public/app/backbone_collections/*.js', 
+      './public/app/backbone_models/*.js', 
+      './public/app/app.js', 
+      './controllers/*.js',
+      './index.js',
+      './routes.js'
+    ])
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
 });
