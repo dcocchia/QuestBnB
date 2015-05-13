@@ -3,7 +3,7 @@ var React = require('react');
 var Handlebars = require('handlebars');
 require('node-jsx').install({extension: '.jsx'});
 var layout = Handlebars.compile(fs.readFileSync('views/Layout.hbs').toString());
-var headerView = React.createFactory(require('../views/headerView.jsx'));
+var headerView = React.createFactory(require('../views/HeaderView.jsx'));
 var modalsView = React.createFactory(require('../views/ModalsView.jsx'));
 var headerProps = { open: false };
 var modalsProps = { tripList: [] };
