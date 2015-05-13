@@ -150,6 +150,13 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 				return undefined;
 			}
 		}();
+		var removeBtn = function() {
+			if (isTripView) { return React.createElement("span", null) }
+
+			return(
+				React.createElement("div", {className: "remove", role: "button", "aria-label": "cancel and remove lodging", title: "Cancel and remove lodging"})
+			)
+		}();
 
 		if (noLodging && isTripView && !_.isEmpty(this.props.location)) { 
 			return (
@@ -183,6 +190,7 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 
 		return (
 			React.createElement("div", {className: "lodging-chosen col-md-12 col-sm-12", "data-id": data.id}, 
+				removeBtn, 
 				React.createElement("div", {className: "col-md-6 col-sm-12"}, 
 					React.createElement("div", {className: "result-img img-wrapper"}, 
 						React.createElement("div", {className: "result-price"}, 

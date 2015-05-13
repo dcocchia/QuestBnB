@@ -42118,6 +42118,8 @@ var lodging_result_view = Backbone.View.extend({
 		'click .set-chosen'						: 'onSetLodingStatus',
 		'click .next-photo'						: 'onNextPhoto',
 		'click .prev-photo'						: 'onPrevPhoto',
+		'click .remove'							: 'onRemoveClick',
+		'click .remove-tip .btn'				: 'onRemoveTipClick', 
 		'mouseenter'							: 'onMouseEnter',
 		'mouseleave'							: 'onMouseLeave',
 
@@ -42236,8 +42238,44 @@ var lodging_result_view = Backbone.View.extend({
 		this.syncStopModel();
 	},
 
-	showToolTip: function($elm, opts) {
+	onRemoveClick: function(e) {
+		var $target = $(e.currentTarget);
+		e.preventDefault();
+
+		$target.tooltip('destroy');
+		this.showToolTip($target , {
+			trigger: 'click',
+			title: '<div class="remove-tip">' + 
+				'<p>Removing this stop will cancel your request to book' + 
+				' this lodging. Are you sure?</p>' + 
+				'<button class="btn btn-primary" ' + 
+				'data-action="yes">Yes</button>' + 
+				'<button class="btn btn-primary" ' + 
+				'data-action="no">No</button></div>',
+			placement: 'left',
+			html: true
+		});
+	},
+
+	onRemoveTipClick: function(e) {
+		var $target = $(e.currentTarget);
+		var action = $target.attr('data-action');
+		var $removeBtn = $target.closest('.tooltip').siblings('.remove');
+		e.preventDefault();
+
+		this.destroyToolTip({ currentTarget: $removeBtn[0] });
+
+		if (action === 'yes') {
+			Backbone.trigger('StopView:removeChosenLodging');
+			return;
+		}
+	},
+
+	showToolTip: function($elm, opts) {	
 		$elm.tooltip(opts);
+		if (opts.title) {
+			$elm.attr('data-original-title', opts.title);
+		}
 		$elm.tooltip('show');
 	},
 
@@ -42593,6 +42631,11 @@ var lodgings_search_results_view = Backbone.View.extend({
 			Backbone.trigger('lodgings_search_results_view:render');
 		}, this));
 
+		Backbone.on('StopView:removeChosenLodging', _.bind(
+			this.destroyChosenLodgingView, 
+			this
+		));
+
 		Backbone.on('StopView:scrollTop', _.bind(this.scrollToTop, this));
 		Backbone.on('StopView:scrollToElm', _.bind(this.scrollToElm, this));
 
@@ -42678,6 +42721,11 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}
 
 		delete this.chosenLodgingView;
+	},
+
+	destroyChosenLodgingView: function() {
+		this.clearChosenLodgingView();
+		this.stop_model.set('lodging', {});
 	},
 
 	render: function() {
@@ -43199,12 +43247,12 @@ var StopView = Backbone.View.extend({
 				trigger: 'click',
 				title: '<div class="remove-tip">' + 
 					'<p>Removing this stop will cancel your request to book' + 
-					'this lodging. Are you sure?</p>' + 
+					' this lodging. Are you sure?</p>' + 
 					'<button class="btn btn-primary" ' + 
 					'data-action="yes">Yes</button>' + 
 					'<button class="btn btn-primary" ' + 
 					'data-action="no">No</button></div>',
-				placement: 'left',
+				placement: 'auto',
 				html: true
 			});
 			return;
@@ -44297,6 +44345,13 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 				return undefined;
 			}
 		}();
+		var removeBtn = function() {
+			if (isTripView) { return React.createElement("span", null) }
+
+			return(
+				React.createElement("div", {className: "remove", role: "button", "aria-label": "cancel and remove lodging", title: "Cancel and remove lodging"})
+			)
+		}();
 
 		if (noLodging && isTripView && !_.isEmpty(this.props.location)) { 
 			return (
@@ -44330,6 +44385,7 @@ var ChosenLodging = React.createClass({displayName: "ChosenLodging",
 
 		return (
 			React.createElement("div", {className: "lodging-chosen col-md-12 col-sm-12", "data-id": data.id}, 
+				removeBtn, 
 				React.createElement("div", {className: "col-md-6 col-sm-12"}, 
 					React.createElement("div", {className: "result-img img-wrapper"}, 
 						React.createElement("div", {className: "result-price"}, 

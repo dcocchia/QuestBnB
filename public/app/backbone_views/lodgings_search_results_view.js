@@ -58,6 +58,11 @@ var lodgings_search_results_view = Backbone.View.extend({
 			Backbone.trigger('lodgings_search_results_view:render');
 		}, this));
 
+		Backbone.on('StopView:removeChosenLodging', _.bind(
+			this.destroyChosenLodgingView, 
+			this
+		));
+
 		Backbone.on('StopView:scrollTop', _.bind(this.scrollToTop, this));
 		Backbone.on('StopView:scrollToElm', _.bind(this.scrollToElm, this));
 
@@ -143,6 +148,11 @@ var lodgings_search_results_view = Backbone.View.extend({
 		}
 
 		delete this.chosenLodgingView;
+	},
+
+	destroyChosenLodgingView: function() {
+		this.clearChosenLodgingView();
+		this.stop_model.set('lodging', {});
 	},
 
 	render: function() {

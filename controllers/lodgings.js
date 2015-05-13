@@ -8,7 +8,7 @@ try {
 }
 
 var Promise = require('bluebird');
-var _ = require('lodash');
+var _ 		= require('lodash');
 var request = require('request');
 
 exports.get = function(req, res) {

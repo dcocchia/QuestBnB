@@ -150,6 +150,13 @@ var ChosenLodging = React.createClass({
 				return undefined;
 			}
 		}();
+		var removeBtn = function() {
+			if (isTripView) { return <span></span> }
+
+			return(
+				<div className="remove" role="button" aria-label="cancel and remove lodging" title="Cancel and remove lodging"></div>
+			)
+		}();
 
 		if (noLodging && isTripView && !_.isEmpty(this.props.location)) { 
 			return (
@@ -183,6 +190,7 @@ var ChosenLodging = React.createClass({
 
 		return (
 			<div className="lodging-chosen col-md-12 col-sm-12" data-id={data.id}>
+				{removeBtn}
 				<div className="col-md-6 col-sm-12">
 					<div className="result-img img-wrapper">
 						<div className="result-price">

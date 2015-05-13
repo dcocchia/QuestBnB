@@ -11,6 +11,8 @@ var lodging_result_view = Backbone.View.extend({
 		'click .set-chosen'						: 'onSetLodingStatus',
 		'click .next-photo'						: 'onNextPhoto',
 		'click .prev-photo'						: 'onPrevPhoto',
+		'click .remove'							: 'onRemoveClick',
+		'click .remove-tip .btn'				: 'onRemoveTipClick', 
 		'mouseenter'							: 'onMouseEnter',
 		'mouseleave'							: 'onMouseLeave',
 
@@ -129,8 +131,44 @@ var lodging_result_view = Backbone.View.extend({
 		this.syncStopModel();
 	},
 
-	showToolTip: function($elm, opts) {
+	onRemoveClick: function(e) {
+		var $target = $(e.currentTarget);
+		e.preventDefault();
+
+		$target.tooltip('destroy');
+		this.showToolTip($target , {
+			trigger: 'click',
+			title: '<div class="remove-tip">' + 
+				'<p>Removing this stop will cancel your request to book' + 
+				' this lodging. Are you sure?</p>' + 
+				'<button class="btn btn-primary" ' + 
+				'data-action="yes">Yes</button>' + 
+				'<button class="btn btn-primary" ' + 
+				'data-action="no">No</button></div>',
+			placement: 'left',
+			html: true
+		});
+	},
+
+	onRemoveTipClick: function(e) {
+		var $target = $(e.currentTarget);
+		var action = $target.attr('data-action');
+		var $removeBtn = $target.closest('.tooltip').siblings('.remove');
+		e.preventDefault();
+
+		this.destroyToolTip({ currentTarget: $removeBtn[0] });
+
+		if (action === 'yes') {
+			Backbone.trigger('StopView:removeChosenLodging');
+			return;
+		}
+	},
+
+	showToolTip: function($elm, opts) {	
 		$elm.tooltip(opts);
+		if (opts.title) {
+			$elm.attr('data-original-title', opts.title);
+		}
 		$elm.tooltip('show');
 	},
 

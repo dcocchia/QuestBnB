@@ -324,6 +324,12 @@ img {
 	height: auto;
 	padding: 15px 0px;
 
+	&:hover {
+		.remove {
+			opacity: 1;
+		}
+	}
+
 	.img-wrapper {
 		height: 255px;
 		padding-bottom: 0;
@@ -457,4 +463,26 @@ img {
 		}
 	}
 	 
+}
+
+  /********************/
+ /*  Tooltip styles  */
+/********************/
+.tooltip {
+
+	.tooltip-inner {
+		border: 1px solid;
+		border-color: inherit;
+		background-color: #fff;
+		color: inherit;
+
+		.btn {
+			margin-right: 5px;
+			margin-top: 5px;
+		}
+	}
+
+	.tooltip-arrow {
+		border-left-color: inherit;
+	}
 }

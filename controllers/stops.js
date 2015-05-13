@@ -1,17 +1,18 @@
-var self = this;
-var Promise = require('bluebird');
-var _ = require('lodash');
-var request = require('request');
+var self 		= this;
+var Promise 	= require('bluebird');
+var _ 			= require('lodash');
+var request 	= require('request');
 
 //rendering 
-var React = require('react');
-var Renderer = require('../renderer/server_renderer');
-var stopView = React.createFactory(require('../views/StopView.jsx'));
+var React		= require('react');
+var Renderer 	= require('../renderer/server_renderer');
+var stopView 	= React.createFactory(require('../views/StopView.jsx'));
 
 //db related utils
-var mongojs = require('mongojs');
-var db = mongojs('QuestBnB');
-var trips = db.collection('trips');
+var mongojs 	= require('mongojs');
+var db 			= mongojs('QuestBnB');
+var trips 		= db.collection('trips');
+
 //bluebird promisify mongojs
 Promise.promisifyAll(mongojs);
 
