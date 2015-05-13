@@ -1,3 +1,20 @@
+//load config file
+try {
+	if (process.env.ISPROD) {
+		var config = {
+			dbConnectionString: process.env.dbConnectionString,
+			ZilyoApiKey: process.env.ZilyoApiKey
+		}
+	} else {
+		var config = require('../config');
+	}
+} catch(e) {
+	console.log('error loading config', e);
+	console.error('\033[31m config file is required! ' + 
+		'Calls requiring DB lookups may not work.\033[0m');
+	var config = { dbConnectionString: 'QuestBnB' }
+}
+
 var self 		= this;
 var Promise 	= require('bluebird');
 var _ 			= require('lodash');
@@ -9,7 +26,7 @@ var tripView 	= React.createFactory(require('../views/TripView.jsx'));
 
 //db related utils
 var mongojs 	= require('mongojs');
-var db 			= mongojs('QuestBnB');
+var db 			= mongojs(config.dbConnectionString);
 var trips 		= db.collection('trips');
 
 //bluebird promisify mongojs

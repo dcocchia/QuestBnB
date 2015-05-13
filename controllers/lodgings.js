@@ -1,6 +1,13 @@
 //load config file
 try {
-	var config = require('../config');
+	if (process.env.ISPROD) {
+		var config = {
+			dbConnectionString: process.env.dbConnectionString,
+			ZilyoApiKey: process.env.ZilyoApiKey
+		}
+	} else {
+		var config = require('../config');
+	}
 } catch(e) {
 	console.log('error loading config', e);
 	console.error('\033[31m config file is required! ' + 
