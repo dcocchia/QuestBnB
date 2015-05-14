@@ -291,8 +291,7 @@ var TripView = React.createClass({displayName: "TripView",
 					), 
 					React.createElement("div", {className: "trip-dates-wrapper search-box"}, 
 						React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Leaving", "aria-label": "date start", defaultValue: this.props.start}), 
-						React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end}), 
-						React.createElement("button", {className: "submit form-control btn btn-primary"}, "Done")
+						React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Returning", "aria-label": "date end", defaultValue: this.props.end})
 					)
 				)
 			)

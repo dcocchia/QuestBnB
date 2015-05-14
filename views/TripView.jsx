@@ -292,7 +292,6 @@ var TripView = React.createClass({
 					<div className="trip-dates-wrapper search-box">
 						<input type="text" name="startDate" className="start date form-control" placeholder="Leaving" aria-label="date start" defaultValue={this.props.start}/>
 						<input type="text" name="endDate" className="end date form-control" placeholder="Returning" aria-label="date end" defaultValue={this.props.end}/>
-						<button className="submit form-control btn btn-primary">Done</button>
 					</div>
 				</div>
 			</div>
