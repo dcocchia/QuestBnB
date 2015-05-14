@@ -4,7 +4,7 @@ try {
 		var config = {
 			dbConnectionString: process.env.dbConnectionString,
 			ZilyoApiKey: process.env.ZilyoApiKey
-		}
+		};
 	} else {
 		var config = require('../config');
 	}
@@ -12,7 +12,7 @@ try {
 	console.log('error loading config', e);
 	console.error('\033[31m config file is required! ' + 
 		'Calls requiring DB lookups may not work.\033[0m');
-	var config = { dbConnectionString: 'QuestBnB' }
+	var config = { dbConnectionString: 'QuestBnB' };
 }
 
 var self 		= this;

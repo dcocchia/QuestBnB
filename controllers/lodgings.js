@@ -4,7 +4,7 @@ try {
 		var config = {
 			dbConnectionString: process.env.dbConnectionString,
 			ZilyoApiKey: process.env.ZilyoApiKey
-		}
+		};
 	} else {
 		var config = require('../config');
 	}

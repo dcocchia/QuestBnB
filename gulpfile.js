@@ -8,6 +8,9 @@ var react = require('gulp-react');
 var handlebars = require('gulp-handlebars');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
 var mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
 var jshint = require('gulp-jshint');
@@ -31,6 +34,10 @@ gulp.task('browserify', ['jsx'], function() {
   return browserify('./public/app/app.js')
     .bundle()
     .pipe(source('bundle.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(uglify())
+    .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('./public/'));
 });
 
