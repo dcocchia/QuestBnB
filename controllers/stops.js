@@ -89,6 +89,7 @@ exports.get = function(req, res){
 			}
 
 			_.extend(stopDoc, {
+				pageName: "/stops",
 				title: doc.title + ' &#8211; Stop ' + stopDoc.stopNum.index,
 				tripTitle: doc.title,
 				tripStart: doc.start,

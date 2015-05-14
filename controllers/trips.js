@@ -69,7 +69,8 @@ exports.get = function(req, res){
 			doc = docs[0];
 			
 			_.extend(doc, { 
-				mapStyleClasses: 'map trip-view'
+				mapStyleClasses: 'map trip-view',
+				pageName: "/trips"
 			});
 
 			res.format({

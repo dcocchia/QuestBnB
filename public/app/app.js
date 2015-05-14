@@ -112,7 +112,7 @@
 						this.models.trip_model.trigger('ready');
 					}, this)
 				});
-				ga('send', 'pageview', '/trip');
+				ga('send', 'pageview', '/trips');
 			}, this));
 
 			this.router.on('route:stop', _.bind(function(tripId, stopId) {
@@ -141,7 +141,7 @@
 					trip_model: this.models.trip_model,
 					lodgings_collection: this.collections.lodgings_collection
 				})._bootStrapView();
-				ga('send', 'pageview', '/stop');
+				ga('send', 'pageview', '/stops');
 			}, this));
 		},
 

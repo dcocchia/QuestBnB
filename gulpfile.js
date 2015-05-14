@@ -30,7 +30,7 @@ gulp.task('jsx', function() {
     .pipe(gulp.dest('./public/views'));
 });
 
-gulp.task('browserify', ['jsx'], function() {
+gulp.task('browserify-build', ['jsx'], function() {
   return browserify('./public/app/app.js')
     .bundle()
     .pipe(source('bundle.js'))
@@ -38,6 +38,13 @@ gulp.task('browserify', ['jsx'], function() {
     .pipe(sourcemaps.init({loadMaps: true}))
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./public/'));
+});
+
+gulp.task('browserify', ['jsx'], function() {
+  return browserify('./public/app/app.js')
+    .bundle()
+    .pipe(source('bundle.js'))
     .pipe(gulp.dest('./public/'));
 });
 
@@ -65,6 +72,8 @@ gulp.task('lint', function() {
     .pipe(jshint())
     .pipe(jshint.reporter('default'));
 });
+
+gulp.task('build', ['less', 'jsx', 'browserify-build', 'lint', 'test']);
 
 gulp.task('develop', function() {
 	nodemon({ 
