@@ -1,5 +1,6 @@
-var React = require('react');
-var Stars = require('./Stars');
+var React 	= require('react');
+var _ 		= require('lodash');
+var Stars 	= require('./Stars');
 
 var buildPageBtns = function(page, count, resultsPerPage) {
 	var numPages = Math.ceil(count.totalResults / resultsPerPage);
@@ -122,6 +123,18 @@ var SearchResults = React.createClass({
 		}
 
 		if (countBottom < 0) { countBottom = 0; }
+
+		if (_.isNaN(countBottom) || countBottom === "NaN") {
+			countBottom = 0;
+		}
+
+		if (_.isNaN(countTop) || countTop === "NaN") {
+			countTop = 0;
+		}
+
+		if (_.isNaN(count.totalResults) || count.totalResults === "NaN") {
+			count.totalResults = 0;
+		}
 
 		return (
 			<div className={(isLoading) ? "search-results-wrapper-inner loading" : "search-results-wrapper-inner"}>

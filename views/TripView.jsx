@@ -242,7 +242,10 @@ var TripView = React.createClass({
 		var stopProps = this.props.stop_props;
 		var travellers = this.props.travellers;
 		var slideInBottom = this.props.slideInBottom;
+		var cost = this.props.cost || 0;
 		var stopClasses;
+
+		if (_.isNaN(cost) || cost === "NaN") { cost = 0; }
 
 		return (
 			<div className="trip-page" data-trip-id={tripId}>
@@ -275,7 +278,7 @@ var TripView = React.createClass({
 							<TripBlurb icon={"fa fa-clock-o"} text={this.props.tripDuration} editable={false}/>
 							<TripBlurb icon={"fa fa-car"} text={this.props.tripDistance  + " miles"} editable={false}/>
 							<TripBlurb icon={"fa fa-map-marker"} text={this.props.numStops + " destinations"} editable={false}/>
-							<TripBlurb icon={"fa fa-money"} text={"$" + this.props.cost} editable={true} data={this.props}/>
+							<TripBlurb icon={"fa fa-money"} text={"$" + cost} editable={true} data={this.props}/>
 						</div>
 					</div>
 				</div>
