@@ -90,6 +90,7 @@
 					model: this.models.search_model
 				});
 				Backbone.trigger('landing_view:render');
+				ga('send', 'pageview', '/landing');
 			}, this));
 
 			this.router.on('route:trip', _.bind( function(tripId) { 
@@ -111,7 +112,7 @@
 						this.models.trip_model.trigger('ready');
 					}, this)
 				});
-
+				ga('send', 'pageview', '/trip');
 			}, this));
 
 			this.router.on('route:stop', _.bind(function(tripId, stopId) {
@@ -140,7 +141,7 @@
 					trip_model: this.models.trip_model,
 					lodgings_collection: this.collections.lodgings_collection
 				})._bootStrapView();
-
+				ga('send', 'pageview', '/stop');
 			}, this));
 		},
 

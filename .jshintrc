@@ -2,7 +2,8 @@
   "globals": {
     "Backbone": true,
     "_": true,
-    "google": true
+    "google": true,
+    "ga": true
   },
   "browser": true,
   "jquery": true,
