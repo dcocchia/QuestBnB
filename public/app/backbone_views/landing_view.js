@@ -89,7 +89,7 @@ var LandingView = PageView.extend({
 		var geoPromise = new Promise(_.bind(function(resolve, reject) {
 			localGeo = this.getClientGeo();
 
-			if (!localGeo) {
+			if (!localGeo || _.isEmpty(localGeo)) {
 				//user never accpeted geo request
 				//or geolocation api not supported
 				resolve();

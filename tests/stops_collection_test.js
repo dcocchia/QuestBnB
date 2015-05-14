@@ -750,52 +750,6 @@ describe('stops_collection', function(){
 			});
 		});
 
-		it('should do nothing if legs length does not match models.length - 1', function() {
-			var stops = new stops_collection();
-			var tripModel = new trip_model();
-			var stop1, stop2, stop3;
-			
-			stops.add([
-				{
-					isNew: false, 
-					stopNum: {index: 1},
-					_id: 1 
-				},
-				{
-					isNew: false, 
-					stopNum: {index: 2},
-					_id: 2
-				},
-				{
-					isNew: false, 
-					stopNum: {index: 3},
-					_id: 3
-				},
-				{
-					isNew: false, 
-					stopNum: {index: 4},
-					_id: 4
-				}
-			]);
-
-			stop1 = stops.models[0];
-			stop2 = stops.models[1];
-			stop3 = stops.models[2];
-			stop4 = stops.models[3];
-
-			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-
-			stops.mergeMapData(mockMappingResult, tripModel);
-			
-			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop4.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-		});
-
 		it('should run without error even with no result argument', function() {
 			var stops = new stops_collection();
 			var tripModel = new trip_model();
@@ -830,8 +784,8 @@ describe('stops_collection', function(){
 			stops.mergeMapData(null, tripModel);
 			
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0 mins", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0 mins", value: 0});
 		});
 
 		it('should run without error even with no routes', function() {
@@ -868,8 +822,8 @@ describe('stops_collection', function(){
 			stops.mergeMapData({}, tripModel);
 			
 			expect(stop1.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
-			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0", value: 0});
+			expect(stop2.get("totals").duration).to.be.deep.equal({ text: "0 mins", value: 0});
+			expect(stop3.get("totals").duration).to.be.deep.equal({ text: "0 mins", value: 0});
 		});
 
 		it('should run without error even with bad map data', function() {

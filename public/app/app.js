@@ -74,7 +74,8 @@
 					lodgings_collection: Lodgings_collection
 				}
 			});
-			Backbone.history.start({pushState: true});
+			
+			Backbone.history.start({pushState: "pushState" in window.history});
 		},
 
 		setRouteListeners: function() {

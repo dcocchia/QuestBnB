@@ -112,8 +112,6 @@ var stops_colletion = Backbone.Collection.extend({
 		if (!result.routes) { result.routes = [{legs:[]}]; }
 		legs = result.routes[0].legs;
 
-		if (legs.length !== this.models.length - 1) { return; }
-
 		_.each(this.models, _.bind(function(stop, index) {
 			if (index > 0) {
 				//bad model

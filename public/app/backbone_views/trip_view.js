@@ -341,7 +341,9 @@ var TripView = PageView.extend({
 		.then(_.bind(function(result) {
 			this.setViewNewMapStop(result);
 		}, this))
-		.catch(function(err) {});
+		.catch(function(err) {
+			console.warn(err);
+		});
 	},
 
 	setViewNewMapStop: function(result) {
