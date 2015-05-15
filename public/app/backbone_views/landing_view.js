@@ -116,6 +116,7 @@ var LandingView = PageView.extend({
 
 	bindDatePickers: function() {
 		this.elms.$startCalendar.datepicker({ 
+			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				var that = this;
 				//delay for letting first calendar close

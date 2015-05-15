@@ -57,11 +57,11 @@ var Traveller = React.createClass({displayName: "Traveller",
 				React.createElement("p", null, traveller.bio), 
 				React.createElement("div", {className: "edit-card", "area-hidden": "true"}, 
 					React.createElement("form", {className: "form-inline"}, 
-						React.createElement("div", {className: "form-group col-sm-8 col-m-8 col-lg-8"}, 
+						React.createElement("div", {className: "form-group col-xs-6 col-sm-6 col-m-8 col-lg-8"}, 
 							React.createElement("input", {type: "text", name: "travellerName", className: "traveller-name", placeholder: "Traveller Name", value: traveller.name, onChange: this.handleChange})
 						), 
-						 React.createElement("button", {type: "submit", className: "save-traveller btn btn-primary col-sm-2 col-m-2 col-lg-2"}, "Save"), 
-						  React.createElement("button", {type: "submit", className: "remove-traveller btn col-sm-2 col-m-2 col-lg-2"}, "Remove")
+						 React.createElement("button", {type: "submit", className: "save-traveller btn btn-primary col-xs-3 col-sm-3 col-m-2 col-lg-2"}, "Save"), 
+						  React.createElement("button", {type: "submit", className: "remove-traveller btn col-xs-3 col-sm-3 col-m-2 col-lg-2"}, "Remove")
 					)
 				)
 			)

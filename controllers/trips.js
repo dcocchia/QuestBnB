@@ -42,6 +42,13 @@ var addObjIds = function(items) {
 	});
 };
 
+var addDates = function(items, start, end) {
+	_.each(items, function(item) {
+		item.start = start;
+		item.end = end;
+	});
+}
+
 exports.create = function(req, res){
 	var tripData = req.body;
 
@@ -117,7 +124,7 @@ exports.edit = function(req, res){
 	}).then(function(docs) {
 		if (docs && docs.length > 0) {			
 			doc = docs[0];
-			
+			addDates(doc.stops, doc.start, doc.end);
 			res.status(200).send(doc);
 
 		} else {

@@ -94,7 +94,9 @@ exports.get = function(req, res){
 				tripTitle: doc.title,
 				tripId: tripId,
 				mapStyleClasses: 'map stop-view',
-				isServer: true
+				isServer: true,
+				start: doc.start,
+				end: doc.end
 			});
 
 			res.format({
