@@ -14,8 +14,9 @@ var StopView = React.createClass({displayName: "StopView",
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
 		var tripId = this.props.tripId || "";
-		var stopNum = parseInt(this.props.stopNum.index);
-		var title = humanNumbers[stopNum - 1] + ' Location';
+		var stopNum = this.props.stopNum;
+		var stopNumIndex = (stopNum.index) ? stopNum.index : stopNum;
+		var title = humanNumbers[stopNumIndex - 1] + ' Location';
 		var modelData;
 		var lodgingDataModel;
 		var bootStrapDataElm;

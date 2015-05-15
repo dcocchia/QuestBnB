@@ -8,7 +8,7 @@ exports.index = function(req, res){
 	var html = self.renderer.render(landingView, {
 		mapStyleClasses: 'map',
 		pageName: '/landing',
-		title: "QuestBnB - Find your adventure"
+		title: 'QuestBnB - Find your adventure'
 	});
 	res.send(html);
 };
