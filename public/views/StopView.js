@@ -3,6 +3,7 @@ var React = require('react');
 var SearchQuery = require('./SearchQuery');
 var SeachResults = require('./SearchResults');
 var ChosenLodging = require('./ChosenLodging');
+var humanNumbers = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
 
 var StopView = React.createClass({displayName: "StopView",
 	render: function() {
@@ -13,6 +14,8 @@ var StopView = React.createClass({displayName: "StopView",
 		var results = lodgingData.result || [];
 		var locationProps = ( this.props.locationProps || {} );
 		var tripId = this.props.tripId || "";
+		var stopNum = parseInt(this.props.stopNum.index);
+		var title = humanNumbers[stopNum - 1] + ' Location';
 		var modelData;
 		var lodgingDataModel;
 		var bootStrapDataElm;
@@ -44,7 +47,7 @@ var StopView = React.createClass({displayName: "StopView",
 							React.createElement("a", {href: "/trips/" + tripId, className: "btn btn-back"}, "Back")
 						), 
 						React.createElement("div", {className: "title-wrapper col-lg-10 col-md-10 col-sm-12 col-xs-12"}, 
-							React.createElement("h1", {className: "title", role: "textbox"}, this.props.tripTitle, " – Stop ", this.props.stopNum)
+							React.createElement("h1", {className: "title", role: "textbox"}, title)
 						), 
 						React.createElement("div", {className: "search-query-wrapper"}, 
 							React.createElement(SearchQuery, {checkin: this.props.checkin, checkout: this.props.checkout, locationProps: this.props.locationProps, location: this.props.location})

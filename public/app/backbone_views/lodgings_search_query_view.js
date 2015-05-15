@@ -94,15 +94,15 @@ var lodgings_search_query_view = Backbone.View.extend({
 		var $dateWrapper = this.$('.date-input-wrapper');
 
 		$dateWrapper.find('.date.start').datepicker({
-			minDate: this.stop_model.get('tripStart') || 0,
-			maxDate: this.stop_model.get('tripEnd') || 0,
+			minDate: this.model.get('start') || 0,
+			maxDate: this.model.get('end') || 0,
 			onSelect: _.bind( function(resp) {
 				this.updateStopDates('stimestamp', resp);
 			}, this)
 		});
 		$dateWrapper.find('.date.end').datepicker({
-			minDate: this.stop_model.get('tripStart') || 0,
-			maxDate: this.stop_model.get('tripEnd') || 0,
+			minDate: this.model.get('start') || 0,
+			maxDate: this.model.get('end') || 0,
 			onSelect: _.bind( function(resp) {
 				this.updateStopDates('etimestamp', resp);
 			}, this)

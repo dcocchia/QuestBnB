@@ -92,8 +92,6 @@ exports.get = function(req, res){
 				pageName: '/stops',
 				title: doc.title + ' &#8211; Stop ' + stopDoc.stopNum.index,
 				tripTitle: doc.title,
-				tripStart: doc.start,
-				tripEnd: doc.end,
 				tripId: tripId,
 				mapStyleClasses: 'map stop-view',
 				isServer: true
@@ -149,6 +147,7 @@ exports.create = function(req, res){
 					if (stop._id === stopId) {
 						_.defaults(data, doc.stops[index]);
 						doc.stops[index] = data;
+						doc.stops[index].tripTitle = doc.title;
 						stopIndex = index;
 						return true;
 					}

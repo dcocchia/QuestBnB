@@ -110,7 +110,8 @@ var stop_page_view = PageView.extend({
 					count: this.lodgings_meta_model.get('count'),
 					resultsPerPage: this.lodgings_meta_model.get('resultsPerPage'),
 					page: this.lodgings_meta_model.get('page')
-				}
+				},
+				tripTitle: this.trip_model.get('title')
 			});
 			this.synModelDebounced();
 		}, this));

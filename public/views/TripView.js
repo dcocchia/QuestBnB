@@ -266,8 +266,10 @@ var TripView = React.createClass({displayName: "TripView",
 										React.createElement(StopHead, {data: stop, stopProps: stopProps, locationProps: locationProps, key: stop._id}), 
 										React.createElement(ChosenLodging, {key: index, data: stop.lodging, photoSize: 'large', tripId: tripId, stopId: stop._id, renderStatusLinks: true, location: stop.location, isTripView: true}), 
 										React.createElement("div", {className: "add-stop-btn-wrapper"}, 
-											React.createElement("i", {className: (canAddStop) ? "fa fa-plus-square-o" : "fa fa-plus-square-o hide"}), 
-											React.createElement("button", {className: (canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}, "Add Stop +")
+											React.createElement("button", {className: (canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}, 
+												React.createElement("i", {className: "fa fa-plus-square-o"}), 
+												"Add Location"
+											)
 										)
 									)
 								)

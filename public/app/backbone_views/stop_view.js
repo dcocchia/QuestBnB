@@ -241,8 +241,8 @@ var StopView = Backbone.View.extend({
 			this.showToolTip( $target, {
 				trigger: 'click',
 				title: '<div class="remove-tip">' + 
-					'<p>Removing this stop will cancel your request to book' + 
-					' this lodging. Are you sure?</p>' + 
+					'<p>Removing this location will cancel your request to' + 
+					' book this lodging. Are you sure?</p>' + 
 					'<button class="btn btn-primary" ' + 
 					'data-action="yes">Yes</button>' + 
 					'<button class="btn btn-primary" ' + 

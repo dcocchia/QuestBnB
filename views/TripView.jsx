@@ -266,8 +266,10 @@ var TripView = React.createClass({
 										<StopHead data={stop} stopProps={stopProps} locationProps={locationProps} key={stop._id}/>
 										<ChosenLodging key={index} data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true} location={stop.location} isTripView={true} />
 										<div className="add-stop-btn-wrapper">
-											<i className={(canAddStop) ? "fa fa-plus-square-o" : "fa fa-plus-square-o hide"}></i>
-											<button className={(canAddStop) ? "add-stop-btn absolute-center" : "add-stop-btn absolute-center hide"}>Add Stop &#43;</button>
+											<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}>
+												<i className="fa fa-plus-square-o"></i>
+												Add Location
+											</button>
 										</div>
 									</li>
 								)

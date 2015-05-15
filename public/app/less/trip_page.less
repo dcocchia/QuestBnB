@@ -225,7 +225,7 @@
 		}
 
 		.add-stop-btn-wrapper {
-			height: 30px;
+			height: 40px;
 			background-color: @panel-border-light-grey;
 			float: left;
 			width: 100%;
@@ -235,28 +235,35 @@
 
 			&:hover {
 				.add-stop-btn {
-					display: block;
+					color: @light-red;
 				}
 			}
 
 			.fa-plus-square-o {
 				color: @light-red;
-				line-height: 30px;
-				font-size: 24px;
+				font-size: 30px;
+				line-height: 40px;
 			}
 
 			.add-stop-btn {
-				border: 1px solid @panel-border-grey;
-				width: 100%;
-				background-color: #fff;
+				float: left;
+				font-size: 18px;
+				line-height: 40px;
+				margin: 0 22px;
+				border: 0;
+				background: none;
 				padding: 0;
-				height: 100%;
-				text-align: center;
-				color: @light-red;
-				display: none;
-				border-left: 0;
-				border-right: 0;
-				font-size: 16px;
+
+				span {
+					margin: 0 10px;
+					display: inline-block;
+					vertical-align: bottom;
+				}
+
+				&:focus {
+					outline: none;
+					color: @light-red;
+				}
 			}
 		}
 	}
@@ -560,6 +567,14 @@
 			animation-duration: 1s;
 		}
 	}
+
+	.tooltip {
+
+		.tooltip-inner { 
+			max-width: 400px;
+		}
+
+	}	
 
 	@media (max-width: 768px) {
 		.stop {

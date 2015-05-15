@@ -13,6 +13,7 @@ var ViewOrchestrator = Backbone.View.extend({
 
 	setMapListeners: function() {
 		var mapView = this.views['map_view'];
+		var map_api = this.map_api;
 
 		Backbone.on(
 			'map:setCenter', 
@@ -21,12 +22,12 @@ var ViewOrchestrator = Backbone.View.extend({
 
 		Backbone.on(
 			'map:setMarker', 
-			_.bind(this.map_api.makeMarker, mapView)
+			_.bind(map_api.makeMarker, map_api)
 		);
 
 		Backbone.on(
 			'map:clearMarkers', 
-			_.bind(this.map_api.clearMarkers, mapView)
+			_.bind(map_api.clearMarkers, map_api)
 		);
 
 		Backbone.on(

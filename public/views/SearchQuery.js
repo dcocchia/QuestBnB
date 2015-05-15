@@ -32,8 +32,8 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 		var hasPredictions = ( queryPredictions.length > 0 );
 		var sliderMin = this.state.sliderMin || 0;
 		var sliderMax = this.state.sliderMax || 1000;
-		var checkin = this.props.checkin || this.props.tripStart;
-		var checkout = this.props.checkout || this.props.tripEnd;
+		var checkin = this.props.checkin || this.props.start;
+		var checkout = this.props.checkout || this.props.end;
 
 		return (
 			React.createElement("div", {className: "search-query-wrapper-inner"}, 
