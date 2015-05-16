@@ -47,7 +47,7 @@ var addDates = function(items, start, end) {
 		item.start = start;
 		item.end = end;
 	});
-}
+};
 
 exports.create = function(req, res){
 	var tripData = req.body;

@@ -65,11 +65,24 @@ var LandingView = PageView.extend({
 
 	storeClientGeo: function() {
 		var localGeo = localStorage.getItem('geo');
+		var posObj;
 
 		if (!localGeo && navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(function(position) {
 				try{
-					localStorage.setItem('geo', JSON.stringify(position));
+					// safari and FF can't stringify a Geoposition instance
+					// because the properties are on the prototype
+					// this is an easy workaround
+					posObj = {
+						timestamp: position.timestamp,
+						coords: {}
+					};
+
+					for (prop in position.coords) {
+						posObj.coords[prop] = position.coords[prop];
+					}
+
+					localStorage.setItem('geo', JSON.stringify(posObj));
 				} catch(e) {/* safari private mode fails localStorage set calls */}
 			})
 		}
