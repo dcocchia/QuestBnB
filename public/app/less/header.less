@@ -172,11 +172,21 @@
 	}
 
 	table {
+		>thead {
+			th {
+				border-width: 1px;
+				padding: 8px 40px;
+			}
+		}
+
 		>tbody {
 			>tr {
 				th,
 				td {
 					padding: 8px 40px;
+				}
+				&:first-child td{
+					border-top: 0;
 				}
 			}
 		}

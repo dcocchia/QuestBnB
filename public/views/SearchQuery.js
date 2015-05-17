@@ -62,10 +62,10 @@ var SearchQuery = React.createClass({displayName: "SearchQuery",
 						), 
 						React.createElement("div", {className: "col-lg-9"}, 
 							React.createElement("div", {className: "date-input-wrapper col-lg-6 col-md-6"}, 
-								React.createElement("input", {type: "text", name: "startDate", className: "start date form-control", placeholder: "Check In", "aria-label": "date start", defaultValue: checkin})
+								React.createElement("input", {type: "text", name: "startDate", className: "start date form-control hasDatepicker", placeholder: "Check In", id: "startDate", "aria-label": "date start", defaultValue: checkin})
 							), 
 							React.createElement("div", {className: "date-input-wrapper col-lg-6 col-md-6"}, 
-								React.createElement("input", {type: "text", name: "endDate", className: "end date form-control", placeholder: "Check Out", "aria-label": "date end", defaultValue: checkout})
+								React.createElement("input", {type: "text", name: "endDate", className: "end date form-control hasDatepicker", placeholder: "Check Out", id: "endDate", "aria-label": "date end", defaultValue: checkout})
 							)
 						)
 					)

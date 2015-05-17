@@ -1,11 +1,12 @@
 var headerViewTemplate = require('../../views/HeaderView');
-var navModalsTemplate = require('../../views/ModalsView');
+var tripListTemplate = require('../../views/TripList');
 var renderer = require('../../../renderer/client_renderer');
 
 var HeaderView = Backbone.View.extend({
 	_findElms: function($parentEl) {
 		this.elms.$parentEl = $parentEl;
 		this.elms.$navModals = $('.nav-modals');
+		this.elms.$tripListWrapper = this.elms.$navModals.find('.trip-list-wrapper');
 	},
 
 	elms: {},
@@ -40,7 +41,7 @@ var HeaderView = Backbone.View.extend({
 	},
 
 	renderTripList: function(tripList) {
-		renderer.render(navModalsTemplate, {tripList: tripList}, this.elms.$navModals[0]);
+		renderer.render(tripListTemplate, {tripList: tripList}, this.elms.$tripListWrapper[0]);
 	},
 
 	toggleMenu: function() {

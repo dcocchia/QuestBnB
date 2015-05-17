@@ -17,8 +17,8 @@ var LocationsMenu = React.createClass({
 		var predictions = this.props.predictions;
 		return (
 			<div>
-			{predictions.map(function(prediction) {
-				return <LocationItem prediction={prediction}/>;
+			{predictions.map(function(prediction, index) {
+				return <LocationItem prediction={prediction} key={index}/>;
 			})}
 			</div>
 		)

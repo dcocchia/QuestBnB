@@ -6,7 +6,6 @@ var layout = Handlebars.compile(fs.readFileSync('views/Layout.hbs').toString());
 var headerView = React.createFactory(require('../views/HeaderView.jsx'));
 var modalsView = React.createFactory(require('../views/ModalsView.jsx'));
 var headerProps = { open: false };
-var modalsProps = { tripList: [] };
 
 function Renderer() {}
 
@@ -14,7 +13,7 @@ Renderer.prototype = {
 	render: function(view, props) {
 		var body = view(props);
 		var header = headerView(headerProps);
-		var modals = modalsView(modalsProps)
+		var modals = modalsView();
 		var props = props || {};
 
 		props.body = React.renderToString(body);

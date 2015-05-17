@@ -1,7 +1,10 @@
-var React = require('react');
+var React 		= require('react');
+var TripList 	= require('./TripList');
 
 var ModalsView = React.createClass({
 	render: function() {
+		var tripList = this.props.tripList || [];
+
 		return (
 			<div className="modals-inner-wrapper">
 				<div className="nav-modal-explain modal fade" aria-hidden="true">
@@ -36,23 +39,14 @@ var ModalsView = React.createClass({
 								Your Trips
 								</div>
 							</div>
-							<table className="table">
-								<tbody>
+							<table className="table trip-list-table">
+								<thead>
 									<tr>
 										<th>Name</th>
 										<th>Dates</th>
 									</tr>
-									{this.props.tripList.map(function(trip, index) {
-										return (
-											<tr key={index}>
-												<td>
-													<a href={"/trips/" + trip.id} target="_blank">{trip.title}</a>
-												</td>
-												<td>{(trip.startDate) ? trip.startDate : ""} &#8211; {(trip.endDate) ? trip.endDate : ""}</td>
-											</tr>
-										)
-									})}
-								</tbody>
+								</thead>
+								<TripList tripList={tripList}/>	
 							</table>
 						</div>
 					</div>

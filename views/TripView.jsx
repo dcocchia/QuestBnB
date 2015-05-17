@@ -1,4 +1,4 @@
-var React 			= require('react');
+var React 			= require('react/addons');
 var LocationsMenu 	= require('./LocationsMenu');
 var ChosenLodging 	= require('./ChosenLodging');
 var moment 			= require('moment');
@@ -179,6 +179,17 @@ var StopHead = React.createClass({
 		var lodgingInfoWrapper = <span></span>;
 		var distanceInfoWrapper = <span></span>;
 		var costInfoWrapper = <span></span>;
+		var stopNum ;
+
+		if (data.stopNum.index){
+			stopNum = React.addons.createFragment({
+				stopNum: data.stopNum.index
+			});
+		} else {
+			stopNum = React.addons.createFragment({
+				stopNum: data.stopNum
+			});
+		}
 
 		//distance info
 		if (!isHome && !_.isEmpty(data.location)) {
@@ -216,7 +227,7 @@ var StopHead = React.createClass({
 		return (
 			<div className="stop-head col-lg-12 col-md-12 col-sm-12 col-xs-12">
 				<div className="stop-num-wrapper col-xs-1 col-sm-1 col-md-2 col-lg-1">
-					<span className="stop-num">{data.stopNum}</span>
+					<span className="stop-num">{stopNum}</span>
 				</div>
 				<div className="stop-location-title-wrapper col-xs-11 col-sm-11 col-md-10 col-lg-11">
 					<h2 className="stop-location-title text-ellip" contentEditable="true">{data.location}</h2>
@@ -261,10 +272,10 @@ var TripView = React.createClass({
 								if (stop.lodging && stop.lodging.id === "quest_home") { stopClasses += " home"; }
 								if (stop.isRemoving) { stopClasses += " removing"; }
 								return (
-									<li className={stopClasses} data-stop-id={stop._id} data-stop-index={index}>
+									<li className={stopClasses} data-stop-id={stop._id} key={index} data-stop-index={index}>
 										<div className="remove" role="button" aria-label="remove stop" title="Remove stop"></div>
-										<StopHead data={stop} stopProps={stopProps} locationProps={locationProps} key={stop._id}/>
-										<ChosenLodging key={index} data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true} location={stop.location} isTripView={true} />
+										<StopHead data={stop} stopProps={stopProps} locationProps={locationProps}/>
+										<ChosenLodging data={stop.lodging} photoSize={'large'} tripId={tripId} stopId={stop._id} renderStatusLinks={true} location={stop.location} isTripView={true} />
 										<div className="add-stop-btn-wrapper">
 											<button className={(canAddStop) ? "add-stop-btn" : "add-stop-btn hide"}>
 												<i className="fa fa-plus-square-o"></i>

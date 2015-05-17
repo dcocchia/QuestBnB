@@ -10,30 +10,30 @@ var buildPageBtns = function(page, count, resultsPerPage) {
 	var keyIndex = 0;
 
 	//back arrow
-	if (page > 1) { pageBtns.push(<PageButton isArrow={true} txt="&lt;" page={page-1} />); }
+	if (page > 1) { pageBtns.push(<PageButton key={keyIndex += 1} isArrow={true} txt="&lt;" page={page-1} />); }
 
 	//page 1 btn, go back to start
-	if (page > 3) { pageBtns.push(<PageButton txt="1" page={1} />); }
+	if (page > 3) { pageBtns.push(<PageButton key={keyIndex += 1} txt="1" page={1} />); }
 
 	//spacer
-	if (page >= 3) { pageBtns.push(<PageButton isEllip={true} />); }
+	if (page >= 3) { pageBtns.push(<PageButton key={keyIndex += 1} isEllip={true} />); }
 
 	//1 page before, current page, and one page after
 	for (; i < pageBtnMax && (page + i) <= numPages; i++) {
 		pageBtns.push(
-			<PageButton isActive={!!(page + i === page)} page={page + i} txt={page + i}/>
+			<PageButton key={keyIndex += 1} isActive={!!(page + i === page)} page={page + i} txt={page + i}/>
 		);	
 	}
 
 	if ((numPages - page) >= 3) {
 		//spacer
-		pageBtns.push(<PageButton isEllip={true} />);
+		pageBtns.push(<PageButton key={keyIndex += 1} isEllip={true} />);
 		//last page btn, go to end
-		pageBtns.push(<PageButton txt={numPages} page={numPages} />);	
+		pageBtns.push(<PageButton key={keyIndex += 1} txt={numPages} page={numPages} />);	
 	}
 
 	//next arrow
-	if (page < numPages) { pageBtns.push(<PageButton isArrow={true} txt="&gt;" page={page+1} />); }
+	if (page < numPages) { pageBtns.push(<PageButton key={keyIndex += 1} isArrow={true} txt="&gt;" page={page+1} />); }
 
 	return pageBtns;
 }

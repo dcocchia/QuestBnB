@@ -9,11 +9,11 @@ var ForeGround = React.createClass({
 			var arr = [];
 
 			for (var i = 0; i < ratingInt; i++) {
-				arr.push(<span className="star-filled star"></span>);
+				arr.push(<span key={"_front_star" + i} className="star-filled star"></span>);
 			}
 
 			for (var i = 0; i < ratingDec; i++) {
-				arr.push(<span className="star-half-filled star"></span>);
+				arr.push(<span key={"_front_star_half" + i} className="star-half-filled star"></span>);
 			}
 
 			return arr;
