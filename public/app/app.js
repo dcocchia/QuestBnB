@@ -44,6 +44,7 @@
 
 	var App = View_orchestrator.extend({
 		initialize: function(opts) {
+			this.hasPushState = ("pushState" in window.history);
 			this.router = opts.router;
 			this.models = {};
 			this.views = {};
@@ -75,7 +76,12 @@
 				}
 			});
 			
-			Backbone.history.start({pushState: "pushState" in window.history});
+			Backbone.history.start({pushState: this.hasPushState});
+
+			//if ie9 and somehow brought to pushstate urk, forward to hash url
+			if (!this.hasPushState && window.location.pathname != "/") {
+				window.location.replace("/#" + window.location.pathname.substr(1));
+			}
 		},
 
 		setRouteListeners: function() {

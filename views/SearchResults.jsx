@@ -118,8 +118,8 @@ var SearchResults = React.createClass({
 		var isLoading = this.props.isLoading || false;
 		
 		if (countTop > count.totalResults) {
-			countTop = count.totalResults;
 			countBottom = (countTop + 1) - this.props.resultsPerPage;
+			countTop = count.totalResults;
 		}
 
 		if (countBottom < 0) { countBottom = 0; }

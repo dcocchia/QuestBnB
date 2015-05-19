@@ -41,6 +41,12 @@ var HeaderView = Backbone.View.extend({
 	},
 
 	renderTripList: function(tripList) {
+		var isIE9 = (!!document.all && !window.atob);
+		//tbody nodes innerhtml is write only in ie9
+		//https://github.com/facebook/react/issues/515
+		//deciding just not to render list of trips in ie9 for now
+		if (isIE9) { return; }
+
 		renderer.render(tripListTemplate, {tripList: tripList}, this.elms.$tripListWrapper[0]);
 	},
 
