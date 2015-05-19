@@ -21,7 +21,7 @@ var ModalsView = React.createClass({
 							</p>
 							<p className="explain-txt"><strong>Things to be aware of</strong></p>
 							<ul>
-								<li>While I hope you enjoy the site, it is not meant to be used publicly. Because of this, <strong>there is no way to actually book AirBnB rooms through the site</strong>. You can manually change the booking status, but not booking actually occurs with AirBnB.</li>
+								<li>While I hope you enjoy the site, it is not meant to be used publicly. Because of this, <strong>there is no way to actually book AirBnB rooms through the site</strong>. You can manually change the booking status, but no booking actually occurs with AirBnB.</li>
 								<li>Listings for AirBnB lodgings are supplied by <a href="https://www.mashape.com/zilyo/zilyo" target="_blank">Zilyo’s open API</a></li>
 								<li>Zilyo has <a href="https://www.mashape.com/zilyo/zilyo/support/8#" target="_blank">announced they are shutting down</a>, so their API could dissapear at any time. :(</li>
 								<li>And lastly, this site and its creator are not affiliated, associated, authorized, endorsed by, or in any way officially connected with AirBnB or any of its subsidiaries or its affiliates. The official AirBnB web site is available at <a href="https://www.airbnb.com" target="_blank">www.airbnb.com</a>.</li>
