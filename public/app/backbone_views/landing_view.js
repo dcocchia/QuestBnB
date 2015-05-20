@@ -139,7 +139,8 @@ var LandingView = PageView.extend({
 				}, 250);
 			}, this)
 		});
-		this.elms.$endCalendar.datepicker({ 
+		this.elms.$endCalendar.datepicker({
+			minDate: 0,
 			onSelect: _.bind( function(resp) {
 				this.setEndDate(resp);
 			}, this)

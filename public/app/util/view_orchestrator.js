@@ -72,7 +72,8 @@ var ViewOrchestrator = Backbone.View.extend({
 
 			var thisUrl;
 			var stops = [];
-			var travellers = parseInt(data.travellers);
+			var travellers = parseInt(data.travellers) - 1;
+			//-1 because user is always added to the model
 
 			if (homeStop) { stops.push(homeStop); }
 
