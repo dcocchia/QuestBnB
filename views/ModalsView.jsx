@@ -19,6 +19,7 @@ var ModalsView = React.createClass({
 							<p className="explain-txt">
 								Good question! This is a project created entirely by Dominic Cocchiarella. It is an experiment both in technologies (React server and client) and as a job application to AirBnB. Hopefully if you’ve landed here, you work there and are happily amazed!
 							</p>
+							<p className="explain-txt">The source code is entirely <a href="https://github.com/dcocchia/QuestBnB" target="_blank">available on GitHub</a>! Feel free to pull it down and play around with it.</p>
 							<p className="explain-txt"><strong>Things to be aware of</strong></p>
 							<ul>
 								<li>While I hope you enjoy the site, it is not meant to be used publicly. Because of this, <strong>there is no way to actually book AirBnB rooms through the site</strong>. You can manually change the booking status, but no booking actually occurs with AirBnB.</li>

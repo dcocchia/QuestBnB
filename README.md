@@ -1,4 +1,14 @@
-# QuestBnB [![Build Status](https://travis-ci.org/dcocchia/QuestBnB.svg?branch=master)](https://travis-ci.org/dcocchia/QuestBnB)
+# [QuestBnB](http://questbnb.dominic-c.com/) [![Build Status](https://travis-ci.org/dcocchia/QuestBnB.svg?branch=master)](https://travis-ci.org/dcocchia/QuestBnB)
+
+## Technologies used
+
+* Node.js - server
+* React  - client and server-side rendering
+* MongoDB / mongojs - database
+* Bluebird - Promise library
+* Backbone - js MVC
+* Less - css pre-processor
+* Others - so many libraries and frameworks!
 
 ## Building locally
 
