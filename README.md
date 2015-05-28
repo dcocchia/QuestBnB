@@ -1,5 +1,5 @@
 # [QuestBnB](http://questbnb.dominic-c.com/) [![Build Status](https://travis-ci.org/dcocchia/QuestBnB.svg?branch=master)](https://travis-ci.org/dcocchia/QuestBnB)
-### Plan your next multi-stop trip, find places to stay through AirBnB and find your next adventure!
+#### Plan your next multi-stop trip, find places to stay through AirBnB and find your next adventure!
 
 ## Technologies used
 
