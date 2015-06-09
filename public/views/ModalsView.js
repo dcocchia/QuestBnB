@@ -17,7 +17,7 @@ var ModalsView = React.createClass({displayName: "ModalsView",
 								)
 							), 
 							React.createElement("p", {className: "explain-txt"}, 
-								"Good question! This is a project created entirely by Dominic Cocchiarella. It is an experiment both in technologies (React server and client) and as a job application to AirBnB. Hopefully if you’ve landed here, you work there and are happily amazed!"
+								"Good question! This is a project created entirely by ", React.createElement("a", {href: "mailto:dominic.cocchiarella@gmail.com"}, "Dominic Cocchiarella"), ". It is an experiment in technologies (React server and client). I hope you enjoy it!"
 							), 
 							React.createElement("p", {className: "explain-txt"}, "The source code is entirely ", React.createElement("a", {href: "https://github.com/dcocchia/QuestBnB", target: "_blank"}, "available on GitHub"), "! Feel free to pull it down and play around with it."), 
 							React.createElement("p", {className: "explain-txt"}, React.createElement("strong", null, "Things to be aware of")), 

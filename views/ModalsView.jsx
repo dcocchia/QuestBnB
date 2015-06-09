@@ -17,7 +17,7 @@ var ModalsView = React.createClass({
 								</div>
 							</div>
 							<p className="explain-txt">
-								Good question! This is a project created entirely by Dominic Cocchiarella. It is an experiment both in technologies (React server and client) and as a job application to AirBnB. Hopefully if you’ve landed here, you work there and are happily amazed!
+								Good question! This is a project created entirely by <a href='mailto:dominic.cocchiarella@gmail.com'>Dominic Cocchiarella</a>. It is an experiment in technologies (React server and client). I hope you enjoy it!
 							</p>
 							<p className="explain-txt">The source code is entirely <a href="https://github.com/dcocchia/QuestBnB" target="_blank">available on GitHub</a>! Feel free to pull it down and play around with it.</p>
 							<p className="explain-txt"><strong>Things to be aware of</strong></p>
